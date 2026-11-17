@@ -1,24 +1,23 @@
 {
   "name": "demander_validation",
-  "description": "Arrêt obligatoire avant tout panier validé ou envoi de formulaire. La réponse n'arrive qu'après le clic de l'utilisateur.",
+  "description": "Arrêt obligatoire : demande la décision de l'utilisateur avant tout panier validé ou tout envoi de formulaire. À appeler une fois le produit au panier et le panier affiché, puis attendre la réponse sans rien faire d'autre. Réponse : { decision: \"approuve\" | \"refuse\" | \"modifier\", message? }. Quelle que soit la décision, ne jamais passer commande.",
   "input_schema": {
     "type": "object",
     "properties": {
-      "action": { "type": "string", "enum": ["panier", "envoi"] },
-      "resume": { "type": "string" },
-      "produit": { "type": "string" },
-      "montant_eur": { "type": "number" },
-      "url": { "type": "string" }
+      "action": {
+        "type": "string",
+        "enum": ["panier", "envoi"],
+        "description": "« panier » pour un produit mis au panier, « envoi » pour un formulaire prêt à être envoyé."
+      },
+      "resume": {
+        "type": "string",
+        "description": "Une ou deux phrases : ce qui a été préparé et pourquoi ce produit convient."
+      },
+      "produit": { "type": "string", "description": "Nom exact du produit." },
+      "montant_eur": { "type": "number", "description": "Montant TTC du panier, en euros." },
+      "url": { "type": "string", "description": "URL de la fiche produit ou du panier." }
     },
     "required": ["action", "resume"],
     "additionalProperties": false
-  },
-  "output_schema": {
-    "type": "object",
-    "properties": {
-      "decision": { "type": "string", "enum": ["approuve", "refuse", "modifier"] },
-      "message": { "type": "string" }
-    },
-    "required": ["decision"]
   }
 }

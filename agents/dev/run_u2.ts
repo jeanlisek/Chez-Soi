@@ -132,7 +132,8 @@ async function main(): Promise<void> {
     throw new Error("Indique le site marchand : npm run agent:u2 -- --site <domaine>");
   }
   const urlSite = new URL(/^https?:\/\//i.test(siteBrut) ? siteBrut : `https://${siteBrut}`);
-  const site = urlSite.hostname;
+  // Un chemin est gardé : pour IKEA France, le site est « www.ikea.com/fr/fr ».
+  const site = `${urlSite.hostname}${urlSite.pathname.replace(/\/+$/, "")}`;
 
   const gabarit = await readFile(path.join(RACINE, "agents/dev/prompt_u2_provisoire.md"), "utf8");
   const prompt = gabarit
@@ -156,7 +157,7 @@ async function main(): Promise<void> {
     formatReponse: versJsonSchema(sortieUsage2Schema),
     controlerSortie,
     site,
-    urlDepart: `${urlSite.origin}/`,
+    urlDepart: `${urlSite.origin}${urlSite.pathname}`,
     dossierRuns: path.join(RACINE, "agents/bench/runs"),
     aBlanc: drapeau("a-blanc"),
     malgreSessionsActives: drapeau("malgre-sessions-actives"),

@@ -60,6 +60,129 @@ export const demanderValidationSortieSchema = z.object({
   message: z.string().optional(),
 });
 
+/* ---------- Usage 2 (objets) : réponse finale de l'agent ---------- */
+
+/**
+ * Réponse finale de l'usage 2, demandée à l'agent en sortie structurée
+ * (`agent.answer_format`). Schéma volontairement plat : si la réponse ne s'y conforme
+ * pas, la session H échoue avec `answer_validation`. Seuls `trouve` et `au_panier`
+ * sont obligatoires, pour que l'agent puisse dire « rien trouvé » sans inventer.
+ */
+export const sortieUsage2Schema = z.object({
+  trouve: z.boolean().describe("Vrai si un produit compatible avec les cotes a été trouvé."),
+  au_panier: z.boolean().describe("Vrai si le produit a été ajouté au panier."),
+  produit: z.string().optional().describe("Nom exact du produit."),
+  prix_eur: z.number().optional().describe("Prix TTC en euros, hors livraison."),
+  dimensions: z
+    .object({
+      largeur_cm: z.number(),
+      longueur_cm: z.number(),
+    })
+    .optional()
+    .describe("Dimensions du produit lues sur la fiche, en centimètres."),
+  lien: z.string().optional().describe("URL de la fiche produit."),
+  delai_livraison: z.string().optional().describe("Délai de livraison affiché, tel quel."),
+  remarque: z.string().optional().describe("Écart, doute ou raison de l'échec."),
+});
+export type SortieUsage2 = z.infer<typeof sortieUsage2Schema>;
+
+/** Champs attendus quand `trouve` est vrai : leur absence est signalée, pas corrigée. */
+export const CHAMPS_ATTENDUS_USAGE_2 = [
+  "produit",
+  "prix_eur",
+  "dimensions",
+  "lien",
+  "delai_livraison",
+] as const satisfies readonly (keyof SortieUsage2)[];
+
+/** JSON Schema à passer à H, dérivé du schéma Zod (une seule source de vérité). */
+export function versJsonSchema(schema: z.ZodType): Record<string, unknown> {
+  const json: Record<string, unknown> = { ...z.toJSONSchema(schema) };
+  delete json.$schema;
+  return json;
+}
+
+/** Type d'un schéma Zod, pour les scripts de `agents/dev/` qui n'importent pas zod eux-mêmes. */
+export type SchemaZod<T> = z.ZodType<T>;
+
+/* ---------- Enregistrement d'un run (futur format de `runs_agent`) ---------- */
+
+/**
+ * Un run de l'agent H, tel qu'écrit dans `agents/bench/runs/` par `agents/dev/boucle.ts`.
+ * La table `runs_agent` n'existe pas encore (point ouvert 4) : ce schéma en est l'ébauche.
+ * Jamais d'`agent_view_url` ici : c'est un lien d'accès à la session.
+ */
+export const runAgentSchema = z.object({
+  session_id: z.string(),
+  usage: z.enum(["u1", "u2", "u3"]),
+  agent: z.string(),
+  agent_revision: z.number().nullable(),
+  site: z.string().nullable(),
+  etat_final: z.string(),
+  outcome: z.string().nullable(),
+  error_code: z.string().nullable(),
+  erreur: z.string().nullable(),
+  motif_fin: z.enum([
+    "terminee",
+    "delai_apres_validation",
+    "delai_global",
+    "coupe_circuit",
+    "interruption",
+    "erreur_script",
+  ]),
+  annulee_par_script: z.boolean(),
+  coupe_circuit: z
+    .object({ motif: z.string(), source: z.string(), url: z.string() })
+    .nullable(),
+  debut: z.string(),
+  fin: z.string(),
+  duree_s: z.number(),
+  nb_etapes: z.number(),
+  tokens: z
+    .object({
+      entree: z.number(),
+      cache: z.number(),
+      sortie: z.number(),
+      raisonnement: z.number(),
+      par_modele: z.array(
+        z.object({
+          modele: z.string(),
+          entree: z.number(),
+          cache: z.number(),
+          sortie: z.number(),
+          raisonnement: z.number(),
+        }),
+      ),
+    })
+    .nullable(),
+  cout_usd: z.number().nullable(),
+  decision_validation: z.string().nullable(),
+  appels_outils: z.array(
+    z.object({
+      outil: z.string(),
+      args: z.unknown(),
+      reponse: z.unknown(),
+      erreur: z.string().nullable(),
+      duree_s: z.number(),
+    }),
+  ),
+  sortie_finale: z.unknown(),
+  sortie_valide: z.boolean(),
+  erreurs_sortie: z.array(z.string()),
+  pages_vues: z.array(z.string()),
+  actions_agent: z.record(z.string(), z.number()),
+  /** Ce que la doc H ne précise pas, mesuré pendant le run (onglet Retours Agent API). */
+  observations_api: z.object({
+    appels_sans_id: z.number(),
+    attente_outils_s: z.number(),
+    appels_encore_listes_apres_reponse: z.number(),
+    renvois_de_resultat: z.number(),
+    reponse_presente_apres_annulation: z.boolean().nullable(),
+    approbations_natives_vues: z.number(),
+  }),
+});
+export type RunAgent = z.infer<typeof runAgentSchema>;
+
 export type GetMesuresEntree = z.infer<typeof getMesuresEntreeSchema>;
 export type GetMesuresSortie = z.infer<typeof getMesuresSortieSchema>;
 export type GetContratEntree = z.infer<typeof getContratEntreeSchema>;

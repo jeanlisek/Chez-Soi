@@ -191,9 +191,12 @@ Depuis un worktree (pas de `.env` à sa racine) : `npx tsx --env-file=$HOME/Docu
 | `npm run n8n:pull` | Exporte de l'instance vers `n8n/<nom>.json` les workflows qui ont déjà un fichier dans `n8n/` |
 | `npm run n8n:pull -- <nom>` | Exporte en plus un workflow qui n'a pas encore de fichier |
 | `npm run n8n:push` | Simulation : compare `n8n/*.json` à l'instance et affiche ce qui serait créé ou mis à jour, sans rien modifier |
-| `npm run n8n:push -- --confirmer` | Envoie réellement vers l'instance. Jamais sans prévenir Bastian |
+| `npm run n8n:push -- --confirmer` | Envoie réellement vers l'instance. Jamais sans prévenir Jean-Li et Bastian |
+| `npm run n8n:articles` | Régénère dans `veille_reglementaire` la copie de `n8n/articles_suivis.json` (à lancer après toute modification de la liste) |
 
-Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dans le `.env` de la racine (ignoré par git). Le script ne les affiche jamais. Il passe par l'API publique n8n (`/api/v1/workflows`, en-tête `X-N8N-API-KEY`) ; il n'active, ne désactive et n'exécute aucun workflow. Le JSON exporté est stable : clés triées, sans `createdAt`, `updatedAt`, `versionId`, `staticData`, `pinData`, `shared`, `tags` ni `meta`. Le pull signale les secrets qui semblent écrits en dur (heuristique, à relire quand même). Les amorces vides (`nodes: []`) sont ignorées par le push.
+Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dans le `.env` de la racine (ignoré par git). Le script ne les affiche jamais. Il passe par l'API publique n8n (`/api/v1/workflows`, en-tête `X-N8N-API-KEY`) ; il n'active, ne désactive et n'exécute aucun workflow. L'API publique ne permet pas de lancer une exécution : les tests se font dans l'interface.
+
+Ciblage : un fichier `n8n/<nom>.json` désigne son workflow par l'`id` qu'il contient, pas par son nom. Sans `id`, le push crée le workflow puis écrit l'`id` dans le fichier. Les workflows préfixés « archive · » (originaux de Bastian, conservés) sont ignorés partout. Le JSON exporté est stable : clés triées, sans `createdAt`, `updatedAt`, `versionId`, `staticData`, `pinData`, `shared`, `tags` ni `meta`. Le pull signale les secrets qui semblent écrits en dur (heuristique, à relire quand même). Le push échoue si le nœud « Articles suivis » ne correspond plus à `n8n/articles_suivis.json`.
 
 **supabase** (depuis la racine, CLI Supabase v3 via `npx` ; sous PowerShell, `npx.cmd` si les scripts sont bloqués ; `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort). Depuis la v3, les commandes visent la base locale par défaut : `--remote` vise le projet relié. Le Wi-Fi de l'école bloque le port 5432 : commandes `--remote` et `psql` depuis un partage de connexion. Historique des migrations aligné le 18/11 (0001 à 0007 marquées appliquées).
 
@@ -217,8 +220,10 @@ Interface (18/11) : les 12 écrans de la maquette (Figma « Chez soi · Parcours
 
 - TypeScript strict. Schémas Zod partagés dans `apps/web/lib/schemas.ts`, Pydantic côté Python.
 - Noms métier en français, en snake_case pour la base (`cote_confirmee_cm`, `runs_agent`…), comme dans la v3.
-- Workflows n8n : les JSON de `n8n/` sont la référence. Quand on modifie un workflow dans l'interface, on fait un `npm run n8n:pull` et on commite. On ne fait jamais de push sans prévenir Bastian.
-- Workflows n8n : aucun secret en dur dans les nœuds (en-têtes HTTP, paramètres, nœuds Code). On passe par un credential n8n ou une variable d'environnement ; seules les références de credentials (id et nom) apparaissent dans le JSON.
+- Workflows n8n : les JSON de `n8n/` sont la référence. Quand on modifie un workflow dans l'interface, on fait un `npm run n8n:pull` et on commite. On ne fait jamais de push sans prévenir Jean-Li (propriétaire des workflows sur l'instance) et Bastian (relecteur de `n8n/`).
+- Workflows n8n : aucun secret en dur dans les nœuds (en-têtes HTTP, paramètres, nœuds Code). Les secrets passent par un credential n8n ; seules les références de credentials (id et nom) apparaissent dans le JSON. `$env` est bloqué sur l'instance et les variables n8n sont indisponibles (édition Community) : les paramètres non secrets vivent dans le nœud « Config » de chaque workflow.
+- Workflows n8n : chaque webhook exige Header Auth (credential « Chez Soi · webhook », en-tête `X-Chez-Soi-Secret`). Les nœuds Supabase restent désactivés jusqu'aux migrations de l'issue #1. Entrées, sorties et ordre de test : `n8n/README.md`.
+- Graphe : n8n l'alimente, l'app l'interroge (`/api/plan`). Embeddings `BAAI/bge-m3`, dimension 1024 (`embedding vector(1024)`). La veille Légifrance ne crée que des règles au statut `proposee` ; seule une règle passée à `validee` par une personne entre dans le graphe.
 - Petits commits ciblés. Une session parallèle = un worktree.
 
 ## Git et GitHub (obligatoire, pour l'équipe comme pour Claude)

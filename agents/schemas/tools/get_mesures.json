@@ -1,0 +1,22 @@
+{
+  "name": "get_mesures",
+  "description": "Renvoie les cotes confirmées d'une faille et les contraintes du profil.",
+  "input_schema": {
+    "type": "object",
+    "properties": { "faille_id": { "type": "string" } },
+    "required": ["faille_id"],
+    "additionalProperties": false
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "element": { "type": "string" },
+      "piece": { "type": "string" },
+      "cote_confirmee_cm": { "type": "number" },
+      "largeur_cm": { "type": "number" },
+      "hauteur_cm": { "type": "number" },
+      "contraintes_profil": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["element", "piece", "cote_confirmee_cm", "largeur_cm", "hauteur_cm", "contraintes_profil"]
+  }
+}

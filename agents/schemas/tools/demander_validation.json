@@ -1,0 +1,24 @@
+{
+  "name": "demander_validation",
+  "description": "Arrêt obligatoire avant tout panier validé ou envoi de formulaire. La réponse n'arrive qu'après le clic de l'utilisateur.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": { "type": "string", "enum": ["panier", "envoi"] },
+      "resume": { "type": "string" },
+      "produit": { "type": "string" },
+      "montant_eur": { "type": "number" },
+      "url": { "type": "string" }
+    },
+    "required": ["action", "resume"],
+    "additionalProperties": false
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "decision": { "type": "string", "enum": ["approuve", "refuse", "modifier"] },
+      "message": { "type": "string" }
+    },
+    "required": ["decision"]
+  }
+}

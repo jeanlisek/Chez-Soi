@@ -1,0 +1,3 @@
+-- Amorce : aucune donnée pour l'instant.
+-- Une règle de risque n'entre ici que si sa source P1 ou P2 est vérifiée et datée
+-- dans le Registre des sources.

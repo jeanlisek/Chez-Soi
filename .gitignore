@@ -1,0 +1,28 @@
+# Secrets et environnement
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Outils
+.vercel/
+.DS_Store
+.idea/
+.vscode/
+
+# Données lourdes ou personnelles : jamais dans le dépôt
+*.mp4
+*.mov

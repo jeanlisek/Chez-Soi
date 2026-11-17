@@ -66,7 +66,8 @@ chez-soi/
 │   ├── pipeline/             frames · reconstruction · profondeur · detection · cotes · export
 │   └── contrat/              lecture.py (Docling) · extraction.py · schema.py
 ├── supabase/migrations/      0001_schema · 0002_rls · 0003_regles · 0004_contrats · 0005_graphe (+ seed.sql)
-├── n8n/                      pipeline_analyse · analyse_contrat · suivi_runs · veille_reglementaire (.json)
+├── n8n/                      pipeline_analyse · analyse_contrat · veille_reglementaire (.json) · articles_suivis.json
+├── scripts/                  n8n-sync.mjs (synchronisation repo ↔ n8n)
 ├── docs/                     architecture.md · mesures.md · regles.md
 ├── .env.example
 └── README.md
@@ -85,7 +86,7 @@ chez-soi/
 | `POST /api/agent/run` · `GET ?id=` | Crée une session H (usage 1, 2 ou 3), lit son état |
 | `POST /api/agent/steer` | Message envoyé à une session en cours (ex. « moins de 50 € ») |
 | `POST /api/agent/tools` | Custom tools : `get_mesures`, `get_contrat`, `demander_validation` |
-| `POST /api/webhooks/hai` | Webhooks signés H : vérification, mise à jour de `runs_agent` |
+| `POST /api/webhooks/hai` | Tous les webhooks signés H (`awaiting_tool_results`, `completed`, `failed`) : vérification, écriture dans `runs_agent` |
 
 Service vision : `POST /analyse {logement_id, video_url, piece?, pieces?}` répond 202 avec un `analyse_id` ; n8n lit ensuite `GET /analyse/{analyse_id}` (état, failles, liens du `.glb` et de l'image annotée), puis écrit dans Supabase. Avec `pieces` (nom, debut_s, fin_s), chaque pièce a sa propre reconstruction. Une cote que le pipeline ne peut pas mesurer (objet coupé par le cadre) est marquée « à confirmer » dans `position_3d.cote`, jamais écrite comme cote estimée. Si le calcul échoue, le service sert le résultat précalculé de `services/vision/precalcule/demo/` (`resultat: "precalcule"`) ; le dépôt étant public, seul `failles.json` y est suivi par git, jamais une image, un `.glb` ou une vidéo d'un vrai logement. `POST /autotest` est une route de diagnostic. `POST /contrat {contrat_id, pdf_url}` est synchrone : Docling (pypdf en secours), règles puis LLM facultatif via `HF_TOKEN` ; toute obligation dont la citation n'est pas retrouvée sur sa page est rejetée. Le Space `jeanlisek/chez-soi-vision` est privé : chaque appel porte `Authorization: Bearer <jeton Hugging Face>` et `X-Vision-Key`. Détail dans `services/vision/README.md`.
 
@@ -102,6 +103,7 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 
 - Les fonctions Vercel s'arrêtent vite, donc pas de SDK qui attend la session. Circuit retenu : une route crée la session (`POST /api/v2/sessions`) en déclarant les outils. Le webhook `session.awaiting_tool_results` arrive, la route lit `pending_tool_calls` puis répond via `tool_results`. Pour `demander_validation`, on ne répond qu'après le clic de l'utilisateur dans `ValidationModal`.
 - Un appel d'outil peut être exécuté **deux fois** : chaque outil doit être idempotent.
+- Webhooks : tous les événements H (`awaiting_tool_results`, `completed`, `failed`) arrivent sur `/api/webhooks/hai`, qui écrit dans `runs_agent`. Il n'y a pas de workflow n8n `suivi_runs` (décision de Jean-Li, 17/11 ; la v3 le prévoyait en section 10).
 - Webhooks : vérifier la signature, ignorer les doublons (même identifiant de livraison), répondre en moins de 10 s. L'URL doit être publique en https, c'est-à-dire le déploiement Vercel, pas localhost.
 - Le bouton natif « Approve or deny » de H vise les commandes shell. L'arrêt avant un panier ou un envoi passe **uniquement** par `demander_validation`.
 - Vérifié dans la doc (hub.hcompany.ai, 17/11) : un custom tool se déclare `{ name, description, input_schema }`, sans schéma de sortie. Sur un agent du catalogue, les outils passent par `overrides["agent.tools"]` et la sortie structurée par `overrides["agent.answer_format"]` (JSON Schema). Chaque résultat renvoie le `tool_req` reçu, tel quel.
@@ -242,7 +244,7 @@ Plan B de la démo : run enregistré (replay H), 3D précalculée, partage de co
 
 1. **Modèles 3D** : tranché par Jean-Li le 18/11. MoGe-2, Grounding DINO base, SAM 2.1 et MapAnything (variante Apache) ; DA3-BASE et DA3METRIC-LARGE en secours ; VGGT abandonné (licence). Révisions et licences figées dans `services/vision/modeles.py`. MapAnything tourne aussi sur le GPU Apple, mais sa reconstruction n'est pas fiable sur une visite rapide de plusieurs pièces (voir `docs/mesures.md`) ; les cotes n'en dépendent pas.
 2. **Usage 3 dans le navigateur de l'utilisateur** : selon la doc H, l'environnement `user_device` ne passe que par le SDK Python ou la CLI, avec un Chrome dédié lancé avec un port de débogage, sans coffre-fort, et la session meurt si le programme Python s'arrête. Le circuit TS de la v3 ne suffit donc pas. Options : runtime Python local, agent `h/holotab`, ou navigateur cloud pour la démo. À trancher par Briac.
-3. **Webhooks** : `awaiting_tool_results` doit arriver sur `/api/webhooks/hai` (l'app répond aux outils). Pour `completed`/`failed`, choisir entre la même route et n8n `suivi_runs` (qui n'existe pas encore). À trancher par Briac et Bastian.
+3. ~~**Webhooks**~~ : **tranché** (Jean-Li, 17/11). Tous les webhooks H arrivent sur `/api/webhooks/hai`, qui écrit dans `runs_agent`. Le workflow n8n `suivi_runs` est abandonné.
 4. **Schéma** : tranché le 18/11 (issue #1). v3 et doc CDO réconciliés, `pieces` et `declarations` retenues, vocabulaire `elements` commun ; détail dans `supabase/README.md`.
 5. **Action montrée en live vendredi** : proposition du CPO, usage 2 « sous-tapis 60 × 160 cm » avec pilotage « moins de 50 € ». Décision de Jean-Li, mercredi midi.
 6. Auth : Apple, Google ou lien par e-mail (proposition du CPO), plus un logement exemple avant l'inscription.

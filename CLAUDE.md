@@ -38,6 +38,8 @@ Drive de l'équipe (pour les humains) : https://drive.google.com/drive/folders/1
 
 L'usage 1 ne tourne qu'en parcours A (avec contrat) et seulement si les conditions générales n'ont pas été déposées.
 
+L'usage 1 alimente le graphe de connaissances (v3, flux 7 et 8) : les lois arrivent par l'API PISTE, mais les conditions générales des assureurs n'ont pas d'API, c'est l'agent qui va les chercher. Le backend télécharge le PDF à l'URL renvoyée, vérifie lui-même la référence, puis le pipeline contrat l'ajoute au graphe (nœuds Clause). Décision de Jean-Li, 17/11 : l'usage 1 fait partie du chemin critique (#7).
+
 ### Parcours A / B
 
 - A, avec contrat : verdict dans l'ordre contrat, puis loi, puis recommandé.
@@ -191,8 +193,8 @@ Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dan
 
 ## Priorités pour la démo de jeudi soir (proposition)
 
-Chemin critique : schéma Supabase + seed, puis capture et upload, puis `/analyse` (avec un résultat 3D précalculé en plan B), puis `/api/plan`, puis usage 2 avec `demander_validation` et pilotage, puis `ValidationModal`, puis `runs_agent`.
-Bonus, une fois le chemin critique tenu : usage 1, usage 3, AR, veille réglementaire, export Minecraft.
+Chemin critique : schéma Supabase + seed, puis capture et upload, puis `/analyse` (avec un résultat 3D précalculé en plan B), puis `/api/plan`, puis usage 2 avec `demander_validation` et pilotage, puis `ValidationModal`, puis `runs_agent`, puis usage 1 (conditions générales de l'assureur → graphe, #7).
+Bonus, une fois le chemin critique tenu : usage 3, AR, veille réglementaire, export Minecraft.
 Plan B de la démo : run enregistré (replay H), 3D précalculée, partage de connexion.
 
 ## Points ouverts (ne pas trancher seul, demander)

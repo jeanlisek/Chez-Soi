@@ -7,6 +7,7 @@
   },
   "scripts": {
     "n8n:pull": "node scripts/n8n-sync.mjs pull",
-    "n8n:push": "node scripts/n8n-sync.mjs push"
+    "n8n:push": "node scripts/n8n-sync.mjs push",
+    "n8n:articles": "node scripts/n8n-sync.mjs articles"
   }
 }

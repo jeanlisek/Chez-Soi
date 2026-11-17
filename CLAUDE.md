@@ -154,7 +154,18 @@ Pas de workspace racine : chaque partie s'installe dans son dossier. Gestionnair
 | `docker build -t chez-soi-vision .` | Image du Space (pas encore construite ni testée) |
 | `docker run --rm -p 7860:7860 chez-soi-vision` | Lance l'image en local |
 
-**Pas encore de commande** : tests (aucun test écrit), déploiement du Space Hugging Face, déploiement Vercel, migrations Supabase (schéma non écrit, voir point ouvert 4), import et export n8n, banc agent (`agents/bench/run_bench.py` est une amorce).
+**n8n** (depuis la racine, script `scripts/n8n-sync.mjs`, sans dépendance, Node 20.12 ou plus)
+
+| Commande | Rôle |
+|---|---|
+| `npm run n8n:pull` | Exporte de l'instance vers `n8n/<nom>.json` les workflows qui ont déjà un fichier dans `n8n/` |
+| `npm run n8n:pull -- <nom>` | Exporte en plus un workflow qui n'a pas encore de fichier |
+| `npm run n8n:push` | Simulation : compare `n8n/*.json` à l'instance et affiche ce qui serait créé ou mis à jour, sans rien modifier |
+| `npm run n8n:push -- --confirmer` | Envoie réellement vers l'instance. Jamais sans prévenir Bastian |
+
+Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dans le `.env` de la racine (ignoré par git). Le script ne les affiche jamais. Il passe par l'API publique n8n (`/api/v1/workflows`, en-tête `X-N8N-API-KEY`) ; il n'active, ne désactive et n'exécute aucun workflow. Le JSON exporté est stable : clés triées, sans `createdAt`, `updatedAt`, `versionId`, `staticData`, `pinData`, `shared`, `tags` ni `meta`. Le pull signale les secrets qui semblent écrits en dur (heuristique, à relire quand même). Les amorces vides (`nodes: []`) sont ignorées par le push.
+
+**Pas encore de commande** : tests (aucun test écrit), déploiement du Space Hugging Face, déploiement Vercel, migrations Supabase (schéma non écrit, voir point ouvert 4), banc agent (`agents/bench/run_bench.py` est une amorce).
 
 État du squelette : les routes API de `apps/web` et du service vision renvoient un stub typé en HTTP 501 (`StubReponse` dans `apps/web/lib/schemas.ts`, helper `apps/web/lib/stub.ts`).
 
@@ -162,7 +173,8 @@ Pas de workspace racine : chaque partie s'installe dans son dossier. Gestionnair
 
 - TypeScript strict. Schémas Zod partagés dans `apps/web/lib/schemas.ts`, Pydantic côté Python.
 - Noms métier en français, en snake_case pour la base (`cote_confirmee_cm`, `runs_agent`…), comme dans la v3.
-- Workflows n8n : exportés en JSON dans `n8n/`, jamais modifiés uniquement dans l'interface.
+- Workflows n8n : les JSON de `n8n/` sont la référence. Quand on modifie un workflow dans l'interface, on fait un `npm run n8n:pull` et on commite. On ne fait jamais de push sans prévenir Bastian.
+- Workflows n8n : aucun secret en dur dans les nœuds (en-têtes HTTP, paramètres, nœuds Code). On passe par un credential n8n ou une variable d'environnement ; seules les références de credentials (id et nom) apparaissent dans le JSON.
 - Petits commits ciblés. Une session parallèle = un worktree.
 
 ## Priorités pour la démo de jeudi soir (proposition)

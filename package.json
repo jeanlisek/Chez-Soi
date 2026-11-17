@@ -1,0 +1,12 @@
+{
+  "name": "chez-soi",
+  "private": true,
+  "description": "Scripts de la racine du monorepo. Les applications s'installent dans leur propre dossier.",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "n8n:pull": "node scripts/n8n-sync.mjs pull",
+    "n8n:push": "node scripts/n8n-sync.mjs push"
+  }
+}

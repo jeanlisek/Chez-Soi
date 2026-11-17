@@ -1,7 +1,414 @@
 {
-  "name": "veille_reglementaire",
-  "nodes": [],
-  "connections": {},
   "active": false,
-  "settings": {}
+  "connections": {
+    "01 · Lundi · 09:00": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "02 · Choisir les sources",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "02 · Choisir les sources": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "03 · Rechercher avec H",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "03 · Rechercher avec H": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "04 · Extraire les nouveautés",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "04 · Extraire les nouveautés": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "05 · Comparer les règles",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "05 · Comparer les règles": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "06 · Préparer un brouillon",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "06 · Préparer un brouillon": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "07 · Faire valider",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "07 · Faire valider": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "08 · Versionner les règles",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "08 · Versionner les règles": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "09 · Résumer la veille",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "fuI6WIXjttq5UHAP",
+  "name": "veille_reglementaire",
+  "nodes": [
+    {
+      "id": "bdccf6d3-3768-4ad0-a665-4642f040e4a8",
+      "name": "Titre et légende",
+      "parameters": {
+        "color": 7,
+        "content": "# 🔎 03 · VEILLE RÉGLEMENTAIRE\nSurveiller les sources officielles et proposer des mises à jour avant validation humaine.\n\n**ARCHITECTURE À COMPLÉTER** · Lecture de gauche à droite · Les services grisés attendent leur branchement.",
+        "height": 190,
+        "width": 2660
+      },
+      "position": [
+        0,
+        -230
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "05dfda3c-c1ed-46b5-845e-31efe1e63f11",
+      "name": "01 · DÉCLENCHER",
+      "parameters": {
+        "color": 5,
+        "content": "## 01 · DÉCLENCHER\nLundi, 09:00 · Europe/Paris\n\nSources et thèmes à définir.",
+        "height": 400,
+        "width": 560
+      },
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "d14fb5c6-0037-4b7d-aaf5-32fd4fdb2476",
+      "name": "02 · RECHERCHER",
+      "parameters": {
+        "color": 6,
+        "content": "## 02 · RECHERCHER\nAgent H → publications → changements\n\nSession et attente à implémenter.",
+        "height": 400,
+        "width": 560
+      },
+      "position": [
+        620,
+        0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "4814bb45-4160-4d95-a7a1-5000f8b20864",
+      "name": "03 · PRÉPARER",
+      "parameters": {
+        "color": 1,
+        "content": "## 03 · PRÉPARER\nComparaison → propositions sourcées\n\nEnregistrement du brouillon.",
+        "height": 400,
+        "width": 560
+      },
+      "position": [
+        1240,
+        0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "6e16f404-ce69-4ee8-9c7c-3c8eb834e576",
+      "name": "04 · VALIDER ET PUBLIER",
+      "parameters": {
+        "color": 3,
+        "content": "## 04 · VALIDER ET PUBLIER\nValidation humaine obligatoire\n\nPuis version du référentiel et bilan.",
+        "height": 400,
+        "width": 800
+      },
+      "position": [
+        1860,
+        0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "71ad5ce4-af9e-4417-a2fc-5c20e9c9ea83",
+      "name": "📥 Références de départ",
+      "parameters": {
+        "color": 5,
+        "content": "## 📥 Références de départ\nSources officielles · thèmes suivis\n\nRègles validées · date de dernière veille.",
+        "height": 260,
+        "width": 860
+      },
+      "position": [
+        0,
+        460
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "867f2fdf-5de2-40db-a95e-0cc0d3bb95ce",
+      "name": "📤 Résultat cible",
+      "parameters": {
+        "color": 4,
+        "content": "## 📤 Résultat cible\nChangements proposés + sources + dates\n\nDécisions de validation + version des règles.",
+        "height": 260,
+        "width": 860
+      },
+      "position": [
+        900,
+        460
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "e9d79246-10cb-4ac3-95e0-14f6440266f7",
+      "name": "🔧 À compléter",
+      "parameters": {
+        "color": 1,
+        "content": "## 🔧 À compléter\nAgent H, attente bornée, comparaison et stockage.\n\nRemplacer le bloc de validation par une étape réellement bloquante. Prévoir « aucun changement » et « source indisponible ».",
+        "height": 260,
+        "width": 860
+      },
+      "position": [
+        1800,
+        460
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "04bf99b5-7972-4e19-9b44-7a512a0153d9",
+      "name": "Détails de conception",
+      "parameters": {
+        "color": 7,
+        "content": "## 📚 Détails de conception\n## 03 · Veille hebdomadaire → propositions → validation → règles\n**Architecture uniquement.** La planification est définie, mais le workflow reste désactivé.\n\n**Entrée cible :** sources officielles, thèmes et référentiel validé.\n**Sortie cible :** changements sourcés, décisions et version du référentiel.\n**À compléter :** agent H de veille, attente/récupération des sessions, extraction, comparaison, stockage et validation réellement bloquante.\n**Principe :** une découverte ne met jamais automatiquement à jour une règle. Prévoir « aucun changement » et « source indisponible ».\n\nLes blocs grisés sont des emplacements réservés, pas des appels opérationnels.",
+        "height": 330,
+        "width": 2660
+      },
+      "position": [
+        0,
+        800
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "038143d3-1aee-4110-b437-6fc2f3237b31",
+      "name": "01 · Lundi · 09:00",
+      "notes": "Planification cible : lundi 09:00, Europe/Paris. Aucune exécution tant que le workflow reste désactivé.",
+      "notesInFlow": false,
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0,
+              "weeksInterval": 1
+            }
+          ]
+        }
+      },
+      "position": [
+        80,
+        190
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "b4c4d0bc-c3c7-4246-9e70-e3b3435cbb25",
+      "name": "02 · Choisir les sources",
+      "notes": "Définir une liste de sources officielles, les thèmes suivis et les références déjà validées. Prévoir une date de dernière veille et un responsable.",
+      "notesInFlow": false,
+      "parameters": {},
+      "position": [
+        320,
+        190
+      ],
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1
+    },
+    {
+      "disabled": true,
+      "id": "850ed6c6-3523-4384-9279-abf9a9782f6f",
+      "name": "03 · Rechercher avec H",
+      "notes": "Agent de veille à définir : consulter uniquement les sources autorisées et relever URL, date, publication et contenu. Implémenter ensuite lancement de session → attente bornée → statut → lecture du résultat.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        700,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "disabled": true,
+      "id": "e346cd9a-7b72-4b85-9cdc-aebe6cc55923",
+      "name": "04 · Extraire les nouveautés",
+      "notes": "Entrée : publications consultées. Sortie : changements candidats sourcés. Séparer date de publication, date d’entrée en vigueur et hypothèses.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        940,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "disabled": true,
+      "id": "9e72545b-0fee-4363-8c71-90b073d09bbb",
+      "name": "05 · Comparer les règles",
+      "notes": "Comparer les changements candidats aux règles déjà validées. Sortie : inchangé / nouveau / modifié / à vérifier. Dédupliquer les textes.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        1320,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "disabled": true,
+      "id": "76fac123-50f7-4333-aa4e-87153cbd6eb9",
+      "name": "06 · Préparer un brouillon",
+      "notes": "Enregistrer les propositions et leurs sources dans le stockage à définir. Aucun changement de règle métier sans validation.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        1560,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "817406d6-1426-4a66-92b5-e160e3fae1c2",
+      "name": "07 · Faire valider",
+      "notes": "Étape bloquante à implémenter : responsable, canal de validation et décision approuvée/refusée. Le bloc actuel ne valide rien. Ne pas activer avant son remplacement.",
+      "notesInFlow": false,
+      "parameters": {},
+      "position": [
+        1940,
+        190
+      ],
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1
+    },
+    {
+      "disabled": true,
+      "id": "afcaed66-313f-4c8d-b7a9-ccc1f53c2e91",
+      "name": "08 · Versionner les règles",
+      "notes": "Uniquement après validation explicite : versionner le référentiel, enregistrer les sources et journaliser auteur/date. Cette étape est désactivée.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        2180,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "b85ce35c-6967-4e43-bc0d-afe187163f89",
+      "name": "09 · Résumer la veille",
+      "notes": "Sortie cible : veille_id, sources_consultees, changements_proposes, decisions et version_regles. Définir la destination du bilan sans envoi automatique pour le moment.",
+      "notesInFlow": false,
+      "parameters": {},
+      "position": [
+        2420,
+        190
+      ],
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1
+    }
+  ],
+  "settings": {
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1",
+    "executionTimeout": 300,
+    "timezone": "Europe/Paris"
+  }
 }

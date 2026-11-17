@@ -1,7 +1,357 @@
 {
-  "name": "pipeline_analyse",
-  "nodes": [],
-  "connections": {},
   "active": false,
-  "settings": {}
+  "connections": {
+    "01 · Vidéo et profil": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "02 · Contrôler l’entrée",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "02 · Contrôler l’entrée": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "03 · Analyser le logement",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "03 · Analyser le logement": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "04 · Identifier les risques",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "04 · Identifier les risques": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "05 · Proposer un plan",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "05 · Proposer un plan": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "06 · Enregistrer le diagnostic",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "06 · Enregistrer le diagnostic": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "07 · Renvoyer le plan",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "id": "XRdZDg8wbDc8KUGb",
+  "name": "pipeline_analyse",
+  "nodes": [
+    {
+      "id": "c882fede-e20b-410f-aaea-ffd2bcd320a0",
+      "name": "Titre et légende",
+      "parameters": {
+        "color": 7,
+        "content": "# 🎬 01 · ANALYSE VIDÉO\nTransformer une vidéo du logement en observations, risques et plan d’amélioration.\n\n**ARCHITECTURE À COMPLÉTER** · Lecture de gauche à droite · Les services grisés attendent leur branchement.",
+        "height": 190,
+        "width": 2200
+      },
+      "position": [
+        0,
+        -230
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "1d5755bd-1024-439c-8d2b-8ee6cca7d80c",
+      "name": "01 · RECEVOIR",
+      "parameters": {
+        "color": 5,
+        "content": "## 01 · RECEVOIR\nVidéo + profil + consentement\n\nContrôles d’entrée à compléter.",
+        "height": 400,
+        "width": 560
+      },
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "faf6ec72-0930-4329-b425-fc18888ab8ad",
+      "name": "02 · COMPRENDRE",
+      "parameters": {
+        "color": 6,
+        "content": "## 02 · COMPRENDRE\nVision Hugging Face → observations → risques\n\nServices à connecter.",
+        "height": 400,
+        "width": 560
+      },
+      "position": [
+        620,
+        0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "a9a95082-8a39-4fde-b3e1-734491c69bc5",
+      "name": "03 · PRÉPARER",
+      "parameters": {
+        "color": 1,
+        "content": "## 03 · PRÉPARER\nContre-mesures proposées + priorités\n\nPlan et stockage à connecter.",
+        "height": 400,
+        "width": 560
+      },
+      "position": [
+        1240,
+        0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "03a4bf1b-9b76-4ea1-9da5-fe23ee2c5cd7",
+      "name": "04 · RESTITUER",
+      "parameters": {
+        "color": 4,
+        "content": "## 04 · RESTITUER\nUn diagnostic et un plan lisibles\n\nContrat de réponse à finaliser.",
+        "height": 400,
+        "width": 340
+      },
+      "position": [
+        1860,
+        0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "5b661d71-6adb-40cb-b998-f9fa9d705231",
+      "name": "📥 Données attendues",
+      "parameters": {
+        "color": 5,
+        "content": "## 📥 Données attendues\n`video_id` ou `video_url`\n\n`profil` · consentement · contexte du logement",
+        "height": 260,
+        "width": 706
+      },
+      "position": [
+        0,
+        460
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "cf0efff2-164b-4f9a-a480-2e4cbf778da3",
+      "name": "📤 Résultat cible",
+      "parameters": {
+        "color": 4,
+        "content": "## 📤 Résultat cible\n`diagnostic_id` · observations · risques justifiés\n\nplan · version des règles",
+        "height": 260,
+        "width": 706
+      },
+      "position": [
+        746,
+        460
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "76c91ef4-301f-405a-8c91-4a76a2e49b49",
+      "name": "🔧 À compléter",
+      "parameters": {
+        "color": 1,
+        "content": "## 🔧 À compléter\nVision → règles → plan → stockage.\n\nConserver l’incertitude des mesures. Les achats et démarches se feront dans un autre parcours.",
+        "height": 260,
+        "width": 706
+      },
+      "position": [
+        1492,
+        460
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "b772007e-eec9-4629-8cca-df6561251341",
+      "name": "Détails de conception",
+      "parameters": {
+        "color": 7,
+        "content": "## 📚 Détails de conception\n## 01 · Analyse vidéo → risques → plan\n**Architecture uniquement.** Les quatre blocs de service grisés sont désactivés ; aucune analyse n’est exécutée.\n\n**Entrée cible :** video_id / video_url, profil, consentement.\n**Sortie cible :** diagnostic_id, observations, risques justifiés, plan, version_regles.\n**À compléter :** validation des entrées, service vision, règles, génération du plan, stockage et gestion des erreurs.\n**Limite :** les observations et mesures estimées doivent porter leur incertitude. Les achats et démarches ne sont pas lancés ici.\n\nLe dernier bloc renvoie volontairement « architecture_a_completer » (HTTP 501) tant que les services ne sont pas branchés.",
+        "height": 330,
+        "width": 2200
+      },
+      "position": [
+        0,
+        800
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "28434ee0-9620-44aa-90ba-37d78e722367",
+      "name": "01 · Vidéo et profil",
+      "notes": "Point d’entrée prévu pour l’application Chez Soi. Non publié.",
+      "notesInFlow": false,
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {},
+        "path": "chez-soi/analyse-video",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        80,
+        190
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "1e85a1d0-b8ba-41fb-a12c-32638feb05c8"
+    },
+    {
+      "id": "0c0a8a70-6892-4529-9a8c-846b74a1aee3",
+      "name": "02 · Contrôler l’entrée",
+      "notes": "À définir : référence vidéo, profil, consentement, format et limites. Ajouter une branche erreur avant tout traitement.",
+      "notesInFlow": false,
+      "parameters": {},
+      "position": [
+        320,
+        190
+      ],
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1
+    },
+    {
+      "disabled": true,
+      "id": "4bbf18dd-49e1-4b89-a0fc-63f7c7399a42",
+      "name": "03 · Analyser le logement",
+      "notes": "Entrée : video_url ou video_id, profil. Sortie : observations, pièces, objets, dimensions estimées et incertitude. L’équipe vision définit le service.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        700,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "disabled": true,
+      "id": "5a29dfd5-9b19-4395-8590-212deeb62a35",
+      "name": "04 · Identifier les risques",
+      "notes": "Entrée : observations + profil + règles validées. Sortie : risques priorisés avec justification et références. Aucune mesure ne doit être traitée comme certaine sans validation.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        940,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "disabled": true,
+      "id": "b4e8cfbe-fdc9-49bd-88e5-20c875117a40",
+      "name": "05 · Proposer un plan",
+      "notes": "Entrée : risques. Sortie : contre-mesures proposées, priorité, contraintes et estimation éventuelle du coût. Le déclenchement d’actions H Company sera un parcours distinct soumis à validation.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        1320,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "disabled": true,
+      "id": "2890736b-0aaa-41d2-9b6d-ecafd255f222",
+      "name": "06 · Enregistrer le diagnostic",
+      "notes": "Destination à décider avec le CTO/CDO : Supabase ou service applicatif. Contrat cible : diagnostic_id, observations, risques, plan, version_regles.",
+      "notesInFlow": false,
+      "parameters": {
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "url": "https://example.invalid/a-configurer"
+      },
+      "position": [
+        1560,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "2c4155b4-9579-4580-8651-e754b20913e4",
+      "name": "07 · Renvoyer le plan",
+      "notes": "Réponse explicite de maquette : aucun diagnostic ni analyse réelle. À remplacer après branchement des services.",
+      "notesInFlow": false,
+      "parameters": {
+        "options": {
+          "responseCode": 501
+        },
+        "respondWith": "json",
+        "responseBody": "{\"statut\": \"architecture_a_completer\", \"workflow\": \"pipeline_analyse\", \"sortie_cible\": [\"diagnostic_id\", \"observations\", \"risques\", \"plan\", \"version_regles\"]}"
+      },
+      "position": [
+        1940,
+        190
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4
+    }
+  ],
+  "settings": {
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1",
+    "executionTimeout": 300,
+    "timezone": "Europe/Paris"
+  }
 }

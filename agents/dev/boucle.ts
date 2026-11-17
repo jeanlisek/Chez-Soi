@@ -79,7 +79,7 @@ function jetons(texte: string): string[] {
   }
   return decode
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .split(/[^a-z]+/)
     .filter(Boolean);

@@ -9,6 +9,8 @@ Prompts, schémas d'outils, skill, scripts locaux et banc de mesure de l'agent H
 - `dev/` : scripts locaux, sans webhook ni Supabase.
   - `boucle.ts` : module commun à tous les usages. Il vérifie le quota, crée une session, suit `/status` et `/changes`, sert les outils, applique les délais et le coupe-circuit, annule sur Ctrl+C, enregistre le run.
   - `run_u2.ts` : usage 2, sous-tapis antidérapant pour un tapis de 60 × 160 cm, persona fictive Jeanne.
+  - `controle.ts` : contrôle de la réponse finale. `schema_valide` dit si elle respecte le schéma Zod (`null` et chaîne vide valent « absent ») ; `ecarts_metier` liste ce qu'il reste à vérifier (champ attendu absent, dimension qui dépasse la cote). La réponse brute de l'agent est enregistrée telle que reçue.
+  - `recontroler.ts` : repasse ce contrôle sur les runs déjà enregistrés, sans appeler H (`npm run agent:recontroler`).
   - `prompt_u2_provisoire.md` : prompt provisoire. Les prompts définitifs sont dans `prompts/` (issue #6).
   - `fixtures/` : données fictives servies par les outils.
 - `bench/runs/` : un fichier JSON par run, au futur format de `runs_agent` (`runAgentSchema` dans `apps/web/lib/schemas.ts`).
@@ -44,8 +46,12 @@ Vu au premier run (18/11) : l'agent peut émettre un custom tool et une action d
 
 Limite du coupe-circuit : il réagit **après coup**, quelques secondes au plus après la page vue. Il n'empêche pas le clic. Il ne voit pas non plus un tunnel de commande qui s'ouvrirait sans changer d'URL (fenêtre modale). Une page panier rangée sous `/checkout/cart` ou `/commande/panier` est tolérée ; un paramètre de tri (`?order=prix`) ou une recherche ne déclenchent rien.
 
+## Dimension : ce que le contrôle ne prouve pas
+
+Aux deux premiers runs, l'agent a retenu un produit plus grand que le tapis (67,5 × 200 cm pour 60 × 160 cm) en le disant découpable. C'est vrai sur la fiche, mais **rien dans sa réponse ne prouve qu'il l'a lu** : le contrôle signale seulement l'écart. La skill `verifier_dimension` (issue #6) devra exiger une citation de la fiche, par exemple un champ `citation_decoupe`, pour accepter un produit plus grand que la cote.
+
 ## Ce que l'usage 1 réutilisera (issue #7)
 
-Tels quels : `apps/web/lib/hai.ts` et `dev/boucle.ts` (quota, création, suivi, cache des outils, coupe-circuit, délais, annulation, enregistrement dans `bench/runs/`).
+Tels quels : `apps/web/lib/hai.ts`, `dev/boucle.ts` (quota, création, suivi, cache des outils, coupe-circuit, délais, annulation, enregistrement dans `bench/runs/`) et `evaluerSortie` de `dev/controle.ts`.
 
 À ajouter par `dev/run_u1.ts` : `get_contrat.json` au format de la doc H, une fixture de contrat fictif, un prompt provisoire, le schéma de sortie `{ trouve, url_cg, … }` dans `schemas.ts`, puis le téléchargement du PDF et le contrôle de la référence par le code. Pas d'outil de validation : l'usage 1 est en lecture seule.

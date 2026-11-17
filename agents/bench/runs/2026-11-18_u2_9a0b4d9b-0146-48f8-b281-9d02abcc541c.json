@@ -81,10 +81,12 @@
     "dimensions": null,
     "delai_livraison": null
   },
-  "sortie_valide": false,
-  "erreurs_sortie": [
-    "dimensions : Invalid input: expected object, received null",
-    "delai_livraison : Invalid input: expected string, received null"
+  "schema_valide": true,
+  "erreurs_schema": [],
+  "ecarts_metier": [
+    "largeur_cm : absent ou vide alors que trouve est vrai",
+    "longueur_cm : absent ou vide alors que trouve est vrai",
+    "delai_livraison : absent ou vide alors que trouve est vrai"
   ],
   "pages_vues": [
     "https://www.ikea.com/fr/fr/",

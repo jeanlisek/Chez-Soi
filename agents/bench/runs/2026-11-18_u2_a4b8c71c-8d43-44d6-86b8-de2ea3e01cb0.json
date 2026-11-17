@@ -82,9 +82,11 @@
     "delai_livraison": "",
     "remarque": "Produit refusé par l'utilisateur. Le sous-tapis STOPP est antidipsant et découpable aux ciseaux, compatible avec le tapi de 60×160 cm."
   },
-  "sortie_valide": false,
-  "erreurs_sortie": [
-    "dimensions : 67.5 × 200 cm dépasse 60 × 160 cm (acceptable seulement si le produit se découpe : à vérifier sur la fiche)"
+  "schema_valide": true,
+  "erreurs_schema": [],
+  "ecarts_metier": [
+    "delai_livraison : absent ou vide alors que trouve est vrai",
+    "dimensions : 67.5 × 200 cm dépasse 60 × 160 cm. Acceptable seulement si le produit se découpe, et la réponse n'apporte aucune citation de la fiche qui le prouve"
   ],
   "pages_vues": [
     "https://www.ikea.com/fr/fr/",

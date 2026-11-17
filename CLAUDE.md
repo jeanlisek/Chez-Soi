@@ -158,9 +158,10 @@ Pas de workspace racine : chaque partie s'installe dans son dossier. Gestionnair
 |---|---|
 | `npm run agent:u2 -- --site <domaine>` | Lance UN run réel de l'usage 2 (sous-tapis 60 × 160 cm, persona fictive) sur le site donné, arrêt au panier. Charge `../../.env` (`H_API_KEY`). À lancer dans un vrai terminal : `demander_validation` y pose la question (Entrée seule = refus). |
 | `npm run agent:u2 -- --site <domaine> --a-blanc` | Affiche le corps de `POST /sessions` sans rien envoyer |
+| `npm run agent:recontroler` | Repasse le contrôle de sortie sur les runs de `agents/bench/runs/`, sans appeler H. Lecture seule ; `-- --ecrire` met à jour les champs dérivés (`schema_valide`, `erreurs_schema`, `ecarts_metier`), jamais les données brutes de l'agent |
 | `npm run typecheck:agents` | `tsc --noEmit` sur `agents/dev/` (`tsconfig.agents.json`, hors du build Next) |
 
-Depuis un worktree (pas de `.env` à sa racine) : `npx tsx --env-file=$HOME/Documents/Chez-Soi/.env ../../agents/dev/run_u2.ts --site <domaine>`. Options : `--agent <nom[:N]>`, `--malgre-sessions-actives`. Chaque run est écrit dans `agents/bench/runs/AAAA-MM-JJ_u2_<session>.json`, sans `agent_view_url`. Une session par lancement, jamais de relance automatique ; annoncer le run dans le canal.
+Depuis un worktree (pas de `.env` à sa racine) : `npx tsx --env-file=$HOME/Documents/Chez-Soi/.env ../../agents/dev/run_u2.ts --site <domaine>`. Options : `--agent <nom[:N]>`, `--malgre-sessions-actives`. Chaque run est écrit dans `agents/bench/runs/AAAA-MM-JJ_u2_<session>.json`, sans `agent_view_url`. `schema_valide` dit si la réponse respecte le schéma Zod (`null` et chaîne vide valent « absent ») ; `ecarts_metier` liste ce qu'il reste à vérifier. Une session par lancement, jamais de relance automatique ; annoncer le run dans le canal.
 
 **services/vision** (depuis `services/vision/`, Python 3.11 dans l'image)
 

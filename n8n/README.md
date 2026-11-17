@@ -132,7 +132,7 @@ Entrée : `articles_suivis.json`, dont le nœud « Articles suivis » porte une 
 
 Lecture, par l'API Légifrance via PISTE et uniquement avec des appels décrits par la DILA : `POST /search`, puis `POST /consult/getArticle` (article) ou `POST /consult/legiPart` (texte entier). Aucun agent H.
 
-Sortie : un bilan (`textes_suivis`, `lus`, `inchanges`, `modifies`, `premieres_lectures`, `non_compares`, `introuvables`, `ambigus`, `sources_indisponibles`, `regles_proposees`, `changements_sans_regle`, `publication`).
+Sortie : un bilan (`textes_suivis`, `lus`, `inchanges`, `modifies`, `premieres_lectures`, `non_compares`, `introuvables`, `ambigus`, `incoherents`, `sources_indisponibles`, `regles_proposees`, `changements_sans_regle`, `publication`).
 
 Règles appliquées :
 
@@ -140,6 +140,8 @@ Règles appliquées :
 - Une version modifiée, ou lue pour la première fois, crée une **nouvelle** ligne `regles` au statut `proposee`, avec `source_ref`, `source_url`, `verifie_le` et `version + 1`. Une règle existante n'est jamais modifiée : les diagnostics passés gardent leur version.
 - **Validation humaine bloquante** : le workflow ne passe jamais une règle à `validee`. La publication dans le graphe ne lit que les règles `validee`.
 - Une recherche qui renvoie plusieurs résultats est classée `ambigu` et n'est jamais devinée.
+- **Aucun identifiant Légifrance en dur**, ni dans la liste ni dans le workflow : chaque texte est retrouvé par recherche (numéro d'article, numéro de texte, NOR). L'identifiant que le Registre des sources donnait pour L113-2 renvoyait en réalité L113-8.
+- Un article dont le numéro lu diffère du numéro demandé est classé `incoherent` et ne produit aucune règle.
 - Les sources hors Légifrance (Service-Public, HAS, CNSA, normes AFNOR, A2P) restent en saisie manuelle dans `supabase/seed.sql`. Une statistique (P3) ne produit jamais de règle.
 
 ## Idempotence
@@ -152,7 +154,7 @@ Règles appliquées :
 
 Rien n'est activé. Les tests se font nœud par nœud, avec des données fictives épinglées (« pin data »), sans appeler de service réel sauf mention contraire.
 
-1. **Credential PISTE** : dans `veille_reglementaire`, ouvrir « Test PISTE · un seul appel » et cliquer sur « Execute step », une seule fois. Attendu : `statusCode` 200.
+1. **Credential PISTE** : vérifié le 17/11/2026, l'API de production répond. Le nœud « Test PISTE · un seul appel » fait désormais la recherche de l'article L113-2 du Code des assurances par son numéro (`POST /search`), comme le workflow. Attendu au prochain test : `statusCode` 200 et un seul identifiant LEGIARTI, à ouvrir pour vérifier que c'est bien L113-2.
 2. **pipeline_analyse** : épingler sur « 01 · Logement et vidéo » un corps fictif `{ "body": { "logement_id": "11111111-2222-4333-8444-555555555555", "video_url": "https://exemple.test/video.mp4" } }`, puis exécuter dans l'ordre « 02 · Contrôler l’entrée », « Entrée valide ? », « 03 · Appeler le service vision » (attendu avec l'URL provisoire : service injoignable), « 04 · Interpréter la réponse », jusqu'à « Répondre 502 ». Refaire avec un corps invalide pour la branche 400.
 3. **analyse_contrat** : même démarche avec `{ "body": { "contrat_id": "…", "pdf_url": "https://exemple.test/contrat.pdf" } }`. Pour la suite du flux, épingler sur « 03 · Appeler le service vision » une réponse fictive `{ "statusCode": 200, "body": { … } }` au format décrit plus haut, puis exécuter « 05 · Filtrer les clauses » et « 07 · Préparer le graphe ».
 4. **Embeddings** : dans `analyse_contrat`, activer « 08 · Calculer les embeddings (HF) », l'exécuter sur la sortie de « 07 · Préparer le graphe », puis vérifier dans « 09 · Assembler les écritures » que `embeddings` vaut `calcules`.

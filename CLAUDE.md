@@ -177,6 +177,18 @@ Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dan
 - Workflows n8n : aucun secret en dur dans les nœuds (en-têtes HTTP, paramètres, nœuds Code). On passe par un credential n8n ou une variable d'environnement ; seules les références de credentials (id et nom) apparaissent dans le JSON.
 - Petits commits ciblés. Une session parallèle = un worktree.
 
+## Git et GitHub (obligatoire, pour l'équipe comme pour Claude)
+
+- **`main` est protégée** : pas de push direct ni de force-push. Tout passe par une pull request.
+- **Une branche par sujet**, nommée `type/sujet-court`, en minuscules et avec des tirets : `feat/`, `fix/`, `supabase/`, `n8n/`, `ui/`, `vision/`, `agents/`, `docs/`, `chore/`. Exemple : `n8n/graphrag-piste`.
+- **Une PR = un sujet**, liée à son issue (`Closes #N`), avec le modèle de PR rempli. Une PR trop grosse se découpe.
+- **Avant d'ouvrir la PR** : `npm run lint`, `npm run typecheck` et `npm run build` dans `apps/web` si la PR y touche ; relire `git diff origin/main...HEAD` pour vérifier qu'aucun secret ni fichier `.env` n'y figure.
+- **Fusion en squash uniquement.** Le titre de la PR devient le commit sur `main` : en français, à l'impératif, sans préfixe (« Ajoute le schéma Supabase »). La branche est supprimée automatiquement après la fusion.
+- **Relecture** : Jean-Li par défaut ; Briac pour `supabase/`, `apps/` et `services/` ; Bastian pour `n8n/`. Vérifier la preview Vercel de la PR avant de fusionner.
+- **En cas de conflit** : rebase de la branche sur `origin/main`, jamais de merge de `main` dans la branche.
+- **Claude** : crée la branche au début de la session, commite par petites étapes, pousse la branche et ouvre la PR (`gh pr create`), puis donne le lien. **Ne fusionne jamais une PR toi-même** et ne pousse jamais sur `main`.
+- **Suivi** : une tâche de code = une issue GitHub. Le tableau de Pilotage (Drive) reste le suivi d'équipe ; on y note le numéro d'issue.
+
 ## Priorités pour la démo de jeudi soir (proposition)
 
 Chemin critique : schéma Supabase + seed, puis capture et upload, puis `/analyse` (avec un résultat 3D précalculé en plan B), puis `/api/plan`, puis usage 2 avec `demander_validation` et pilotage, puis `ValidationModal`, puis `runs_agent`.

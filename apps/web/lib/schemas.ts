@@ -64,22 +64,20 @@ export const demanderValidationSortieSchema = z.object({
 
 /**
  * Réponse finale de l'usage 2, demandée à l'agent en sortie structurée
- * (`agent.answer_format`). Schéma volontairement plat : si la réponse ne s'y conforme
- * pas, la session H échoue avec `answer_validation`. Seuls `trouve` et `au_panier`
- * sont obligatoires, pour que l'agent puisse dire « rien trouvé » sans inventer.
+ * (`agent.answer_format`). Seuls `trouve` et `au_panier` sont obligatoires, pour que
+ * l'agent puisse dire « rien trouvé » sans inventer.
+ *
+ * Schéma PLAT, sans objet imbriqué : au premier run (18/11), `h/web-surfer-flash` a
+ * envoyé l'objet `dimensions` sous forme de chaîne, s'est fait rejeter quatre fois, puis
+ * a rendu `null` à la place et perdu la donnée. D'où `largeur_cm` et `longueur_cm`.
  */
 export const sortieUsage2Schema = z.object({
   trouve: z.boolean().describe("Vrai si un produit compatible avec les cotes a été trouvé."),
   au_panier: z.boolean().describe("Vrai si le produit a été ajouté au panier."),
   produit: z.string().optional().describe("Nom exact du produit."),
   prix_eur: z.number().optional().describe("Prix TTC en euros, hors livraison."),
-  dimensions: z
-    .object({
-      largeur_cm: z.number(),
-      longueur_cm: z.number(),
-    })
-    .optional()
-    .describe("Dimensions du produit lues sur la fiche, en centimètres."),
+  largeur_cm: z.number().optional().describe("Largeur du produit lue sur la fiche, en centimètres."),
+  longueur_cm: z.number().optional().describe("Longueur du produit lue sur la fiche, en centimètres."),
   lien: z.string().optional().describe("URL de la fiche produit."),
   delai_livraison: z.string().optional().describe("Délai de livraison affiché, tel quel."),
   remarque: z.string().optional().describe("Écart, doute ou raison de l'échec."),
@@ -90,7 +88,8 @@ export type SortieUsage2 = z.infer<typeof sortieUsage2Schema>;
 export const CHAMPS_ATTENDUS_USAGE_2 = [
   "produit",
   "prix_eur",
-  "dimensions",
+  "largeur_cm",
+  "longueur_cm",
   "lien",
   "delai_livraison",
 ] as const satisfies readonly (keyof SortieUsage2)[];

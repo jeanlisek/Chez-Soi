@@ -188,6 +188,16 @@ function nettoyer<T>(valeur: T): T {
   return valeur;
 }
 
+/** Retire les propriétés `null` d'un objet, en profondeur (les tableaux sont gardés tels quels). */
+function sansNuls(valeur: unknown): unknown {
+  if (!valeur || typeof valeur !== "object" || Array.isArray(valeur)) return valeur;
+  return Object.fromEntries(
+    Object.entries(valeur)
+      .filter(([, element]) => element !== null)
+      .map(([cle, element]) => [cle, sansNuls(element)]),
+  );
+}
+
 function sansRequete(texte: string): string {
   try {
     const url = new URL(texte);
@@ -589,6 +599,9 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
       // Texte libre : la validation échouera et le texte reste dans le run.
     }
   }
+  // H accepte `null` pour un champ optionnel que l'agent ne remplit pas (vu au premier
+  // run), même quand le schéma ne l'autorise pas : pour nous, `null` vaut « absent ».
+  candidat = sansNuls(candidat);
   let sortie: S | null = null;
   const erreursSortie: string[] = [];
   if (brut === null) {

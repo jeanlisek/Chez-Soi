@@ -114,9 +114,8 @@ function controlerSortie(sortie: SortieUsage2): string[] {
   const ecarts: string[] = CHAMPS_ATTENDUS_USAGE_2.filter((champ) => sortie[champ] === undefined).map(
     (champ) => `${champ} : absent alors que trouve est vrai`,
   );
-  const dimensions = sortie.dimensions;
-  if (dimensions) {
-    const [petit, grand] = [dimensions.largeur_cm, dimensions.longueur_cm].sort((a, b) => a - b);
+  if (sortie.largeur_cm !== undefined && sortie.longueur_cm !== undefined) {
+    const [petit, grand] = [sortie.largeur_cm, sortie.longueur_cm].sort((a, b) => a - b);
     if (petit > 60 || grand > 160) {
       ecarts.push(
         `dimensions : ${petit} × ${grand} cm dépasse 60 × 160 cm (acceptable seulement si le produit se découpe : à vérifier sur la fiche)`,

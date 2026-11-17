@@ -40,6 +40,8 @@ L'API H n'a **pas de garde-fou natif sur une action du navigateur**. L'approbati
    - délai global de 10 minutes, et `max_time_s: 600` côté serveur si le script meurt ;
    - **coupe-circuit** : l'API expose les pages vues (`observation_event.metadata.url`) et les actions choisies (`policy_event.tool_reqs`) dans les événements de `/changes`. Dès qu'une de ces URL contient un mot comme `checkout`, `paiement`, `payment`, `commande`, `order`, `livraison`, `login`, `connexion`, `compte` ou `account`, la session est annulée.
 
+Vu au premier run (18/11) : l'agent peut émettre un custom tool et une action du navigateur **dans la même étape**, et l'action s'exécute sans attendre le résultat de l'outil. Appeler `demander_validation` ne suspend donc pas, à lui seul, un clic émis en même temps.
+
 Limite du coupe-circuit : il réagit **après coup**, quelques secondes au plus après la page vue. Il n'empêche pas le clic. Il ne voit pas non plus un tunnel de commande qui s'ouvrirait sans changer d'URL (fenêtre modale). Une page panier rangée sous `/checkout/cart` ou `/commande/panier` est tolérée ; un paramètre de tri (`?order=prix`) ou une recherche ne déclenchent rien.
 
 ## Ce que l'usage 1 réutilisera (issue #7)

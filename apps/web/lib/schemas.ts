@@ -165,9 +165,13 @@ export const runAgentSchema = z.object({
       duree_s: z.number(),
     }),
   ),
+  /** Réponse de l'agent telle que reçue, jamais normalisée ni corrigée. */
   sortie_finale: z.unknown(),
-  sortie_valide: z.boolean(),
-  erreurs_sortie: z.array(z.string()),
+  /** Conforme au schéma Zod de l'usage (`null` et chaîne vide valant « absent »). */
+  schema_valide: z.boolean(),
+  erreurs_schema: z.array(z.string()),
+  /** Ce qu'il faut aller vérifier, que le schéma soit respecté ou non. Vide si rien à signaler. */
+  ecarts_metier: z.array(z.string()),
   pages_vues: z.array(z.string()),
   actions_agent: z.record(z.string(), z.number()),
   /** Ce que la doc H ne précise pas, mesuré pendant le run (onglet Retours Agent API). */

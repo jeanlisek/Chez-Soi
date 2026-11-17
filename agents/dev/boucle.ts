@@ -33,6 +33,7 @@ import {
   type ResultatOutilHai,
 } from "../../apps/web/lib/hai";
 import { runAgentSchema, type RunAgent, type SchemaZod } from "../../apps/web/lib/schemas";
+import { evaluerSortie } from "./controle";
 
 /* ---------- Coupe-circuit ---------- */
 
@@ -188,16 +189,6 @@ function nettoyer<T>(valeur: T): T {
   return valeur;
 }
 
-/** Retire les propriétés `null` d'un objet, en profondeur (les tableaux sont gardés tels quels). */
-function sansNuls(valeur: unknown): unknown {
-  if (!valeur || typeof valeur !== "object" || Array.isArray(valeur)) return valeur;
-  return Object.fromEntries(
-    Object.entries(valeur)
-      .filter(([, element]) => element !== null)
-      .map(([cle, element]) => [cle, sansNuls(element)]),
-  );
-}
-
 function sansRequete(texte: string): string {
   try {
     const url = new URL(texte);
@@ -232,7 +223,7 @@ export type OptionsRun<S> = {
   /** Schéma Zod de la réponse finale, et son JSON Schema envoyé à H. */
   schemaSortie: SchemaZod<S>;
   formatReponse: Record<string, unknown>;
-  /** Contrôles métier en plus du schéma : renvoie la liste des écarts. */
+  /** Contrôles métier, lancés si le schéma est respecté : renvoie la liste des écarts. */
   controlerSortie?: (sortie: S) => string[];
   site?: string;
   urlDepart?: string;
@@ -590,33 +581,8 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
 
   if (annulee) observations.reponse_presente_apres_annulation = brut !== null;
 
-  // Sortie finale : validée par Zod, jamais corrigée.
-  let candidat = brut;
-  if (typeof candidat === "string") {
-    try {
-      candidat = JSON.parse(candidat);
-    } catch {
-      // Texte libre : la validation échouera et le texte reste dans le run.
-    }
-  }
-  // H accepte `null` pour un champ optionnel que l'agent ne remplit pas (vu au premier
-  // run), même quand le schéma ne l'autorise pas : pour nous, `null` vaut « absent ».
-  candidat = sansNuls(candidat);
-  let sortie: S | null = null;
-  const erreursSortie: string[] = [];
-  if (brut === null) {
-    erreursSortie.push("Aucune réponse finale.");
-  } else {
-    const analyse = options.schemaSortie.safeParse(candidat);
-    if (analyse.success) {
-      sortie = analyse.data;
-      erreursSortie.push(...(options.controlerSortie?.(analyse.data) ?? []));
-    } else {
-      erreursSortie.push(
-        ...analyse.error.issues.map((probleme) => `${probleme.path.join(".") || "(racine)"} : ${probleme.message}`),
-      );
-    }
-  }
+  // Sortie finale : contrôlée sur une copie normalisée, enregistrée telle que reçue.
+  const evaluation = evaluerSortie(brut, options.schemaSortie, options.controlerSortie);
 
   const parModele = etat.usage_per_model.map((usage) => ({
     modele: usage.name,
@@ -660,9 +626,10 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
       cout_usd: coutUsd,
       decision_validation: decisionValidation,
       appels_outils: appelsOutils,
-      sortie_finale: sortie ?? candidat,
-      sortie_valide: sortie !== null && erreursSortie.length === 0,
-      erreurs_sortie: erreursSortie,
+      sortie_finale: evaluation.brut,
+      schema_valide: evaluation.schema_valide,
+      erreurs_schema: evaluation.erreurs_schema,
+      ecarts_metier: evaluation.ecarts_metier,
       pages_vues: pagesVues,
       actions_agent: actionsAgent,
       observations_api: observations,
@@ -681,5 +648,5 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
   await writeFile(fichier, texte, "utf8");
   journal(`Run enregistré : ${fichier}`);
 
-  return { run, fichier, sortie };
+  return { run, fichier, sortie: evaluation.sortie };
 }

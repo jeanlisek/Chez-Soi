@@ -13,7 +13,6 @@ import { createInterface } from "node:readline/promises";
 
 import { HAI_AGENT, outilHaiSchema, type OutilHai } from "../../apps/web/lib/hai";
 import {
-  CHAMPS_ATTENDUS_USAGE_2,
   demanderValidationEntreeSchema,
   demanderValidationSortieSchema,
   getMesuresEntreeSchema,
@@ -26,6 +25,7 @@ import {
   type SortieUsage2,
 } from "../../apps/web/lib/schemas";
 import { executerRun, type ContexteOutil, type OutilLocal } from "./boucle";
+import { controlerSortieUsage2 } from "./controle";
 
 const RACINE = path.resolve(__dirname, "../..");
 const FAILLE_ID = "faille-demo-tapis-01";
@@ -108,23 +108,6 @@ async function demanderValidation(
   );
 }
 
-/** Écarts signalés, jamais corrigés : l'outcome de l'agent est une auto-évaluation. */
-function controlerSortie(sortie: SortieUsage2): string[] {
-  if (!sortie.trouve) return [];
-  const ecarts: string[] = CHAMPS_ATTENDUS_USAGE_2.filter((champ) => sortie[champ] === undefined).map(
-    (champ) => `${champ} : absent alors que trouve est vrai`,
-  );
-  if (sortie.largeur_cm !== undefined && sortie.longueur_cm !== undefined) {
-    const [petit, grand] = [sortie.largeur_cm, sortie.longueur_cm].sort((a, b) => a - b);
-    if (petit > 60 || grand > 160) {
-      ecarts.push(
-        `dimensions : ${petit} × ${grand} cm dépasse 60 × 160 cm (acceptable seulement si le produit se découpe : à vérifier sur la fiche)`,
-      );
-    }
-  }
-  return ecarts;
-}
-
 async function main(): Promise<void> {
   const siteBrut = option("site");
   if (!siteBrut) {
@@ -154,7 +137,7 @@ async function main(): Promise<void> {
     outils,
     schemaSortie: sortieUsage2Schema,
     formatReponse: versJsonSchema(sortieUsage2Schema),
-    controlerSortie,
+    controlerSortie: controlerSortieUsage2,
     site,
     urlDepart: `${urlSite.origin}${urlSite.pathname}`,
     dossierRuns: path.join(RACINE, "agents/bench/runs"),
@@ -167,16 +150,14 @@ async function main(): Promise<void> {
   console.log("\n──────── Résultat ────────");
   console.log(`État final : ${run.etat_final} · outcome : ${run.outcome ?? "aucun"} · error_code : ${run.error_code ?? "aucun"}`);
   console.log(`Fin : ${run.motif_fin} · durée : ${run.duree_s} s · étapes : ${run.nb_etapes} · validation : ${run.decision_validation ?? "non demandée"}`);
+  console.log(`Schéma : ${run.schema_valide ? "conforme" : "NON conforme"}`);
+  run.erreurs_schema.forEach((erreur) => console.log(`  - ${erreur}`));
   if (sortie) {
-    console.log("Sortie finale (conforme au schéma Zod) :");
+    console.log("Sortie finale (normalisée : null et chaîne vide valent absent) :");
     console.log(JSON.stringify(sortie, null, 2));
-  } else {
-    console.log("Pas de sortie finale conforme au schéma.");
   }
-  if (run.erreurs_sortie.length > 0) {
-    console.log("Écarts :");
-    run.erreurs_sortie.forEach((ecart) => console.log(`  - ${ecart}`));
-  }
+  console.log(`Écarts métier : ${run.ecarts_metier.length === 0 ? "aucun" : ""}`);
+  run.ecarts_metier.forEach((ecart) => console.log(`  - ${ecart}`));
 }
 
 main()

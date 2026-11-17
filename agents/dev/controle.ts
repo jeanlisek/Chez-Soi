@@ -1,0 +1,117 @@
+/**
+ * Contrôle de la réponse finale d'un run, commun à boucle.ts (pendant le run) et à
+ * recontroler.ts (sur les runs déjà enregistrés).
+ *
+ * Deux questions séparées :
+ *  - `schema_valide` : la réponse est-elle conforme au schéma Zod de l'usage ?
+ *  - `ecarts_metier` : conforme ou pas, que faut-il aller vérifier (champ attendu absent,
+ *    dimension qui dépasse la cote…) ? Liste vide si rien à signaler.
+ *
+ * La réponse brute de l'agent n'est jamais modifiée : on contrôle une copie normalisée.
+ */
+import {
+  CHAMPS_ATTENDUS_USAGE_2,
+  type SchemaZod,
+  type SortieUsage2,
+} from "../../apps/web/lib/schemas";
+
+function estVide(valeur: unknown): boolean {
+  return valeur === null || (typeof valeur === "string" && valeur.trim() === "");
+}
+
+/**
+ * Copie sans les propriétés vides, en profondeur. `null` et une chaîne vide (ou faite
+ * seulement d'espaces) valent « absent » : H accepte `null` pour un champ optionnel que
+ * l'agent ne remplit pas, et l'agent rend `""` quand on lui dit de laisser un champ vide.
+ * Les tableaux sont gardés tels quels.
+ */
+export function sansVides(valeur: unknown): unknown {
+  if (!valeur || typeof valeur !== "object" || Array.isArray(valeur)) return valeur;
+  return Object.fromEntries(
+    Object.entries(valeur)
+      .filter(([, element]) => !estVide(element))
+      .map(([cle, element]) => [cle, sansVides(element)]),
+  );
+}
+
+export type Evaluation<S> = {
+  /** Réponse de l'agent telle que reçue (texte JSON décodé si besoin), jamais normalisée. */
+  brut: unknown;
+  /** Réponse typée, normalisée, ou `null` si elle n'est pas conforme au schéma. */
+  sortie: S | null;
+  schema_valide: boolean;
+  erreurs_schema: string[];
+  ecarts_metier: string[];
+};
+
+export function evaluerSortie<S>(
+  reponse: unknown,
+  schema: SchemaZod<S>,
+  controler?: (sortie: S) => string[],
+): Evaluation<S> {
+  let brut = reponse ?? null;
+  if (typeof brut === "string") {
+    try {
+      brut = JSON.parse(brut);
+    } catch {
+      // Texte libre : il n'est pas conforme au schéma, et reste tel quel dans le run.
+    }
+  }
+  if (brut === null) {
+    return {
+      brut,
+      sortie: null,
+      schema_valide: false,
+      erreurs_schema: ["Aucune réponse finale."],
+      ecarts_metier: [],
+    };
+  }
+
+  const analyse = schema.safeParse(sansVides(brut));
+  if (!analyse.success) {
+    return {
+      brut,
+      sortie: null,
+      schema_valide: false,
+      erreurs_schema: analyse.error.issues.map(
+        (probleme) => `${probleme.path.join(".") || "(racine)"} : ${probleme.message}`,
+      ),
+      ecarts_metier: [],
+    };
+  }
+  return {
+    brut,
+    sortie: analyse.data,
+    schema_valide: true,
+    erreurs_schema: [],
+    ecarts_metier: controler?.(analyse.data) ?? [],
+  };
+}
+
+/* ---------- Usage 2 ---------- */
+
+/**
+ * Écarts métier de l'usage 2, signalés et jamais corrigés : l'`outcome` de l'agent est une
+ * auto-évaluation. Limite connue : un produit plus grand que le tapis n'est acceptable que
+ * s'il se découpe, et rien dans la réponse ne prouve que l'agent l'a lu sur la fiche. La
+ * skill `verifier_dimension` devra exiger une citation de la fiche (issue #6).
+ */
+export function controlerSortieUsage2(
+  sortie: SortieUsage2,
+  tapis: { largeur_cm: number; longueur_cm: number } = { largeur_cm: 60, longueur_cm: 160 },
+): string[] {
+  if (!sortie.trouve) return [];
+  const ecarts: string[] = CHAMPS_ATTENDUS_USAGE_2.filter((champ) => sortie[champ] === undefined).map(
+    (champ) => `${champ} : absent ou vide alors que trouve est vrai`,
+  );
+  if (sortie.largeur_cm !== undefined && sortie.longueur_cm !== undefined) {
+    const [petit, grand] = [sortie.largeur_cm, sortie.longueur_cm].sort((a, b) => a - b);
+    const [petitTapis, grandTapis] = [tapis.largeur_cm, tapis.longueur_cm].sort((a, b) => a - b);
+    if (petit > petitTapis || grand > grandTapis) {
+      ecarts.push(
+        `dimensions : ${petit} × ${grand} cm dépasse ${petitTapis} × ${grandTapis} cm. Acceptable seulement si le produit se découpe, et la réponse n'apporte aucune citation de la fiche qui le prouve`,
+      );
+    }
+  }
+  return ecarts;
+}

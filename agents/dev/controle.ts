@@ -90,11 +90,38 @@ export function evaluerSortie<S>(
 
 /* ---------- Usage 2 ---------- */
 
+/** Mots qui disent qu'un produit se découpe (comparés sans accents ni majuscules). */
+const MOTS_DECOUPE = ["decoup", "recoup", "couper", "coupe", "ciseau", "cutter", "sur mesure"];
+
+function sansAccents(texte: string): string {
+  return texte.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+}
+
+/**
+ * Règle de la skill `verifier_dimension` (issue #15), vérifiée par le code : un produit plus
+ * grand que la cote n'est accepté qu'avec `citation_decoupe`, phrase de la fiche qui dit qu'il
+ * se découpe. Sans citation, ou avec une citation qui ne parle pas de découpe, le produit est
+ * à REFUSER. Le code ne peut pas relire la fiche : il vérifie la présence et la forme de la
+ * citation, pas qu'elle figure mot pour mot sur la page (à contrôler à la main dans le replay).
+ */
+export function ecartDecoupe(citation: string | undefined): string | null {
+  if (!citation || citation.trim().length === 0) {
+    return "aucune citation_decoupe de la fiche : produit à REFUSER";
+  }
+  const texte = sansAccents(citation);
+  if (!MOTS_DECOUPE.some((mot) => texte.includes(mot))) {
+    return `citation_decoupe « ${citation} » ne dit pas que le produit se découpe : produit à REFUSER`;
+  }
+  if (citation.trim().split(/\s+/).length < 3) {
+    return `citation_decoupe « ${citation} » trop courte pour être une phrase de la fiche : à vérifier dans le replay`;
+  }
+  return null;
+}
+
 /**
  * Écarts métier de l'usage 2, signalés et jamais corrigés : l'`outcome` de l'agent est une
- * auto-évaluation. Limite connue : un produit plus grand que le tapis n'est acceptable que
- * s'il se découpe, et rien dans la réponse ne prouve que l'agent l'a lu sur la fiche. La
- * skill `verifier_dimension` devra exiger une citation de la fiche (issue #6).
+ * auto-évaluation. Un produit plus grand que le tapis passe par `ecartDecoupe` (skill
+ * `verifier_dimension`, issue #15).
  */
 export function controlerSortieUsage2(
   sortie: SortieUsage2,
@@ -108,9 +135,10 @@ export function controlerSortieUsage2(
     const [petit, grand] = [sortie.largeur_cm, sortie.longueur_cm].sort((a, b) => a - b);
     const [petitTapis, grandTapis] = [tapis.largeur_cm, tapis.longueur_cm].sort((a, b) => a - b);
     if (petit > petitTapis || grand > grandTapis) {
-      ecarts.push(
-        `dimensions : ${petit} × ${grand} cm dépasse ${petitTapis} × ${grandTapis} cm. Acceptable seulement si le produit se découpe, et la réponse n'apporte aucune citation de la fiche qui le prouve`,
-      );
+      const decoupe = ecartDecoupe(sortie.citation_decoupe);
+      if (decoupe) {
+        ecarts.push(`dimensions : ${petit} × ${grand} cm dépasse ${petitTapis} × ${grandTapis} cm, ${decoupe}`);
+      }
     }
   }
   return ecarts;

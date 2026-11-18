@@ -82,6 +82,12 @@ export const sortieUsage2Schema = z.object({
   longueur_cm: z.number().optional().describe("Longueur du produit lue sur la fiche, en centimètres."),
   lien: z.string().optional().describe("URL de la fiche produit."),
   delai_livraison: z.string().optional().describe("Délai de livraison affiché, tel quel."),
+  citation_decoupe: z
+    .string()
+    .optional()
+    .describe(
+      "Seulement si le produit dépasse la cote : phrase de la fiche, recopiée mot pour mot, qui dit qu'il se découpe. Vide sinon.",
+    ),
   remarque: z.string().optional().describe("Écart, doute ou raison de l'échec."),
 });
 export type SortieUsage2 = z.infer<typeof sortieUsage2Schema>;

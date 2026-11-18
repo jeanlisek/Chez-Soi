@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "typecheck:agents": "tsc --noEmit -p tsconfig.agents.json",
     "agent:u2": "tsx --env-file=../../.env ../../agents/dev/run_u2.ts",
-    "agent:recontroler": "tsx ../../agents/dev/recontroler.ts"
+    "agent:recontroler": "tsx ../../agents/dev/recontroler.ts",
+    "agent:skill": "tsx --env-file-if-exists=../../.env ../../agents/dev/publier_skill.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

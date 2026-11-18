@@ -46,9 +46,15 @@ Vu au premier run (18/11) : l'agent peut émettre un custom tool et une action d
 
 Limite du coupe-circuit : il réagit **après coup**, quelques secondes au plus après la page vue. Il n'empêche pas le clic. Il ne voit pas non plus un tunnel de commande qui s'ouvrirait sans changer d'URL (fenêtre modale). Une page panier rangée sous `/checkout/cart` ou `/commande/panier` est tolérée ; un paramètre de tri (`?order=prix`) ou une recherche ne déclenchent rien.
 
-## Dimension : ce que le contrôle ne prouve pas
+## Dimension : la skill `verifier_dimension` (issue #15)
 
-Aux deux premiers runs, l'agent a retenu un produit plus grand que le tapis (67,5 × 200 cm pour 60 × 160 cm) en le disant découpable. C'est vrai sur la fiche, mais **rien dans sa réponse ne prouve qu'il l'a lu** : le contrôle signale seulement l'écart. La skill `verifier_dimension` (issue #6) devra exiger une citation de la fiche, par exemple un champ `citation_decoupe`, pour accepter un produit plus grand que la cote.
+Aux deux premiers runs, l'agent a retenu un produit plus grand que le tapis (67,5 × 200 cm pour 60 × 160 cm) en le disant découpable. C'était vrai sur la fiche, mais **rien dans sa réponse ne le prouvait**.
+
+- `skills/verifier_dimension.md` : skill maison (`name: verifier-dimension`). Dimensions lues sur la fiche ; dimension absente, produit refusé ; produit plus grand que la cote accepté **seulement** avec une phrase de la fiche, recopiée mot pour mot, qui dit qu'il se découpe (`citation_decoupe`).
+- `citation_decoupe` est dans `sortieUsage2Schema` et dans le prompt provisoire de l'usage 2.
+- Le code applique la même règle (`ecartDecoupe` dans `dev/controle.ts`) : produit plus grand sans citation, ou avec une citation qui ne parle pas de découpe, signalé « à REFUSER » dans `ecarts_metier`. Le code ne relit pas la fiche : que la citation figure bien sur la page se vérifie dans le replay.
+- Publication : `npm run agent:skill -- ../../agents/skills/verifier_dimension.md` (à blanc), puis `--publier`. Elle crée la révision 1 ; on fige ensuite les runs avec `--skill verifier-dimension:N`.
+- **Non vérifié** : la doc H ne cite pas `agent.skills` parmi les chemins de `overrides`. Un chemin inconnu renvoie 422 sans créer de session ; et une surcharge remplace la liste, donc les skills d'origine de l'agent pourraient sauter. À tester une fois et à noter dans l'onglet Retours Agent API.
 
 ## Ce que l'usage 1 réutilisera (issue #7)
 

@@ -237,6 +237,8 @@ export type OptionsRun<S> = {
   delaiApresValidationMs?: number;
   /** Filet côté serveur si le script meurt sans annuler (`max_time_s`, 600 par défaut). */
   maxTimeS?: number;
+  /** Surcharges supplémentaires de `POST /sessions`, par chemin (par exemple `agent.skills`). */
+  overrides?: Record<string, unknown>;
   /** `null` désactive le coupe-circuit. */
   motifsInterdits?: MotifsInterdits | null;
   /** Lancer même si une session est déjà active sur le compte. */
@@ -277,6 +279,7 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
     outils: options.outils.map((outil) => outil.declaration),
     formatReponse: options.formatReponse,
     urlDepart: options.urlDepart,
+    ...(options.overrides ? { overrides: options.overrides } : {}),
     maxTimeS: options.maxTimeS ?? 600,
     fileAttente: false,
     timezone: "Europe/Paris",

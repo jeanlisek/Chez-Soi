@@ -1,34 +1,45 @@
 import Link from "next/link";
 
-const LOGEMENT_EXEMPLE = "exemple";
+import { MaisonRayonnante, LogoMaison } from "@/components/chez-soi/illustrations";
+import { Bouton, Ecran } from "@/components/chez-soi/ui";
 
-const etapes = [
-  { href: "/profil", libelle: "Profil des occupants" },
-  { href: `/logement/${LOGEMENT_EXEMPLE}/capture`, libelle: "Capture du logement" },
-  { href: `/logement/${LOGEMENT_EXEMPLE}/plan`, libelle: "Plan 3D" },
-  { href: `/logement/${LOGEMENT_EXEMPLE}/actions`, libelle: "Actions" },
-  { href: `/logement/${LOGEMENT_EXEMPLE}/absence`, libelle: "Mode absence" },
-];
-
+/** Écran 1 · Inscription. */
 export default function Accueil() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 p-8">
-      <header>
-        <h1 className="text-3xl font-semibold">Chez Soi</h1>
-        <p className="text-muted-foreground">Mieux, chez soi !</p>
+    <Ecran ton="lavande">
+      <header className="flex items-center justify-between px-5 pt-5">
+        <span className="grid size-14 place-items-center rounded-full bg-creme">
+          <LogoMaison className="size-8" />
+        </span>
+        <Link
+          href="/connexion"
+          className="rounded-full bg-lavande-claire px-5 py-3 text-sm font-bold text-[#1c2f7a]"
+        >
+          J&apos;ai un compte
+        </Link>
       </header>
-      <nav>
-        <ul className="flex flex-col gap-2">
-          {etapes.map((etape) => (
-            <li key={etape.href}>
-              <Link className="underline underline-offset-4" href={etape.href}>
-                {etape.libelle}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <p className="text-sm text-muted-foreground">Squelette : les pages sont vides.</p>
-    </main>
+
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5">
+        <h1 className="mt-6 text-center text-[28px] leading-tight font-normal">
+          Repérez les risques de votre logement et <strong className="font-extrabold">laissez l&apos;agent agir</strong>
+        </h1>
+        <div className="flex flex-1 items-center justify-center py-6">
+          <MaisonRayonnante className="w-60 max-w-full" />
+        </div>
+      </main>
+
+      <footer className="flex flex-col gap-3 px-5 pb-8">
+        <Bouton href="/connexion?methode=google">Continuer avec Google</Bouton>
+        <Bouton href="/connexion?methode=email" variante="contour">
+          Recevoir un lien par e-mail
+        </Bouton>
+        <Link href="/logement/exemple/profil" className="py-2 text-center font-bold underline underline-offset-4">
+          Voir d&apos;abord un logement exemple
+        </Link>
+        <p className="text-center text-xs text-encre-douce">
+          L&apos;agent ne paie, n&apos;envoie et ne signe jamais à votre place.
+        </p>
+      </footer>
+    </Ecran>
   );
 }

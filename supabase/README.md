@@ -27,18 +27,25 @@ Une migration déjà appliquée ne se modifie jamais : on en ajoute une nouvelle
 
 ## Commandes
 
+CLI Supabase v3, lancée avec `npx` depuis la racine du dépôt (`supabase/config.toml` est versionné). Depuis la v3, les commandes visent une base **locale** par défaut : `--remote` vise le projet relié.
+
 ```bash
-supabase link --project-ref hfcunqjqmtlozhiwfihl
-supabase db push            # applique les migrations manquantes
+npx supabase login                                     # une fois par poste
+npx supabase link --project-ref hfcunqjqmtlozhiwfihl
+npx supabase migration list --remote                   # le dépôt et le projet doivent afficher les mêmes versions
+npx supabase db push --remote --dry-run                # puis sans --dry-run pour appliquer
 psql "$DATABASE_URL" -f supabase/seed.sql
-psql "$DATABASE_URL" -f supabase/tests/rls_test.sql   # attendu : NOTICE « RLS OK »
-supabase gen types typescript --project-id hfcunqjqmtlozhiwfihl > apps/web/lib/supabase/types.ts
+psql "$DATABASE_URL" -f supabase/tests/rls_test.sql    # attendu : NOTICE « RLS OK »
+npx supabase gen types typescript --remote > apps/web/lib/supabase/types.ts
 ```
 
-Les migrations 0001 à 0004 ont été appliquées le 17/11/2026, et 0005 à 0007 le 18/11/2026, depuis l'éditeur SQL du dashboard, à partir de ces fichiers exacts (empreintes SHA-256 contrôlées). Pour que la CLI le sache, une seule fois après `supabase link` :
+- **Windows (PowerShell)** : si l'exécution de scripts est désactivée, écrire `npx.cmd` au lieu de `npx`. Sous Windows PowerShell 5, `>` écrit en UTF-16 : pour les types, utiliser `| Out-File -Encoding utf8 apps/web/lib/supabase/types.ts`.
+- **Réseau** : le Wi-Fi de l'école bloque le port 5432 (constaté le 18/11/2026). Les commandes `--remote` et `psql` passent par un partage de connexion. L'application (HTTPS) et n8n ne sont pas concernés.
+
+Les migrations 0001 à 0004 ont été appliquées le 17/11/2026, et 0005 à 0007 le 18/11/2026, depuis l'éditeur SQL du dashboard, à partir de ces fichiers exacts (empreintes SHA-256 contrôlées). L'historique de la CLI a été aligné le 18/11/2026 (déjà fait, ne pas relancer) :
 
 ```bash
-supabase migration repair --status applied 0001 0002 0003 0004 0005 0006 0007
+npx supabase migration repair 0001 0002 0003 0004 0005 0006 0007 --status applied --remote
 ```
 
 `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort de l'équipe, jamais dans le dépôt.

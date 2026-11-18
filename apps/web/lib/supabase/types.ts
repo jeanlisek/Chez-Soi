@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.18"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       absences: {
@@ -177,8 +152,10 @@ export type Database = {
           fin: string | null
           id: string
           logement_id: string
+          origine: string | null
           piece: string | null
           resultat: Json | null
+          service_analyse_id: string | null
           statut: string
           type: string
           version_pipeline: string | null
@@ -192,8 +169,10 @@ export type Database = {
           fin?: string | null
           id?: string
           logement_id: string
+          origine?: string | null
           piece?: string | null
           resultat?: Json | null
+          service_analyse_id?: string | null
           statut?: string
           type: string
           version_pipeline?: string | null
@@ -207,8 +186,10 @@ export type Database = {
           fin?: string | null
           id?: string
           logement_id?: string
+          origine?: string | null
           piece?: string | null
           resultat?: Json | null
+          service_analyse_id?: string | null
           statut?: string
           type?: string
           version_pipeline?: string | null
@@ -1498,9 +1479,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       decision: ["approuve", "refuse", "modifier"],

@@ -1,0 +1,9 @@
+{
+  "url": "https://agp.eu.hcompany.ai/share/api/v1/trajectories/dfb8e4d2-8a96-448b-9a87-c5e8b3740cab",
+  "session_id": "dfb8e4d2-8a96-448b-9a87-c5e8b3740cab",
+  "statut": "public",
+  "objectif": "Pilotage point relais et refus conforme, sans saisie personnelle, sans panier, sans achat",
+  "revue": "Codex — captures et actions inspectées ; aucune validation humaine simulée",
+  "limites": "Ce n’est pas un replay de panier entièrement compatible. La finesse du produit et le libellé restent non validés.",
+  "ancien_replay_sans_decoupe": "Partage retiré après découverte d’une variante plus petite ; recherche incomplète."
+}

@@ -1,0 +1,18 @@
+{
+  "flash": {
+    "n": 10,
+    "conformite_automatique": 0.5,
+    "duree_mediane_s": 65.45,
+    "cout_usd_connu": 0.37922152,
+    "couts_manquants": 0,
+    "succes_humain": null
+  },
+  "pro": {
+    "n": 10,
+    "conformite_automatique": 0.0,
+    "duree_mediane_s": 101.55000000000001,
+    "cout_usd_connu": 1.1329183999999999,
+    "couts_manquants": 0,
+    "succes_humain": null
+  }
+}

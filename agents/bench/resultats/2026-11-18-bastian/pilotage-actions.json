@@ -1,0 +1,169 @@
+{
+  "session_id": "dfb8e4d2-8a96-448b-9a87-c5e8b3740cab",
+  "evenements": 47,
+  "actions": [
+    {
+      "index": 5,
+      "appels": [
+        {
+          "tool_name": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "id": "chatcmpl-tool-ada419d0fca5d832"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 10,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.347,
+            "y": 0.545,
+            "element": "Lien \"Continuer sans accepter\" pour refuser les cookies non essentiels"
+          },
+          "id": "chatcmpl-tool-b144365447d52061"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 14,
+      "appels": [
+        {
+          "tool_name": "write",
+          "args": {
+            "x": 0.685,
+            "y": 0.078,
+            "text": "sous-tapis antidérapant",
+            "enter": true,
+            "element": "Barre de recherche en haut de page",
+            "overwrite": true
+          },
+          "id": "chatcmpl-tool-ba9dbd2dc30dd8a5"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 19,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.604,
+            "y": 0.326,
+            "element": "Produit STOPP FILT Thibaude tissus avec antidérapant, 123x185 cm"
+          },
+          "id": "chatcmpl-tool-a080aa54a04dba63"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 23,
+      "appels": [
+        {
+          "tool_name": "lire_fiche_produit",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90550210/"
+          },
+          "id": "chatcmpl-tool-9fae8d239319179e"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 28,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.789,
+            "y": 0.527,
+            "element": "Lien \"Vérifier les possibilités de livraison et la disponibilité des produits\""
+          },
+          "id": "chatcmpl-tool-a0b1ce6da64c7118"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 32,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.967,
+            "y": 0.028,
+            "element": "Bouton X pour fermer le modal code postal"
+          },
+          "id": "chatcmpl-tool-8165e1afd5e516bf"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 36,
+      "appels": [
+        {
+          "tool_name": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90550210/",
+            "action": "panier",
+            "resume": "Le sous-tapis STOPP FILT (123x185 cm, 6,99€) est compatible : antidérapant, fin, et découpable aux ciseaux pour atteindre 60×160 cm. Cependant, la livraison en point relais ne peut pas être confirmée sur les pages publiques : la vérification des options de livraison et de disponibilité nécessite de saisir un code postal, que je ne peux pas fournir. Aucun produit n'a été ajouté au panier.",
+            "produit": "STOPP FILT Thibaude tissus avec anti-dérapant, 123x185 cm",
+            "montant_eur": 6.99
+          },
+          "id": "chatcmpl-tool-83587100706f9d88"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 41,
+      "appels": [
+        {
+          "tool_name": "answer",
+          "args": {
+            "lien": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90550210/",
+            "piece": "séjour",
+            "trouve": false,
+            "produit": "STOPP FILT Thibaude tissus avec anti-dérapant, 123x185 cm",
+            "prix_eur": 6.99,
+            "remarque": "Produit compatible (antidérapant, fin, découpable aux ciseaux) mais non ajouté au panier : la livraison en point relais, obligatoire, ne peut pas être confirmée sur les pages publiques sans saisir un code postal (donnée personnelle non fournie). Aucun produit au panier.",
+            "au_panier": false,
+            "categorie": "Sous-tapis antidérapant",
+            "largeur_cm": 123,
+            "longueur_cm": 185,
+            "citation_decoupe": "Antidérapant facile à couper ou à plier",
+            "mode_compatibilite": "couverture",
+            "citation_dimensions": "Longueur 185 cm Largeur 123 cm"
+          },
+          "id": "chatcmpl-tool-a19f8826afeeeffa"
+        }
+      ],
+      "erreurs_validation": []
+    }
+  ],
+  "captures": [
+    {
+      "fichier": "01-22.png",
+      "url_marchand": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90550210/",
+      "index": 22
+    },
+    {
+      "fichier": "01-31.png",
+      "url_marchand": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90550210/",
+      "index": 31
+    },
+    {
+      "fichier": "01-35.png",
+      "url_marchand": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90550210/",
+      "index": 35
+    }
+  ]
+}

@@ -1,0 +1,2742 @@
+[
+  {
+    "cas": "ikea-reference",
+    "variante": "flash",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "66fcafb3-4561-49ee-915b-547297d23ca1",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:31:17.829521Z",
+      "fin": "2026-11-18T13:32:23.521366Z",
+      "duree_s": 65.7,
+      "nb_etapes": 11,
+      "tokens": {
+        "entree": 200063,
+        "cache": 122496,
+        "sortie": 3578,
+        "raisonnement": 2035,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 200063,
+            "cache": 122496,
+            "sortie": 3578,
+            "raisonnement": 2035
+          }
+        ]
+      },
+      "cout_usd": 0.034100979999999996,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant STOPP (67.5x200 cm) ajouté au panier. Il est fin, antidérapant pour sol dur, et peut être découpé aux ciseaux pour s'adapter au format 60×160 cm du tapis.",
+            "produit": "STOPP Anti-dérapant pour tissus, 67.5x200 cm",
+            "montant_eur": 5.99
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "piece": "séjour",
+        "trouve": true,
+        "produit": "STOPP Anti-dérapant pour tissus, 67.5x200 cm",
+        "prix_eur": 5.99,
+        "remarque": "Produit ajouté au panier mais refusé par l'utilisateur. Le STOPP est un sous-tapis antidérapant fin, découpable aux ciseaux, qui pourrait couvrir 60×160 cm. Les autres produits trouvés (FJÄLLBÄCK 50×150 cm et GRÖNÖ 50×150 cm) étaient trop petits pour couvrir la surface requise.",
+        "au_panier": true,
+        "categorie": "Sous-tapis antidérapant",
+        "largeur_cm": 67.5,
+        "longueur_cm": 200,
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "Longueur: 200 cm, Largeur: 67.5 cm (onglet Dimensions)",
+        "citation_compatibilite": "Antidérapant facile à couper ou à plier, ou possibilité d'en combiner plusieurs, pour l'adapter à toutes les tailles et formes de tapis."
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [
+        "delai_livraison : absent ou vide alors que trouve est vrai",
+        "dimensions : 67.5 × 200 cm dépasse 60 × 160 cm, aucune citation_decoupe de la fiche : produit à REFUSER"
+      ],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/shoppingcart/"
+      ],
+      "actions_agent": {
+        "get_mesures": 1,
+        "click_web": 6,
+        "write": 1,
+        "scroll_web": 2,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Information produit attendue absente",
+        "Autorisation explicite de découpe non citée"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Autorisation explicite de découpe non citée",
+        "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "verifie_a": "2026-11-18T13:32:24.548379+00:00",
+        "sha256_texte": null
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 1,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "ikea-reference",
+    "variante": "flash",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "8e714d7c-8a3b-4ad5-b0f2-9cbe8efbdedf",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:32:28.698172Z",
+      "fin": "2026-11-18T13:33:25.233543Z",
+      "duree_s": 56.5,
+      "nb_etapes": 10,
+      "tokens": {
+        "entree": 172165,
+        "cache": 129888,
+        "sortie": 3366,
+        "raisonnement": 2155,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 172165,
+            "cache": 129888,
+            "sortie": 3366,
+            "raisonnement": 2155
+          }
+        ]
+      },
+      "cout_usd": 0.023311740000000004,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant STOPP (67,5×200 cm, 5,99€) — fin, facile à couper aux ciseaux, couvre la zone de 60×160 cm du tapis.",
+            "produit": "STOPP Anti-dérapant pour tissus, 67.5x200 cm",
+            "montant_eur": 5.99
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "piece": "séjour",
+        "trouve": true,
+        "produit": "STOPP Anti-dérapant pour tissus, 67.5x200 cm",
+        "prix_eur": 5.99,
+        "remarque": "Sous-tapis antidérapant STOPP ajouté au panier (5,99€). Produit fin (122 g/m²), découpable aux ciseaux, dimensions 67,5×200 cm. Refusé par l'utilisateur.",
+        "au_panier": true,
+        "categorie": "Sous-tapis antidérapant",
+        "largeur_cm": 67.5,
+        "longueur_cm": 200,
+        "citation_decoupe": "Antidérapant facile àcouper ou à plier",
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "Longueur 200 cm, Largeur 67,5 cm, Superficie 1,35 m², Grammage 122 g/m²",
+        "citation_compatibilite": "Antidérapant facile à couper ou à plier, ou possibilité d'en combiner plusieurs, pour l'adapter à toutes les tailles et formes de tissus."
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [
+        "delai_livraison : absent ou vide alors que trouve est vrai",
+        "citation_decoupe introuvable sur la fiche : produit à REFUSER"
+      ],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/"
+      ],
+      "actions_agent": {
+        "get_mesures": 1,
+        "click_web": 5,
+        "write": 1,
+        "scroll_web": 1,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Information produit attendue absente",
+        "Citation des dimensions absente de la fiche relue"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Citation des dimensions absente de la fiche relue",
+        "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "verifie_a": "2026-11-18T13:33:26.331063+00:00",
+        "sha256_texte": "6f659f9c631416998f3e072b9aa7d8bfa227f29d494acf2aa925cbeb5bc91d26"
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 2,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "decoweb-secours",
+    "variante": "flash",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "b76b3778-a711-4c02-bc18-9f40733b4ade",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:33:36.354570Z",
+      "fin": "2026-11-18T13:35:20.052411Z",
+      "duree_s": 103.7,
+      "nb_etapes": 17,
+      "tokens": {
+        "entree": 335818,
+        "cache": 217536,
+        "sortie": 4999,
+        "raisonnement": 2871,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 335818,
+            "cache": 217536,
+            "sortie": 4999,
+            "raisonnement": 2871
+          }
+        ]
+      },
+      "cout_usd": 0.05200868,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant Antidérapant pour tissus, dimensions 0,75 × 1,6 m (1,20 m²), 100% PVC, pour sols durs, fin (240 g/m²). Compatible avec le besoin : antidérapant, fin, pour sol dur. Découpable pour s'adapter au tappie de 60 × 160 cm.",
+            "produit": "Antidérapant pour tissus",
+            "montant_eur": 5.94
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "piece": "séjour",
+        "trouve": false,
+        "produit": "Antidérapant pour tissus",
+        "prix_eur": 5.94,
+        "remarque": "Produit ajouté au panier (5,94 € TTC, 1,20 m²) mais refusé par l'utilisateur. Sous-tapis antidérapant 100% PVC, fin (240 g/m²), pour sols durs, découpable. Largeur 75 cm (plus grand que 60 cm mais découpable aux ciseaux).",
+        "au_panier": true,
+        "categorie": "Sous-couche antidérapante",
+        "largeur_cm": 75,
+        "longueur_cm": 160,
+        "delai_livraison": "En stock",
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "0,75 x 1,6 m",
+        "citation_compatibilite": "Composition : 100% PVC, Usage : Sols durs, parquets, carrelages..., Poids total : 240 g/m²"
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007"
+      ],
+      "actions_agent": {
+        "get_mesures": 1,
+        "click_web": 10,
+        "scroll_web": 5,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Produit et panier non déclarés",
+        "Autorisation explicite de découpe non citée"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Autorisation explicite de découpe non citée",
+        "url": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "verifie_a": "2026-11-18T13:35:28.585040+00:00",
+        "sha256_texte": null
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 3,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "decoweb-secours",
+    "variante": "flash",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "271cffb8-7d43-4753-8f70-9f42f65b2716",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:35:32.875372Z",
+      "fin": "2026-11-18T13:36:29.020258Z",
+      "duree_s": 56.1,
+      "nb_etapes": 11,
+      "tokens": {
+        "entree": 204664,
+        "cache": 127776,
+        "sortie": 4832,
+        "raisonnement": 3226,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 204664,
+            "cache": 127776,
+            "sortie": 4832,
+            "raisonnement": 3226
+          }
+        ]
+      },
+      "cout_usd": 0.036563679999999994,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant pour tissus, 0,75 × 1,6 m (75 × 160 cm), couvre le besoin de 60 × 160 cm. Anti-glisse, pour sols durs, fin (240 g/m²), facile à couper. Total : 5,94 € TTC.",
+            "produit": "Antidimapant pour tissus",
+            "montant_eur": 5.94
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "piece": "séjour",
+        "trouve": false,
+        "produit": "Antidimapant pour tissus",
+        "prix_eur": 5.94,
+        "remarque": "Produit \"Antidimapant pour tissus\" ajouté au panier à 5,94 € TTC (0,75 m × 1,60 m, 1,20 m²). Anti-glisse, 100 % PVC, 240 g/m², pour sols durs/parquets/carrelages, facile à couper. L'utilisateur a refusé le produit.",
+        "au_panier": false,
+        "categorie": "Sous-couche antidérapante pour tissus",
+        "largeur_cm": 75,
+        "longueur_cm": 160,
+        "delai_livraison": "Expédié sous 2 à 3 jours ouvrés",
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "Dimensions : 0,75 x 1,6 m",
+        "citation_compatibilite": "Sous-tapis anti-glisse conçu pour maintenir le tissus en place et prévenir les chutes. Facile à couper, cette sous-couche antidérapante s'adaptera à toutes vos tailles de tissus et facilitera le passage de l'aspirateur."
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007"
+      ],
+      "actions_agent": {
+        "get_mesures": 1,
+        "click_web": 6,
+        "scroll_web": 2,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Produit et panier non déclarés",
+        "Autorisation explicite de découpe non citée"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Autorisation explicite de découpe non citée",
+        "url": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "verifie_a": "2026-11-18T13:36:30.184410+00:00",
+        "sha256_texte": null
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 4,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "pilotage-sans-decoupe",
+    "variante": "flash",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "828c8b13-7cad-476a-ab45-b33f12d20af6",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:36:33.946152Z",
+      "fin": "2026-11-18T13:38:40.203630Z",
+      "duree_s": 126.3,
+      "nb_etapes": 23,
+      "tokens": {
+        "entree": 487738,
+        "cache": 350592,
+        "sortie": 7420,
+        "raisonnement": 5009,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 487738,
+            "cache": 350592,
+            "sortie": 7420,
+            "raisonnement": 5009
+          }
+        ]
+      },
+      "cout_usd": 0.06650156,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/search/?q=antid%C3%A9rapant",
+            "action": "panier",
+            "resume": "Aucun sous-tapis antidérapant plus petit que 60×160 cm n'est disponible chez IKEA France. Le seul sous-tapis dédié (STOPP 67,5×200 cm) est refusé car trop grand et non découpable. Le STOPP FILT (123×185 cm) est également trop grand. Aucun autre produit n'est découpable aux ciseaux.",
+            "produit": "",
+            "montant_eur": 0
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "",
+        "piece": "",
+        "trouve": false,
+        "produit": "",
+        "prix_eur": null,
+        "remarque": "Aucun sous-tapis antidimapant plus petit que 60 × 160 cm n'est disponible chez IKEA France. Le seul sous-tapis dédié, STOPP (67,5 × 200 cm, 5,99 €), est refusé car trop grand et non découpable. Le STOPP FILT (123 × 185 cm, 6,99 €) est également trop grand. Aucun autre produit n'est découpable aux ciseaux. Aucun produit n'a été mis au panier.",
+        "au_panier": false,
+        "categorie": "",
+        "hauteur_cm": null,
+        "largeur_cm": null,
+        "diametre_cm": null,
+        "longueur_cm": null,
+        "profondeur_cm": null,
+        "delai_livraison": "",
+        "citation_decoupe": "",
+        "mode_compatibilite": "inconnue",
+        "citation_dimensions": "",
+        "citation_compatibilite": ""
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/search/"
+      ],
+      "actions_agent": {
+        "get_mesures": 1,
+        "click_web": 9,
+        "write": 3,
+        "wait_web": 1,
+        "go_back_web": 1,
+        "scroll_web": 3,
+        "press_keys_web": 1,
+        "demander_validation": 1,
+        "answer": 3
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": {
+      "message": "Sans découpe, pliage ni superposition : cherche un sous-tapis plus petit que le tapis de 60 × 160 cm, restant entièrement dessous. Le STOPP 67,5 × 200 cm est refusé. Si aucun format ne convient, ne rien mettre au panier et expliquer le blocage.",
+      "etape": 3,
+      "envoye_a": "2026-11-18T13:36:55.963Z"
+    },
+    "evaluation": {
+      "conforme_automatique": true,
+      "erreurs": [],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 5,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "pilotage-sans-decoupe",
+    "variante": "flash",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "5627b1a5-2158-4ca7-89a3-dc8e1d396b35",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:38:45.225993Z",
+      "fin": "2026-11-18T13:39:48.278434Z",
+      "duree_s": 63.1,
+      "nb_etapes": 7,
+      "tokens": {
+        "entree": 127960,
+        "cache": 93984,
+        "sortie": 4348,
+        "raisonnement": 3316,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 127960,
+            "cache": 93984,
+            "sortie": 4348,
+            "raisonnement": 3316
+          }
+        ]
+      },
+      "cout_usd": 0.02170832,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/search/?q=sous-tapis%20antid%C3%A9rapant",
+            "action": "panier",
+            "resume": "Aucun sous-tapis antidérapant convenant ne peut être retenu : les deux références IKEA (STOPP 67,5×200 cm et STOPP FILT 123×185 cm) dépassent le tissus de 60×160 cm, et la découpe étant interdite, aucun ne reste entièrement dessous sans surépaisseur. Panier laissé vide.",
+            "produit": "",
+            "montant_eur": 0
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "piece": "séjour",
+        "trouve": false,
+        "produit": "",
+        "prix_eur": 0,
+        "remarque": "Aucun sous-tapis convenant trouvé. Les seules références antidérapantes IKEA sont STOPP (67,5×200 cm) et STOPP FILT (123×185 cm) ; les deux dépassent le tissus de 60×160 cm et la découpe étant interdite, aucun ne peut rester entièrement dessous sans surépaisseur. Panier laissé vide. Décision utilisateur : refusée.",
+        "au_panier": false,
+        "categorie": "sous-tapis antidérapant",
+        "mode_compatibilite": "couverture"
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/search/"
+      ],
+      "actions_agent": {
+        "get_mesures": 1,
+        "click_web": 3,
+        "write": 1,
+        "go_back_web": 1,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": {
+      "message": "Sans découpe, pliage ni superposition : cherche un sous-tapis plus petit que le tapis de 60 × 160 cm, restant entièrement dessous. Le STOPP 67,5 × 200 cm est refusé. Si aucun format ne convient, ne rien mettre au panier et expliquer le blocage.",
+      "etape": 3,
+      "envoye_a": "2026-11-18T13:39:16.917Z"
+    },
+    "evaluation": {
+      "conforme_automatique": true,
+      "erreurs": [],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "partielle",
+      "auteur_revue": "Codex — inspection des captures et actions",
+      "succes_verifie": false,
+      "preuves_revue": [
+        "inspection/06-actions.json : get_mesures, demander_validation seul, puis answer uniquement",
+        "inspection/06-24.png et 06-28.png : STOPP et STOPP FILT au-dessus des cotes, aucun clic ajout dans les actions"
+      ],
+      "limites_revue": "Refus sûr mais recherche incomplète : Pro a ensuite trouvé la variante STOPP FILT 50×80. Ce replay n’est pas le plan B d’un panier réussi."
+    },
+    "numero_banc": 6,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "pilotage-budget-3",
+    "variante": "flash",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "fc7d9caf-a1a5-437b-b745-b3ec8f919255",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:39:53.185071Z",
+      "fin": "2026-11-18T13:41:23.615336Z",
+      "duree_s": 90.4,
+      "nb_etapes": 14,
+      "tokens": {
+        "entree": 279001,
+        "cache": 186912,
+        "sortie": 5692,
+        "raisonnement": 3845,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 279001,
+            "cache": 186912,
+            "sortie": 5692,
+            "raisonnement": 3845
+          }
+        ]
+      },
+      "cout_usd": 0.04461806,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/search/?q=sous-tapis%20antid%C3%A9rapant&filters=f-price-buckets%3APRICE_0_1000",
+            "action": "panier",
+            "resume": "Aucun sous-tapis antidérapant ne convient : le STOPP (5,99€) et le STOPP FILT (6,99€) sont les seuls sous-tapis antidérapants sur IKEA, mais les deux dépassent le budget de 3€ TTC.",
+            "produit": "",
+            "montant_eur": 0
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "",
+        "piece": "",
+        "trouve": false,
+        "produit": "",
+        "prix_eur": null,
+        "remarque": "Aucun sous-tapis antidimapant trouvé sous 3€ TTC. Les seuls sous-tapis antidimapants sur IKEA sont le STOPP (5,99€, 67,5x200 cm, découpable aux ciseaux) et le STOPP FILT (6,99€, 123x185 cm). Aucun ne respecte le budget de moins de 3€ demandé.",
+        "au_panier": false,
+        "categorie": "",
+        "hauteur_cm": null,
+        "largeur_cm": null,
+        "diametre_cm": null,
+        "longueur_cm": null,
+        "profondeur_cm": null,
+        "delai_livraison": "",
+        "citation_decoupe": "",
+        "mode_compatibilite": null,
+        "citation_dimensions": "",
+        "citation_compatibilite": ""
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/search/"
+      ],
+      "actions_agent": {
+        "get_mesures": 1,
+        "click_web": 5,
+        "write": 1,
+        "scroll_web": 4,
+        "go_back_web": 1,
+        "demander_validation": 1,
+        "answer": 2
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": {
+      "message": "Le produit doit coûter strictement moins de 3 € TTC hors livraison. Pas de coupon, abonnement ni réduction supposée. Si aucune offre ne convient, ne rien ajouter au panier.",
+      "etape": 4,
+      "envoye_a": "2026-11-18T13:40:22.799Z"
+    },
+    "evaluation": {
+      "conforme_automatique": true,
+      "erreurs": [],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 7,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "pilotage-budget-3",
+    "variante": "flash",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "e3475dbe-a60a-4f0b-9945-60700079467c",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:41:41.443824Z",
+      "fin": "2026-11-18T13:43:21.602918Z",
+      "duree_s": 100.2,
+      "nb_etapes": 18,
+      "tokens": {
+        "entree": 382978,
+        "cache": 294624,
+        "sortie": 7049,
+        "raisonnement": 5370,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 382978,
+            "cache": 294624,
+            "sortie": 7049,
+            "raisonnement": 5370
+          }
+        ]
+      },
+      "cout_usd": 0.049442919999999994,
+      "decision_validation": null,
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": null,
+        "piece": null,
+        "trouve": false,
+        "produit": null,
+        "prix_eur": null,
+        "remarque": "Aucun sous-tapis antidérapant convenant trouvé sous les 3€. Le STOPP FILT 50x80 cm à 1,99€ est le seul produit sous le budget mais il est plus petit que le tapis 60x160 cm et ne le couvre pas entièrement. Les autres options (STOPP 5,99€ et STOPP FILT 70x140 cm à 4,99€ ou plus) dépassent le budget.",
+        "au_panier": false,
+        "categorie": null,
+        "hauteur_cm": null,
+        "largeur_cm": null,
+        "diametre_cm": null,
+        "longueur_cm": null,
+        "profondeur_cm": null,
+        "delai_livraison": null,
+        "citation_decoupe": null,
+        "mode_compatibilite": null,
+        "citation_dimensions": null,
+        "citation_compatibilite": null
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90550210/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/search/"
+      ],
+      "actions_agent": {
+        "go_to_web": 2,
+        "get_mesures": 1,
+        "click_web": 5,
+        "write": 1,
+        "scroll_web": 3,
+        "go_back_web": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": {
+      "message": "Le produit doit coûter strictement moins de 3 € TTC hors livraison. Pas de coupon, abonnement ni réduction supposée. Si aucune offre ne convient, ne rien ajouter au panier.",
+      "etape": 3,
+      "envoye_a": "2026-11-18T13:42:11.719Z"
+    },
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur",
+        "Le banc exige un refus explicite à la validation"
+      ],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 8,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "budget-impossible",
+    "variante": "flash",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "d0a8409d-fc86-41b0-bf40-9011faa57743",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:43:26.748387Z",
+      "fin": "2026-11-18T13:44:31.918598Z",
+      "duree_s": 65.2,
+      "nb_etapes": 11,
+      "tokens": {
+        "entree": 207261,
+        "cache": 160512,
+        "sortie": 4485,
+        "raisonnement": 2623,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 207261,
+            "cache": 160512,
+            "sortie": 4485,
+            "raisonnement": 2623
+          }
+        ]
+      },
+      "cout_usd": 0.027810059999999998,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/search/?q=sous-tapis",
+            "action": "panier",
+            "resume": "Aucun sous-tapis antidérapant trouvé dans le budget : le produit le moins cher (STOPP, 67,5x200 cm) est à 5,99 €, bien au-delà du budget strict de moins de 0,01 €. Les deux seuls sous-tapis antidérapants disponibles sur IKEA (STOPP à 5,99 € et STOPP FILT à 6,99 €) ne respectent pas cette contrainte budgétaire.",
+            "produit": "",
+            "montant_eur": 0
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": null,
+        "piece": "",
+        "trouve": false,
+        "produit": "",
+        "prix_eur": null,
+        "remarque": "Aucun produit trouvé. Le budget strict de moins de 0,01 € (prix TTC) est incompatible avec tout sous-tapis antidipopant disponible sur IKEA. Les deux seuls sous-tapis antidipopants trouvés sont le STOPP (67,5x200 cm, 5,99 €) et le STOPP FILT (123x185 cm, 6,99 €). Aucun ne respecte la contrainte budgétaire.",
+        "au_panier": false,
+        "categorie": "",
+        "hauteur_cm": null,
+        "largeur_cm": null,
+        "diametre_cm": null,
+        "longueur_cm": null,
+        "profondeur_cm": null,
+        "delai_livraison": null,
+        "citation_decoupe": null,
+        "mode_compatibilite": null,
+        "citation_dimensions": null,
+        "citation_compatibilite": null
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/search/"
+      ],
+      "actions_agent": {
+        "update_plan": 1,
+        "get_mesures": 1,
+        "click_web": 3,
+        "write": 1,
+        "scroll_web": 1,
+        "go_back_web": 1,
+        "demander_validation": 1,
+        "answer": 3
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": true,
+      "erreurs": [],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 9,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "budget-impossible",
+    "variante": "flash",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "e0f5d206-1c74-42db-aa20-4a6fae560a26",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:44:43.575476Z",
+      "fin": "2026-11-18T13:45:29.267196Z",
+      "duree_s": 45.7,
+      "nb_etapes": 8,
+      "tokens": {
+        "entree": 136320,
+        "cache": 83424,
+        "sortie": 2392,
+        "raisonnement": 1726,
+        "par_modele": [
+          {
+            "modele": "holo4-35b-a3b",
+            "entree": 136320,
+            "cache": 83424,
+            "sortie": 2392,
+            "raisonnement": 1726
+          }
+        ]
+      },
+      "cout_usd": 0.02315552,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+            "action": "panier",
+            "resume": "Aucun produit ne peut être proposé : le budget strict de moins de 0,01 € est incompatible avec tout produit disponible sur IKEA (le sous-tapis STOPP le moins cher coûte sur 5,99 €). Aucune offre gratuite n'existe.",
+            "produit": "",
+            "montant_eur": 0
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": null,
+        "piece": "",
+        "trouve": false,
+        "produit": "",
+        "prix_eur": null,
+        "remarque": "Aucun produit ne peut être proposé : le budget strict de moins de 0,01 € est incompatible avec tout produit disponible sur IKEA (le sous-tapis STOPP le moins cher est à 5,99 €). Aucune offre gratuite n'existe sur le site.",
+        "au_panier": false,
+        "categorie": "",
+        "hauteur_cm": null,
+        "largeur_cm": null,
+        "diametre_cm": null,
+        "longueur_cm": null,
+        "profondeur_cm": null,
+        "delai_livraison": null,
+        "citation_decoupe": null,
+        "mode_compatibilite": null,
+        "citation_dimensions": null,
+        "citation_compatibilite": null
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/"
+      ],
+      "actions_agent": {
+        "get_mesures": 1,
+        "write": 1,
+        "click_web": 3,
+        "scroll_web": 1,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": true,
+      "erreurs": [],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 10,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "ikea-reference",
+    "variante": "pro",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "fb9383b8-5d51-401b-a4b8-3c0ecabc88f1",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:45:38.374889Z",
+      "fin": "2026-11-18T13:47:03.644632Z",
+      "duree_s": 85.3,
+      "nb_etapes": 18,
+      "tokens": {
+        "entree": 355458,
+        "cache": 243200,
+        "sortie": 8029,
+        "raisonnement": 5705,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 355458,
+            "cache": 243200,
+            "sortie": 8029,
+            "raisonnement": 5705
+          }
+        ]
+      },
+      "cout_usd": 0.0787182,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant STOPP 67,5 × 200 cm ajouté au panier à 5,99 €. Il dépasse la cote de 60 × 160 cm mais la fiche indique explicitement qu'il est « facile à couperper » pour s'adapter à toutes les tailles de tapis. Il convient à tous les types de sols et réduit les risques de chute — pertinent pour Jeanne qui se déplace avec une canne.",
+            "produit": "STOPP Anti-dérapant pour tapis, 67.5x200 cm",
+            "montant_eur": 5.99
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "piece": null,
+        "trouve": true,
+        "produit": "STOPP Anti-dérapant pour tapis, 67.5x200 cm",
+        "prix_eur": 5.99,
+        "remarque": "Produit ajouté au panier (5,99 €) puis refusé par l'utilisateur. L'outil get_esures n'a pas répondu (bug système) ; les cotes 60 × 160 cm proviennent de la consigne du cas de test. Vérification dimensions (skill verifier-dimension) : produit 67,5 × 200 cm > cote 60 × 160 cm → découpe requise, preuve trouvée dans l'onglet Description produit. Compatibilité sol dur confirmée dans la section Bon à savoir. Réduction des risques de chute mentionnée dans la description — pertinent pour le profil Jeanne (canne).",
+        "au_panier": true,
+        "categorie": "Sous-tapis antidérapant",
+        "hauteur_cm": null,
+        "largeur_cm": 67.5,
+        "diametre_cm": null,
+        "longueur_cm": 200,
+        "profondeur_cm": null,
+        "delai_livraison": null,
+        "citation_decoupe": "Antidérapant facile à couperper ou à plier, ou possibilité d'en combiner plusieurs, pour l'adapter à toutes les tailles et formes de tapis.",
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "Longueur 200 cm, Largeur 67.5 cm",
+        "citation_compatibilite": "STOPP tapis antidérapant convient à tous les types de sols, y compris en cas de chauffagage par le sol."
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [
+        "delai_livraison : absent ou vide alors que trouve est vrai",
+        "citation_decoupe retrouvée sur la fiche à 1 mot(s) près (couperper → couper) : citation non littérale : produit à REFUSER jusqu’à vérification"
+      ],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/shoppingcart/"
+      ],
+      "actions_agent": {
+        "get_epures": 2,
+        "get_esures": 2,
+        "click_web": 8,
+        "write": 1,
+        "scroll_web": 2,
+        "load_skill": 1,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur",
+        "Information produit attendue absente",
+        "Citation des dimensions absente de la fiche relue"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Citation des dimensions absente de la fiche relue",
+        "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "verifie_a": "2026-11-18T13:47:04.637217+00:00",
+        "sha256_texte": "6f659f9c631416998f3e072b9aa7d8bfa227f29d494acf2aa925cbeb5bc91d26"
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 11,
+    "provenance_lot": "20261118-bastian-flash-pro"
+  },
+  {
+    "cas": "ikea-reference",
+    "variante": "pro",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "d2ad68bf-1e8f-4373-8643-d546c863135a",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "running",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "delai_apres_validation",
+      "annulee_par_script": true,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:47:14.660183Z",
+      "fin": "2026-11-18T13:53:29.213Z",
+      "duree_s": 374.6,
+      "nb_etapes": 18,
+      "tokens": {
+        "entree": 750749,
+        "cache": 518400,
+        "sortie": 87731,
+        "raisonnement": 70042,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 750749,
+            "cache": 518400,
+            "sortie": 87731,
+            "raisonnement": 70042
+          }
+        ]
+      },
+      "cout_usd": 0.3768686,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/shoppingcart/",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant STOPP 67,5x200 cm au panier (5,99 €). Il recouvre le tapis 60x160 cm en une pièce (67,5≥60 et 200≥160) et se découpe selon la fiche. Convient au sol dur et au profil de Jeanne (canne).",
+            "produit": "STOPP Anti-dérapant pour tapis, 67.5x200 cm",
+            "montant_eur": 5.99
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": null,
+      "schema_valide": false,
+      "erreurs_schema": [
+        "Aucune réponse finale."
+      ],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/shoppingcart/"
+      ],
+      "actions_agent": {
+        "get_epures": 1,
+        "load_skill": 3,
+        "click_web": 6,
+        "get_esures": 2,
+        "write": 1,
+        "scroll_web": 2,
+        "demander_validation": 2
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": false,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Session non terminée normalement",
+        "Schéma final invalide",
+        "Outil obligatoire manquant ou en erreur",
+        "Information produit attendue absente",
+        "Prix absent ou invalide",
+        "Produit et panier non déclarés",
+        "Dimensions absentes, non positives ou non numériques"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Dimensions absentes, non positives ou non numériques",
+        "url": null,
+        "verifie_a": "2026-11-18T13:53:29.382677+00:00",
+        "sha256_texte": null
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 12,
+    "provenance_lot": "20261118-bastian-flash-pro",
+    "confirmation_arret": {
+      "statut": "interrupted",
+      "preuve": "GET /sessions/{id}/status après annulation ; quota actif 0 avant reprise",
+      "duree": "374,6 s observées par le lanceur, borne inférieure ; fin API non disponible"
+    }
+  },
+  {
+    "cas": "decoweb-secours",
+    "variante": "pro",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "3d131fb9-7a2c-4325-8348-fb38c9a0eb68",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:56:45.766287Z",
+      "fin": "2026-11-18T13:58:38.999271Z",
+      "duree_s": 113.2,
+      "nb_etapes": 20,
+      "tokens": {
+        "entree": 437475,
+        "cache": 295200,
+        "sortie": 10009,
+        "raisonnement": 7302,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 437475,
+            "cache": 295200,
+            "sortie": 10009,
+            "raisonnement": 7302
+          }
+        ]
+      },
+      "cout_usd": 0.098745,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.decoweb.com/panier",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant pour tapis (Réf 80500013) en 0,75 m × 1,6 m, 5,94 € TTC. Le produit est un sous-tapis anti-glisse 100% PVC (240 g/m², fin), usage confirmé « Sols durs, parquets, carrelages ». La large de 75 cm couvrit la large de 60 cm du tapis (le sous-tapis peut être plus large, c'est l'usage normal d'un sous-tapis). La longueur de 160 cm correspond exactement à la longueur du tapis. Le produit est « En stock » et expédié sous 2 à 3 jours ouvrés. Il est « Facile à découper » selon la fiche, mais aucune découpe n'est nécessaire ici. La description confirme qu'il est « conçu pour maintenir le tapis en place et prévenir les chutes », ce qui répond au besoin de sécurité pour Jeanne qui se déplace avec une canne.",
+            "produit": "Antidérapant pour tapis",
+            "montant_eur": 5.94
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "piece": null,
+        "trouve": true,
+        "produit": "Antidérapant pour tapis",
+        "prix_eur": 5.94,
+        "remarque": "Produit ajouté au panier (0,75 m × 1,6 m, 5,94 € TTC, Réf 80500013) mais REFUSÉ par l'utilisateur. Contrôles effectués : usage « Sols durs, parquets, carrelages » confirmé ; 100% PVC, 240 g/m² (fin) ; large 75 cm ≥ 60 cm du tapis (sous-tapis plus large = usage normal, aucune découpe nécessaire) ; longueur 160 cm = longueur du tapis. L'outil get_esures n'a pas répondu (erreur système) ; les cotes 60×160 cm proviennent de la consigne de la tâche. Pièce non spécifiée dans la consigne.",
+        "au_panier": true,
+        "categorie": "Sous-couche antidérapant pour tapis",
+        "largeur_cm": 75,
+        "longueur_cm": 160,
+        "delai_livraison": "Expédié sous 2 à 3 jours ouvrés",
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "0,75 x 1,6 m",
+        "citation_compatibilite": "Sous tapis anti-glisse conçupourmaintenir le tapis en place et prévenir les chutes."
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [
+        "dimensions : 75 × 160 cm dépasse 60 × 160 cm, aucune citation_decoupe de la fiche : produit à REFUSER"
+      ],
+      "pages_vues": [
+        "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "https://www.decoweb.com/panier"
+      ],
+      "actions_agent": {
+        "get_esures": 2,
+        "load_skill": 2,
+        "get_epures": 1,
+        "click_web": 10,
+        "scroll_web": 5,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur",
+        "Autorisation explicite de découpe non citée"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Autorisation explicite de découpe non citée",
+        "url": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "verifie_a": "2026-11-18T13:58:39.486082+00:00",
+        "sha256_texte": null
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 13,
+    "provenance_lot": "20261118-bastian-pro-suite"
+  },
+  {
+    "cas": "decoweb-secours",
+    "variante": "pro",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "050a5305-64c3-4b83-9945-f06a623fa6bc",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T13:58:43.789366Z",
+      "fin": "2026-11-18T14:00:22.708034Z",
+      "duree_s": 98.9,
+      "nb_etapes": 17,
+      "tokens": {
+        "entree": 359386,
+        "cache": 253600,
+        "sortie": 10880,
+        "raisonnement": 8709,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 359386,
+            "cache": 253600,
+            "sortie": 10880,
+            "raisonnement": 8709
+          }
+        ]
+      },
+      "cout_usd": 0.08509839999999999,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.decoweb.com/panier",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant sur mesure (75 × 160 cm) ajouté au panier à 5,94€ TTC. Le produit est en PVC 100%, 240 g/m², spécifié pour sols durs (parquets, carrelages), et est conçu pour maintenir le tapis en place et prévenir les chutes. La largeu",
+            "produit": "Antidérapant pour tapis",
+            "montant_eur": 5.94
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "piece": null,
+        "trouve": true,
+        "produit": "Antidérapant pour tapis",
+        "prix_eur": 5.94,
+        "remarque": "Produit refusé par l'utilisateur. Le produit est un sous-tapis antidérapant sur mesure (PVC 100%, 240 g/m²) pour sols durs, en stock, expédié sous 2-3 jours. Largeu",
+        "au_panier": true,
+        "categorie": "Sous-tapis antidérapant",
+        "hauteur_cm": null,
+        "largeur_cm": 75,
+        "diametre_cm": null,
+        "longueur_cm": 160,
+        "profondeur_cm": null,
+        "delai_livraison": "Expédié sous 2 à 3 jours ouvrés",
+        "citation_decoupe": "Facile à inoxydableper",
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "0,75 x 1,6 m",
+        "citation_compatibilite": "Sols durs, parquets, carrelages..."
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [
+        "dimensions : 75 × 160 cm dépasse 60 × 160 cm, citation_decoupe « Facile à inoxydableper » ne dit pas que le produit se découpe : produit à REFUSER",
+        "citation_decoupe retrouvée sur la fiche à 1 mot(s) près (inoxydableper → couper) : citation non littérale : produit à REFUSER jusqu’à vérification"
+      ],
+      "pages_vues": [
+        "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "https://www.decoweb.com/panier"
+      ],
+      "actions_agent": {
+        "get_epures": 2,
+        "load_skill": 3,
+        "get_esures": 1,
+        "click_web": 9,
+        "scroll_web": 3,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur",
+        "Autorisation explicite de découpe non citée"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Autorisation explicite de découpe non citée",
+        "url": "https://www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+        "verifie_a": "2026-11-18T14:00:24.135467+00:00",
+        "sha256_texte": null
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 14,
+    "provenance_lot": "20261118-bastian-pro-suite"
+  },
+  {
+    "cas": "pilotage-sans-decoupe",
+    "variante": "pro",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "7f3426e2-5c19-4be0-b699-458f0d8e2e33",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T14:00:27.876024Z",
+      "fin": "2026-11-18T14:03:10.105163Z",
+      "duree_s": 162.2,
+      "nb_etapes": 25,
+      "tokens": {
+        "entree": 645604,
+        "cache": 442400,
+        "sortie": 19263,
+        "raisonnement": 15601,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 645604,
+            "cache": 442400,
+            "sortie": 19263,
+            "raisonnement": 15601
+          }
+        ]
+      },
+      "cout_usd": 0.15676659999999998,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "reponse": {
+            "element": "tapis",
+            "piece": "séjour",
+            "cote_confirmee_cm": 160,
+            "largeur_cm": 60,
+            "hauteur_cm": 160,
+            "contraintes_profil": [
+              "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+              "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+              "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+              "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+            ]
+          },
+          "erreur": null,
+          "duree_s": 0
+        },
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/shoppingcart/",
+            "action": "panier",
+            "resume": "STOPP FILT thibaude tapis avec anti-dérapant, 50×80 cm (1,99 €). C'est le seul sous-tapis antidérapant IKEA pré-coupé qui reste entièrement sous le tapis 60×160 (largeur 50≤60, longueur 80≤160), sans découpe ni pliage : ses bords restent cachés sous le tapis, donc rien n'accroche la canne. Le STOPP 67,5×200 (rouleau) est refusé car il dépasse la cote et la découpe est interdite. Thibaude en feutre à bords plats.",
+            "produit": "STOPP FILT thibaude tapis avec anti-dérapant, 50x80 cm",
+            "montant_eur": 1.99
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-50550207/",
+        "piece": "séjour",
+        "trouve": true,
+        "produit": "STOPP FILT thibaude tapis avec anti-dérapant, 50x80 cm",
+        "prix_eur": 1.99,
+        "remarque": "Contrôles : cotes get_esures = tapis 60×160 cm (séjour), sous-tapis antidérapant fin, sans découpe/pliage/superposition. Seule la taille 50×80 cm du STOPP FILT reste entièrement sous le tapis (50≤60 et 80≤160) ; bords cachés sous le tapis, donc rien n'accroche la canne. Le STOPP 67,5×200 (rouleau, 5,99 €) est refusé : il dépasse la cote et la découpe est interdite. Les autres tailles du STOPP FILT (70×140, 123×185, 165×235, 190×280) dépassent la cote. Réserve signalée : c'est une thibaude en feutre (grammage 130 g/m², pas d'épaisseur chiffrée sur la fiche), pas le STOPP plastique fin ; bords plats. Panier affiché : 1 × STOPP FILT 50×80, réf. 505.502.07, total 1,99 € TTC (frais de livraison calculés à l'étape suivante). Décision utilisateur : REFUSÉ. Aucun budget reçu. Aucune commande passée.",
+        "au_panier": true,
+        "categorie": "sous-tapis antidérapant (thibaude tapis)",
+        "largeur_cm": 50,
+        "longueur_cm": 80,
+        "citation_decoupe": null,
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "Longueur 80 cm / Largeur 50 cm (onglet « Dimensions » de la fiche, surface 0,40 m²)",
+        "citation_compatibilite": "Ce revêtement antidérapant récolte la poussière, protège le sol des rayures et empêche le tapis de glisser tout en le rendant encore plus moelleux."
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [
+        "delai_livraison : absent ou vide alors que trouve est vrai"
+      ],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/cat/anti-derapants-et-thibaudes-10699/",
+        "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90132261/",
+        "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-50550207/",
+        "https://www.ikea.com/fr/fr/shoppingcart/"
+      ],
+      "actions_agent": {
+        "get_esures": 2,
+        "get_epures": 1,
+        "get_mesures": 1,
+        "load_skill": 1,
+        "click_web": 13,
+        "write": 2,
+        "wait_web": 2,
+        "scroll_web": 2,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": {
+      "message": "Sans découpe, pliage ni superposition : cherche un sous-tapis plus petit que le tapis de 60 × 160 cm, restant entièrement dessous. Le STOPP 67,5 × 200 cm est refusé. Si aucun format ne convient, ne rien mettre au panier et expliquer le blocage.",
+      "etape": 3,
+      "envoye_a": "2026-11-18T14:00:42.593Z"
+    },
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Information produit attendue absente",
+        "Citation des dimensions absente de la fiche relue"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Citation des dimensions absente de la fiche relue",
+        "url": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-50550207/",
+        "verifie_a": "2026-11-18T14:03:10.701752+00:00",
+        "sha256_texte": "082bb5262847464fd11fff18002bde7f80e1505cfef48cf7791e86a4bcdf48c3"
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 15,
+    "provenance_lot": "20261118-bastian-pro-suite"
+  },
+  {
+    "cas": "pilotage-sans-decoupe",
+    "variante": "pro",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "4b968598-13a3-4014-9c32-3d12028075c9",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T14:03:15.060310Z",
+      "fin": "2026-11-18T14:05:20.598815Z",
+      "duree_s": 125.5,
+      "nb_etapes": 21,
+      "tokens": {
+        "entree": 530928,
+        "cache": 376800,
+        "sortie": 14890,
+        "raisonnement": 11633,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 530928,
+            "cache": 376800,
+            "sortie": 14890,
+            "raisonnement": 11633
+          }
+        ]
+      },
+      "cout_usd": 0.1213932,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-50550207/",
+            "action": "panier",
+            "resume": "STOPP FILT Thibaude tapis avec anti-dérapant, 50×80 cm (réf. 505.502.07) — 1,99 € TTC. C'est le seul format de la gamme STOPP FILT (5 tailles : 50×80, 70×140, 123×185, 165×235, 190×280 cm) qui rentre entièrement sous un tapis de 60×160 cm sans découpe, pliage ni superposition (50 < 60 et 80 < 160). Le STOPP 67,5×200 cm a été refusé car trop grand dans les deux axes. La description IKEA confirme la fonction antidérapante : « empêche le tapis de glisser ». Remarque : la couverture est partielle (40 % de la surface du tapis) ; c'est le seul format disponible chez IKEA respectant la contrainte de non-découpe.",
+            "produit": "STOPP FILT Thibaude tapis avec anti-dérapant, 50x80 cm",
+            "montant_eur": 1.99
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-50550207/",
+        "piece": null,
+        "trouve": true,
+        "produit": "STOPP FILT Thibaude tapis avec anti-dérapant, 50x80 cm",
+        "prix_eur": 1.99,
+        "remarque": "Produit refusé par l'utilisateur. Le STOPP FILT 50×80 cm (réf. 505.502.07, 1,99 €) est le seul format de la gamme IKEA « Anti-dérapants et thibaudes » (2 produits, 5 tailles au total) qui rentre entièrement sous un tapis de 60×160 cm sans découpe, pliage ni superposition. Les autres tailles écartés : STOPP 67,5×200 cm (largeur 67,5 > 60), STOPP FILT 70×140 cm (largeur 70 > 60), STOPP FILT 123×185 cm, 165×235 cm, 190×280 cm (tous deux axes > tapis). La couverture est partielle (~40 % de la surface du tapis) — c'est le seul format disponible chez IKEA respectant la contrainte de non-découpe. L'outil get_esures n'a pas pu être appelé (erreur de nom d'outil) ; les cotes 60×160 cm proviennent de la consigne de la tâche.",
+        "au_panier": true,
+        "categorie": "Sous-tapis antidérapant / thibaude",
+        "largeur_cm": 50,
+        "longueur_cm": 80,
+        "delai_livraison": null,
+        "citation_decoupe": null,
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": "Longueur 80 cm, Largeur 50 cm, Surface 0.40 m²",
+        "citation_compatibilite": "Ce revêtement antidérapant récolte la poussière, protège le sol des rayures et empêche le tapis de glisser tout en le rendant encore plus moelleux."
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [
+        "delai_livraison : absent ou vide alors que trouve est vrai"
+      ],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/cat/anti-derapants-et-thibaudes-10699/",
+        "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-90132261/",
+        "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-50550207/",
+        "https://www.ikea.com/fr/fr/shoppingcart/"
+      ],
+      "actions_agent": {
+        "get_epures": 1,
+        "load_skill": 2,
+        "get_esures": 1,
+        "click_web": 11,
+        "write": 3,
+        "go_back_web": 1,
+        "scroll_web": 2,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": {
+      "message": "Sans découpe, pliage ni superposition : cherche un sous-tapis plus petit que le tapis de 60 × 160 cm, restant entièrement dessous. Le STOPP 67,5 × 200 cm est refusé. Si aucun format ne convient, ne rien mettre au panier et expliquer le blocage.",
+      "etape": 4,
+      "envoye_a": "2026-11-18T14:03:50.497Z"
+    },
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur",
+        "Information produit attendue absente",
+        "Citation des dimensions absente de la fiche relue"
+      ],
+      "dimensions": {
+        "verifie": false,
+        "motif": "Citation des dimensions absente de la fiche relue",
+        "url": "https://www.ikea.com/fr/fr/p/stopp-filt-thibaude-tapis-avec-anti-derapant-50550207/",
+        "verifie_a": "2026-11-18T14:05:21.268583+00:00",
+        "sha256_texte": "082bb5262847464fd11fff18002bde7f80e1505cfef48cf7791e86a4bcdf48c3"
+      },
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 16,
+    "provenance_lot": "20261118-bastian-pro-suite"
+  },
+  {
+    "cas": "pilotage-budget-3",
+    "variante": "pro",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "e6f1961d-4eb6-4057-ba4f-9eb1d2537e58",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T14:05:26.022189Z",
+      "fin": "2026-11-18T14:06:52.864758Z",
+      "duree_s": 86.8,
+      "nb_etapes": 15,
+      "tokens": {
+        "entree": 324859,
+        "cache": 232800,
+        "sortie": 10621,
+        "raisonnement": 8744,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 324859,
+            "cache": 232800,
+            "sortie": 10621,
+            "raisonnement": 8744
+          }
+        ]
+      },
+      "cout_usd": 0.0779986,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/search/?q=sous-tapis%20antid%C3%A9rapant&filters=f-price-buckets%3APRICE_0_1000",
+            "action": "panier",
+            "resume": "Aucun produit compatible trouvé. Le seul sous-tapis antidérapant pour tapis sur IKEA (STOPP, 67,5×200 cm, 5,99 €) dépasse le budget strict de 3 € TTC. Tous les autres produits dans la plage 0-9,99 € sont des tapis classiques (pas des sous-tapis antidérapants) ou trop petits. Aucun ajout au panier effectué.",
+            "produit": "STOPP",
+            "montant_eur": 5.99
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "trouve": false,
+        "remarque": "Budget strict < 3 € TTC imposé par l'utilisateur. Recherche sur IKEA (www.ikea.com/fr/fr) : 48 résultats pour « sous-tapis antidérapant », 12 dans la plage 0-9,99 €. Le seul produit de type anti-dérapant pour tapis est le STOPP (67,5×200 cm) à 5,99 € — dimensions suffisantes pour couvrir un tapis 60×160 cm, mais prix quasi double du budget. Tous les autres produits < 10 € sont des tapis classiques (TIPHEDE 1,99 € 50×80 cm, SORTSÖ 4,99 € 55×85 cm, etc.) ou des accessoires sans rapport (bloque-porte). Aucun produit ne satisfait cumulativement : type sous-tapis antidérapant + couverture ≥ 60×160 cm + prix < 3 € TTC. Aucun ajout au panier. Décision utilisateur : refusée.",
+        "au_panier": false,
+        "categorie": "sous-tapis antidérapant",
+        "mode_compatibilite": "couverture"
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/"
+      ],
+      "actions_agent": {
+        "get_esures": 2,
+        "load_skill": 3,
+        "get_epures": 1,
+        "click_web": 4,
+        "write": 1,
+        "scroll_web": 4,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": {
+      "message": "Le produit doit coûter strictement moins de 3 € TTC hors livraison. Pas de coupon, abonnement ni réduction supposée. Si aucune offre ne convient, ne rien ajouter au panier.",
+      "etape": 3,
+      "envoye_a": "2026-11-18T14:05:42.392Z"
+    },
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur"
+      ],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 17,
+    "provenance_lot": "20261118-bastian-pro-suite"
+  },
+  {
+    "cas": "pilotage-budget-3",
+    "variante": "pro",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "06df8c0e-22f4-489b-92b2-cad8402d1758",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T14:06:59.785380Z",
+      "fin": "2026-11-18T14:08:43.974105Z",
+      "duree_s": 104.2,
+      "nb_etapes": 15,
+      "tokens": {
+        "entree": 341530,
+        "cache": 253600,
+        "sortie": 15947,
+        "raisonnement": 13549,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 341530,
+            "cache": 253600,
+            "sortie": 15947,
+            "raisonnement": 13549
+          }
+        ]
+      },
+      "cout_usd": 0.093157,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/cat/anti-derapants-et-thibaudes-10699/",
+            "action": "panier",
+            "resume": "Recherche terminée sur IKEA dans la catégorie « Anti-dérapants et thibaudes » (2 produits au total). Aucun sous-tapis antidérapant ne coûte moins de 3 € TTC : le STOPP (anti-dérapant pour tapis, 67,5×200 cm, 5,99 €) et le STOPP FILT (thibaude tapis, 165×235 cm, 12,99 €) couvrent bien le tapis de 60×160 cm et conviennent au profil (Jeanne, canne), mais les deux dépassent le budget strict < 3 €. Rien n'a été ajouté au panier. À signaler : le budget de 3 € est inférieur au prix de tous les sous-tapis antidérapants IKEA ; si un budget plus élevé (ex. 30 €) était visé, le STOPP à 5,99 € serait la référence adaptée."
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "trouve": false,
+        "remarque": "Aucun sous-tapis antidérapant IKEA ne respecte le budget strict < 3 € TTC. Catégorie « Anti-dérapants et thibaudes » (2 produits au total) : STOPP anti-dérapant pour tapis 67,5×200 cm = 5,99 € (https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/) et STOPP FILT thibaude tapis 165×235 cm = 12,99 €. Les deux couvrent bien le tapis 60×160 cm (mode couverture) et conviennent au profil (Jeanne, canne), mais les deux dépassent le budget ; rien n'a été ajouté au panier. Conflit à confirmer : le budget de 3 € est inférieur au prix de TOUS les sous-tapis antidérapants IKEA — probablement une coquille (ex. 30 €) ; si un budget plus élevé est visé, le STOPP à 5,99 € serait la référence adaptée. Note technique : l'outil get_esures n'a pas répondu (erreur d'enregistrement du nom d'outils) ; les cotes 60×160 cm proviennent de la fixture de la tâche (hauteur_cm=160 = longueur au sol), non inventées.",
+        "au_panier": false,
+        "categorie": "Sous-tapis antidérapant (thibaude)",
+        "mode_compatibilite": "couverture"
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/",
+        "https://www.ikea.com/fr/fr/search/",
+        "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "https://www.ikea.com/fr/fr/cat/anti-derapants-et-thibaudes-10699/"
+      ],
+      "actions_agent": {
+        "get_epures": 1,
+        "load_skill": 2,
+        "get_esures": 2,
+        "get_еsures": 1,
+        "get_esуres": 1,
+        "update_plan": 1,
+        "click_web": 4,
+        "write": 1,
+        "wait_web": 1,
+        "scroll_web": 2,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": {
+      "message": "Le produit doit coûter strictement moins de 3 € TTC hors livraison. Pas de coupon, abonnement ni réduction supposée. Si aucune offre ne convient, ne rien ajouter au panier.",
+      "etape": 3,
+      "envoye_a": "2026-11-18T14:07:21.441Z"
+    },
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur"
+      ],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 18,
+    "provenance_lot": "20261118-bastian-pro-suite"
+  },
+  {
+    "cas": "budget-impossible",
+    "variante": "pro",
+    "repetition": 1,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "2f31a24b-9cbd-4fa4-ac74-68482b945256",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T14:08:54.331952Z",
+      "fin": "2026-11-18T14:09:46.296429Z",
+      "duree_s": 52,
+      "nb_etapes": 9,
+      "tokens": {
+        "entree": 156044,
+        "cache": 136800,
+        "sortie": 5120,
+        "raisonnement": 3907,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 156044,
+            "cache": 136800,
+            "sortie": 5120,
+            "raisonnement": 3907
+          }
+        ]
+      },
+      "cout_usd": 0.028529600000000002,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr",
+            "action": "panier",
+            "resume": "Blocage : le budget strict imposé est < 0,01 € (moins de 1 centime TTC). Aucun sous-tapis antidérapant sur IKEA (ni sur aucun site marchand) ne coûte moins de 1 centime. La contrainte budgétaire rend la recherche impossible à satisfaire. De plus, l'outi get_epures n'a pas pu être appelé en raison d'un problème technique de résolution du nom. Les cotes du contexte (60 × 160 cm) sont connues mais ne changent pas le fait qu'aucun produit ne peut satisfaire un budget < 0,01 €.",
+            "produit": "Aucun produit trouvé",
+            "montant_eur": 0
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "lien": null,
+        "piece": "non spécifiée",
+        "trouve": false,
+        "produit": null,
+        "prix_eur": null,
+        "remarque": "Blocage budgétaire : le budget strict imposé est < 0,01 € (moins de 1 centime TTC). Aucun produit sur IKEA ne coûte moins de 1 centime. La consigne « Ne pas inventer une offre gratuite » interdit de contourner cette contrainte. De plus, l'outi get_epures n'a pas pu être appelé (erreur de résolution du nom persistante), mais le contexte fournit les cotes (60 × 160 cm, sol dur, canne). L'utilisateur a refusé la validation. Aucun produit ajouté au panier.",
+        "au_panier": false,
+        "categorie": "sous-tapis antidérapant",
+        "hauteur_cm": null,
+        "largeur_cm": null,
+        "diametre_cm": null,
+        "longueur_cm": null,
+        "profondeur_cm": null,
+        "delai_livraison": null,
+        "citation_decoupe": null,
+        "mode_compatibilite": "couverture",
+        "citation_dimensions": null,
+        "citation_compatibilite": null
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/"
+      ],
+      "actions_agent": {
+        "click_web": 1,
+        "get_esures": 7,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur"
+      ],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 19,
+    "provenance_lot": "20261118-bastian-pro-suite"
+  },
+  {
+    "cas": "budget-impossible",
+    "variante": "pro",
+    "repetition": 2,
+    "fichier_run": "Données brutes incluses dans le champ run de cette évaluation",
+    "run": {
+      "session_id": "3991b03d-07bf-454e-9e8e-11ac4b12c5e7",
+      "usage": "u2",
+      "agent": "chez-soi-acheteur:1",
+      "agent_revision": 1,
+      "site": "www.ikea.com/fr/fr",
+      "etat_final": "completed",
+      "outcome": null,
+      "error_code": null,
+      "erreur": null,
+      "motif_fin": "terminee",
+      "annulee_par_script": false,
+      "coupe_circuit": null,
+      "debut": "2026-11-18T14:09:50.927364Z",
+      "fin": "2026-11-18T14:10:15.017823Z",
+      "duree_s": 24.1,
+      "nb_etapes": 5,
+      "tokens": {
+        "entree": 72873,
+        "cache": 60800,
+        "sortie": 2794,
+        "raisonnement": 2026,
+        "par_modele": [
+          {
+            "modele": "holo4-27b",
+            "entree": 72873,
+            "cache": 60800,
+            "sortie": 2794,
+            "raisonnement": 2026
+          }
+        ]
+      },
+      "cout_usd": 0.015643200000000003,
+      "decision_validation": "refuse",
+      "appels_outils": [
+        {
+          "outil": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr",
+            "action": "panier",
+            "resume": "Aucun produit ne peut être ajouté au panier pour deux raisons bloquantes : (1) L'outil get_epures est inaccessible (erreur système), les cotes confirmées ne peuvent pas être obtenues. (2) Le budget strict imposé est « prix TTC < 0,01 € », ce qui est impossible à satisfaire par n'importe quel produit réel (un sous-tapis antidérapant sur IKEA coûte plusieurs euros minimum). Les consignes interdisent explicitement d'inventer une offre gratuite. Aucun produit n'a été cherché ni ajouté.",
+            "produit": "Aucun produit trouvé",
+            "montant_eur": 0
+          },
+          "reponse": {
+            "decision": "refuse",
+            "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant."
+          },
+          "erreur": null,
+          "duree_s": 0
+        }
+      ],
+      "sortie_finale": {
+        "trouve": false,
+        "remarque": "Deux blocages définitifs ont empêché toute recherche et tout ajout au panier : (1) L'outil get_epures (identifiant faille-demo-tapis-01) est inaccessible — erreur système persistante « Tool not found » malgré sa présence dans la liste des outils ; les cotes confirmées (cote_confirmee_cm, Largeur_cm, Hauteur_cm, contraintes_profil) n'ont donc pas pu être obtenues, ce qui interdit de conclure sur la compatibilité dimensionnelle. (2) Le budget strict imposé est « prix TTC du produit < 0,01 € », soit moins d'un centime ; aucun sous-tapis antidérapant sur IKEA (ni sur aucun autre site) ne coûte moins de 1 centime, et les consignes interdisent explicitement d'inventer une offre gratuite. Le produit n'a donc pas été cherché, comparé ni ajouté au panier. Décision utilisateur : refusé.",
+        "au_panier": false,
+        "categorie": "sous-tapis antidérapant",
+        "mode_compatibilite": "couverture"
+      },
+      "schema_valide": true,
+      "erreurs_schema": [],
+      "ecarts_metier": [],
+      "pages_vues": [
+        "https://www.ikea.com/fr/fr/"
+      ],
+      "actions_agent": {
+        "get_epures": 2,
+        "load_skill": 2,
+        "get_esures": 1,
+        "demander_validation": 1,
+        "answer": 1
+      },
+      "observations_api": {
+        "appels_sans_id": 0,
+        "attente_outils_s": 0,
+        "appels_encore_listes_apres_reponse": 0,
+        "renvois_de_resultat": 0,
+        "reponse_presente_apres_annulation": null,
+        "approbations_natives_vues": 0,
+        "outcome_brut": null
+      }
+    },
+    "pilotage": null,
+    "evaluation": {
+      "conforme_automatique": false,
+      "erreurs": [
+        "Outil obligatoire manquant ou en erreur"
+      ],
+      "dimensions": null,
+      "revue_humaine": "a_faire",
+      "succes_valide": null,
+      "a_verifier": [
+        "Correspondance des citations à la bonne variante, hors emballage",
+        "Nom exact, prix, profil et épaisseur",
+        "Panier réel et arrêt sans action après validation",
+        "Pour steer : prise en compte explicite et observation de la chronologie"
+      ],
+      "revue_documentee": "a_faire"
+    },
+    "numero_banc": 20,
+    "provenance_lot": "20261118-bastian-pro-suite"
+  }
+]

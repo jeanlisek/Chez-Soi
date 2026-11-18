@@ -109,9 +109,10 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 
 ## Modèle de données (Supabase)
 
-Tables de la v3 : `occupants`, `logements`, `contrats`, `obligations_contrat`, `absences`, `failles`, `actions`, `validations`, `runs_agent`, `regles`, `graphe_noeuds` (embedding pgvector), `graphe_aretes`.
-Buckets privés : `videos`, `contrats`, `modeles3d`, `exports`. RLS : un utilisateur ne voit que son logement, son contrat et les nœuds du graphe liés à son contrat ; les nœuds publics (lois, règles, contre-mesures) sont lisibles par tous.
-Le doc « CDO · Données et base » propose en plus `sources`, `regle_conditions`, `diagnostic_regles` et `declarations`, avec 12 règles de démo sourcées. Il faut les réconcilier avec la v3 avant d'écrire la migration 0001 (voir points ouverts).
+Schéma en place sur le projet Supabase `chez-soi` (organisation « Chez Soi », Paris, eu-west-3) : migrations `0001` à `0007` dans `supabase/migrations/`, détail dans `supabase/README.md` (issue #1).
+Tables : `logements`, `pieces`, `occupants`, `declarations`, `absences`, `failles`, `actions`, `validations`, `runs_agent`, `sources`, `regles`, `regle_conditions`, `diagnostic_regles`, `contrats`, `obligations_contrat`, `elements`, `graphe_noeuds` (`embedding vector(1024)`, BAAI/bge-m3), `graphe_aretes`. Vues : `regles_en_vigueur`, `elements_inconnus`. RPC : `match_noeuds`, `sous_graphe` ; réservées au serveur : `get_contrat_champs`, `valider_regle`.
+Buckets privés : `videos`, `contrats`, `modeles3d`, `exports` (50 Mo par fichier sur l'offre gratuite), chemin `{user_id}/{logement_id}/…`. RLS sur toutes les tables : un utilisateur ne voit que son logement, son contrat et les nœuds du graphe liés à son contrat ; les nœuds publics (lois, règles, contre-mesures) sont lisibles par tout utilisateur connecté.
+Le moteur de verdict lit `regles_en_vigueur`. Une nouvelle version de règle hérite des seuils et des conditions de la précédente ; seule une personne la valide (`valider_regle`). La table `elements` est le vocabulaire commun du champ `element` (vision, contrat, règles). Types TypeScript : `apps/web/lib/supabase/types.ts`.
 
 ## Règles non négociables
 
@@ -167,7 +168,19 @@ Pas de workspace racine : chaque partie s'installe dans son dossier. Gestionnair
 
 Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dans le `.env` de la racine (ignoré par git). Le script ne les affiche jamais. Il passe par l'API publique n8n (`/api/v1/workflows`, en-tête `X-N8N-API-KEY`) ; il n'active, ne désactive et n'exécute aucun workflow. Le JSON exporté est stable : clés triées, sans `createdAt`, `updatedAt`, `versionId`, `staticData`, `pinData`, `shared`, `tags` ni `meta`. Le pull signale les secrets qui semblent écrits en dur (heuristique, à relire quand même). Les amorces vides (`nodes: []`) sont ignorées par le push.
 
-**Pas encore de commande** : tests (aucun test écrit), déploiement du Space Hugging Face, déploiement Vercel, migrations Supabase (schéma non écrit, voir point ouvert 4), banc agent (`agents/bench/run_bench.py` est une amorce).
+**supabase** (depuis la racine, avec la CLI Supabase ; `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort)
+
+| Commande | Rôle |
+|---|---|
+| `supabase link --project-ref hfcunqjqmtlozhiwfihl` | Relie le dépôt au projet `chez-soi` |
+| `supabase migration repair --status applied 0001 0002 0003 0004 0005 0006 0007` | Une seule fois : 0001 à 0007 ont été appliquées depuis l'éditeur SQL du dashboard |
+| `supabase db push` | Applique les migrations manquantes (une migration appliquée ne se modifie jamais) |
+| `psql "$DATABASE_URL" -f supabase/seed.sql` | Référentiel : sources, règles, graphe public (rejouable) |
+| `psql "$DATABASE_URL" -f supabase/tests/rls_test.sql` | Test RLS, annulé à la fin (attendu : « RLS OK ») |
+| `psql "$DATABASE_URL" -f supabase/tests/graphe_test.sql` | Test du graphe et des raccordements, annulé à la fin (attendu : « GRAPHE OK ») |
+| `supabase gen types typescript --project-id hfcunqjqmtlozhiwfihl > apps/web/lib/supabase/types.ts` | Régénère les types après chaque migration |
+
+**Pas encore de commande** : tests applicatifs (seuls les tests SQL existent), déploiement du Space Hugging Face, déploiement Vercel, banc agent (`agents/bench/run_bench.py` est une amorce).
 
 État du squelette : les routes API de `apps/web` et du service vision renvoient un stub typé en HTTP 501 (`StubReponse` dans `apps/web/lib/schemas.ts`, helper `apps/web/lib/stub.ts`).
 
@@ -202,6 +215,6 @@ Plan B de la démo : run enregistré (replay H), 3D précalculée, partage de co
 1. **Modèles 3D** (VGGT + Depth Anything 3 dans la v3) : à confirmer par Jean-Li.
 2. **Usage 3 dans le navigateur de l'utilisateur** : selon la doc H, l'environnement `user_device` ne passe que par le SDK Python ou la CLI, avec un Chrome dédié lancé avec un port de débogage, sans coffre-fort, et la session meurt si le programme Python s'arrête. Le circuit TS de la v3 ne suffit donc pas. Options : runtime Python local, agent `h/holotab`, ou navigateur cloud pour la démo. À trancher par Briac.
 3. **Webhooks** : `awaiting_tool_results` doit arriver sur `/api/webhooks/hai` (l'app répond aux outils). Pour `completed`/`failed`, choisir entre la même route et n8n `suivi_runs` (qui n'existe pas encore). À trancher par Briac et Bastian.
-4. **Schéma** : réconcilier la v3 et le doc CDO, et la table `pieces` proposée par le CPO (nom, debut_s, fin_s, qualité).
+4. **Schéma** : tranché le 18/11 (issue #1). v3 et doc CDO réconciliés, `pieces` et `declarations` retenues, vocabulaire `elements` commun ; détail dans `supabase/README.md`.
 5. **Action montrée en live vendredi** : proposition du CPO, usage 2 « sous-tapis 60 × 160 cm » avec pilotage « moins de 50 € ». Décision de Jean-Li, mercredi midi.
 6. Auth : Apple, Google ou lien par e-mail (proposition du CPO), plus un logement exemple avant l'inscription.

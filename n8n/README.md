@@ -170,3 +170,12 @@ Le Space Hugging Face se met en veille après 30 min sans requête et met plusie
 - `reveil_vision` (webhook `POST chez-soi/reveil-vision`, credential « Chez Soi · webhook ») : répond 202 tout de suite puis fait `GET /health` sur le Space (credential « Chez Soi · vision Space »). L'app l'appelle par `POST /api/vision/reveil` dès les écrans Contrat et Capture.
 - `pipeline_analyse` répond **202 « vidéo reçue » dès que l'entrée est valide**, avant d'appeler le Space. Si le Space répond 503, 502, 404, 429 ou rien (démarrage), nouvel essai toutes les 20 s, jusqu'à `ESSAIS_REVEIL` (70) essais. Une autre erreur, un stub ou trop d'essais : l'échec est renvoyé à l'app par `POST /api/analyse/resultat` (`etat: "echec"`), qui affiche « analyse en échec, refilmez ».
 - Délai maximal d'exécution du workflow : 3 600 s.
+
+## Relecture de la PR #4
+
+Le filtre exige une citation non vide et `citation_retrouvee === true` avant de
+conserver une clause (valeur absente, null, false ou chaîne rejetée). La vision
+conserve le nom `piece` pour le trigger Supabase introduit dans #16, sans écrire
+la cote confirmée par l’utilisateur. Régressions locales, sans service externe :
+`node --test scripts/n8n-clauses.test.mjs`. Les workflows restent désactivés ;
+aucune synchronisation ni exécution sur l’instance pendant cette relecture.

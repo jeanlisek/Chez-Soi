@@ -57,6 +57,12 @@ export default function PageAgent() {
         }
       />
       <Corps>
+        {!logement.exemple && etat.run === "aucun" ? (
+          <div className="rounded-[28px] bg-lavande p-6 text-center">
+            <p className="text-lg font-bold">Aucune mission en cours</p>
+            <p className="mt-1 text-encre-douce">Choisissez dans le plan d&apos;action ce que l&apos;agent prépare pour vous.</p>
+          </div>
+        ) : (
         <RunStatus
           message={message}
           etapes={etapes}
@@ -64,6 +70,7 @@ export default function PageAgent() {
           enCours={enCours}
           onArret={() => maj({ run: "aucun" })}
         />
+        )}
         <div className="flex justify-between text-sm">
           <span className="inline-flex items-center gap-1.5 font-semibold">
             <MousePointer2 className="size-3.5 fill-current" />

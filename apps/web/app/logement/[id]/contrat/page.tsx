@@ -1,17 +1,20 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Lock } from "lucide-react";
 
 import { ContratUpload } from "@/components/ContratUpload";
 import { Bouton, Carte, Corps, Ecran, EnTete, Etape, Pied } from "@/components/chez-soi/ui";
 import { useParcours } from "@/lib/demo/etat";
+import { envoyerFichier } from "@/lib/envoi";
 
 /** Écran 3 · Contrat (facultatif). Avec contrat : parcours A ; sans : parcours B. */
 export default function PageContrat() {
   const router = useRouter();
   const { logement, etat, maj } = useParcours();
   const base = `/logement/${logement.id}`;
+  const [message, setMessage] = useState<string | null>(null);
 
   return (
     <Ecran>
@@ -21,8 +24,15 @@ export default function PageContrat() {
           occupant={etat.occupant.libelle}
           depose={etat.contratDepose}
           contrat={logement.contrat}
-          onDepose={() => maj({ contratDepose: true, parcours: "A" })}
+          onDepose={async (fichier) => {
+            if (logement.exemple || !fichier) return maj({ contratDepose: true, parcours: "A" });
+            setMessage("Envoi du contrat…");
+            const r = await envoyerFichier({ logementId: logement.id, type: "contrat", fichier });
+            setMessage(r.ok ? r.resultat.message : r.message);
+            if (r.ok) maj({ contratDepose: true, parcours: "A" });
+          }}
         />
+        {message && <p className="rounded-2xl bg-white p-3 text-sm">{message}</p>}
         <Carte className="text-encre-douce">
           Sans contrat, le diagnostic s&apos;appuie sur la loi puis sur les recommandations. Vous pourrez
           l&apos;ajouter plus tard.

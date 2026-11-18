@@ -19,7 +19,7 @@ export function ContratUpload({
   occupant: string;
   depose: boolean;
   contrat: Contrat | null;
-  onDepose: (fichier?: File) => void;
+  onDepose: (fichier?: File) => void | Promise<void>;
 }) {
   const entree = useRef<HTMLInputElement>(null);
   const [nom, setNom] = useState<string | null>(null);
@@ -32,7 +32,12 @@ export function ContratUpload({
       </div>
       <p className="mt-2 text-encre-douce">Ce qu&apos;il exige devient votre priorité n°1, avec la clause et la page.</p>
 
-      {depose && contrat ? (
+      {depose && !contrat ? (
+        <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/80 p-3">
+          <CheckCircle2 className="size-6 shrink-0 text-vert" />
+          <p className="text-sm font-bold">Contrat reçu{nom ? ` · ${nom}` : ""}. Lecture des clauses en cours.</p>
+        </div>
+      ) : depose && contrat ? (
         <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/80 p-3">
           <CheckCircle2 className="size-6 shrink-0 text-vert" />
           <div className="text-sm">
@@ -76,7 +81,7 @@ export function ContratUpload({
               const f = e.target.files?.[0];
               if (f) {
                 setNom(f.name);
-                onDepose(f);
+                void onDepose(f);
               }
             }}
           />

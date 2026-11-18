@@ -86,7 +86,7 @@ export async function completerEmbeddings(admin: Admin, contratId?: string | nul
 export async function contexteGraphe(admin: Admin, vecteur: number[], contratId: string | null): Promise<ContexteGraphe | null> {
   const { data: proches, error } = await admin.rpc("match_noeuds", {
     query_embedding: JSON.stringify(vecteur),
-    k: 6,
+    k: 14,
     p_contrat_id: contratId ?? undefined,
   } as never);
   if (error || !Array.isArray(proches) || !proches.length) return null;
@@ -96,9 +96,23 @@ export async function contexteGraphe(admin: Admin, vecteur: number[], contratId:
   return { proches: proches as NoeudGraphe[], voisins };
 }
 
-/** Code d'élément du nœud Element le plus proche, si la ressemblance est nette. */
-export function elementProche(contexte: ContexteGraphe | null, seuil = 0.55): { element: string; similarite: number } | null {
-  const n = contexte?.proches.find((x) => x.type === "Element" && typeof x.proprietes?.element === "string");
-  if (!n || (n.similarite ?? 0) < seuil) return null;
-  return { element: n.proprietes.element as string, similarite: n.similarite ?? 0 };
+/**
+ * Code d'élément du nœud Element le plus proche. bge-m3 donne des similarités resserrées
+ * (deux éléments sans rapport dépassent 0,7) : on exige donc un score élevé ET un écart net
+ * avec le deuxième élément. Renvoie aussi les scores, pour le diagnostic.
+ */
+export function elementProche(
+  contexte: ContexteGraphe | null,
+  seuil = SEUIL_ELEMENT,
+  ecart = ECART_ELEMENT,
+): { element: string; similarite: number; second: number; retenu: boolean } | null {
+  const elements = (contexte?.proches ?? []).filter((x) => x.type === "Element" && typeof x.proprietes?.element === "string");
+  if (!elements.length) return null;
+  const [a, b] = elements;
+  const similarite = a.similarite ?? 0;
+  const second = b?.similarite ?? 0;
+  return { element: a.proprietes.element as string, similarite, second, retenu: similarite >= seuil && similarite - second >= ecart };
 }
+
+export const SEUIL_ELEMENT = Number(process.env.GRAPHE_SEUIL_ELEMENT ?? 0.8);
+export const ECART_ELEMENT = Number(process.env.GRAPHE_ECART_ELEMENT ?? 0.03);

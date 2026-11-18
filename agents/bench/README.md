@@ -71,3 +71,29 @@ après vérification qu’il ne contient pas d’information privée.
 Le banc s’arrête sur erreur technique, coupe-circuit ou session non terminale ; aucune
 relance automatique d’une session terminée (un message la relancerait et la facturerait).
 Reporter les résultats dans les onglets Mesures agent et Retours Agent API du Pilotage.
+
+Une inspection réalisée par Codex est inscrite séparément (`revue_documentee`,
+`auteur_revue`, `preuves_revue`, `succes_verifie`). Elle ne remplit jamais à la place
+d’un humain les champs `revue_humaine` et `succes_valide`. Un replay peut être partagé
+après cette revue documentée d’une session fictive ; son type de revue est indiqué.
+
+## Résultats du 18 novembre
+
+Les **20 runs de comparaison** sont dans `resultats/2026-11-18-bastian/` :
+10 Flash, 10 Pro, même prompt archivé et même révision d’agent. Les échecs restent
+dans les mesures. Le run 12 a été interrompu : le lanceur avait encore un statut
+`running`, puis l’API a confirmé `interrupted` et un quota à zéro avant la reprise.
+Sa durée publiée est une borne inférieure observée, pas une fin API inventée.
+
+Les validations suivantes utilisent un prompt amélioré et sont **hors des 20**.
+Le custom tool local `lire_fiche_produit` donne le texte public, le titre et de courts
+extraits littéraux après `get_mesures`, pour éviter une recopie uniquement visuelle.
+Il est raccordé par les overrides de session, sans modifier la skill d’Aurélie.
+Le client doit disposer de Python 3 (bibliothèque standard) et du même accès réseau
+aux deux marchands. Pour le porter dans l’application ou n8n, raccorder aussi ce
+handler de lecture ; aucun handler de production n’est ajouté à une route ici.
+
+La relecture inclut seulement les panneaux IKEA `product-details` et `measurements`
+observés sur les fiches (onglets dépliables), exclut l’emballage, les scripts et les
+contenus cachés arbitraires. Une citation incorrecte reste refusée après cette lecture.
+Les réponses brutes ne sont jamais corrigées pour gonfler le taux de réussite.

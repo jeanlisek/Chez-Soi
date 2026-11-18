@@ -155,6 +155,8 @@ def main():
         if args.executer or args.a_blanc:
             p.error('--exporter est indépendant des modes d’exécution')
         resultats = [json.loads(f.read_text()) for f in sorted(args.exporter.glob('*-evaluation.json'))]
+        if not resultats and (args.exporter/'evaluations.json').exists():
+            resultats = json.loads((args.exporter/'evaluations.json').read_text())
         if not resultats:
             p.error('Aucune évaluation trouvée dans ce lot')
         produire_exports(args.exporter, resultats)

@@ -38,16 +38,21 @@ class RedirectionControlee(HTTPRedirectHandler):
 
 
 class TexteFiche(HTMLParser):
-    """Exclut scripts, styles, éléments masqués et attributs : pas de preuve dans du code."""
-    def __init__(self):
+    """Exclut scripts et masquages arbitraires ; panneaux produit explicitement autorisés seulement."""
+    def __init__(self, panneaux_autorises=()):
         super().__init__(convert_charrefs=True)
+        self.panneaux_autorises = set(panneaux_autorises)
         self.ignore = 0
         self.pile = []
         self.morceaux = []
+        self.titre = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
-        cache = tag in ('script', 'style', 'noscript', 'template', 'head') or 'hidden' in attrs or attrs.get('aria-hidden') == 'true' or bool(re.search(r'display\s*:\s*none|visibility\s*:\s*hidden', attrs.get('style', '')))
+        panneau = attrs.get('id') in self.panneaux_autorises and attrs.get('role') == 'tabpanel' and attrs.get('data-focusable-content') == 'true'
+        cache = (tag in ('script', 'style', 'noscript', 'template', 'head') or attrs.get('id') in ('measurements-packaging', 'SEC_measurements-packaging')
+                 or (('hidden' in attrs or attrs.get('aria-hidden') == 'true') and not panneau)
+                 or bool(re.search(r'display\s*:\s*none|visibility\s*:\s*hidden', attrs.get('style', ''))))
         if tag not in ('br', 'hr', 'img', 'input', 'meta', 'link', 'wbr', 'source', 'area', 'base', 'col', 'embed', 'param', 'track'):
             self.pile.append((tag, cache))
             self.ignore += int(cache)
@@ -66,15 +71,17 @@ class TexteFiche(HTMLParser):
     def handle_data(self, data):
         if not self.ignore:
             self.morceaux.append(data)
+            if any(tag == "h1" for tag, _ in self.pile):
+                self.titre.append(data)
 
 
-def texte_html(html):
-    p = TexteFiche()
+def texte_html(html, panneaux_autorises=()):
+    p = TexteFiche(panneaux_autorises)
     p.feed(html)
     return normaliser(''.join(p.morceaux))
 
 
-def lire_fiche(url):
+def lire_fiche(url, avec_titre=False):
     autoriser_url(url)
     req = Request(url, headers={'User-Agent': 'ChezSoi-dimension-verification/1.0', 'Accept': 'text/html'})
     with build_opener(RedirectionControlee()).open(req, timeout=20) as r:
@@ -84,10 +91,13 @@ def lire_fiche(url):
         data = r.read(LIMITE_OCTETS + 1)
         if len(data) > LIMITE_OCTETS:
             raise ValueError('Fiche trop volumineuse')
-        texte = texte_html(data.decode(r.headers.get_content_charset() or 'utf-8', errors='replace'))
+        panneaux = ('product-details', 'measurements') if urlparse(r.url).hostname in ('www.ikea.com', 'ikea.com') else ()
+        parseur = TexteFiche(panneaux)
+        parseur.feed(data.decode(r.headers.get_content_charset() or 'utf-8', errors='replace'))
+        texte = normaliser(''.join(parseur.morceaux))
         if not texte or re.search(r'captcha|access denied|accès refusé', texte, re.I):
             raise ValueError('Fiche inaccessible ou CAPTCHA : preuve non vérifiable')
-        return texte
+        return (texte, normaliser(' '.join(parseur.titre))) if avec_titre else texte
 
 
 def cotes_citees(citation, largeur, longueur):

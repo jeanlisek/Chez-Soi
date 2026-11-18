@@ -79,6 +79,11 @@ class PreuvesTests(unittest.TestCase):
         html = '<html><head>faux</head><body><h1>STOPP</h1><script>couper</script><p hidden>invente</p><div aria-hidden="true">cache</div><p style="display:none">invisible</p><div title="decoupe">Visible <b>sur fiche</b></div></body></html>'
         self.assertEqual(texte_html(html), 'STOPP Visible sur fiche')
 
+    def test_panneaux_ikea_expansibles_sans_emballage(self):
+        html = '<main><div id="product-details" role="tabpanel" data-focusable-content="true" hidden><p>Facile à couper</p><p hidden>Fausse preuve</p></div><div id="measurements" role="tabpanel" data-focusable-content="true" hidden><p>Longueur 200 cm Largeur 67.5 cm</p><li id="measurements-packaging">Emballage Longueur 67 cm</li></div></main>'
+        self.assertEqual(texte_html(html), '')
+        self.assertEqual(texte_html(html, ('product-details', 'measurements')), 'Facile à couper Longueur 200 cm Largeur 67.5 cm')
+
     def test_ssrf_et_hote_usurpe_refuses(self):
         for url in ('http://www.ikea.com/fr/fr/p/test','https://www.ikea.com.evil.test/fr/fr/p/test',
                     'https://127.0.0.1/', 'https://www.ikea.com:444/fr/fr/p/test',

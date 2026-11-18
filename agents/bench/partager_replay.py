@@ -1,7 +1,7 @@
 """Prépare le partage d'un run revu. Par défaut aucune API ; --partager publie le replay.
 
-Le rapport doit d'abord avoir succes_valide=true et revue_humaine=validee après
-inspection réelle de la session. Aucun partage automatique par le banc.
+Le rapport doit porter une revue documentée avec son auteur et ses preuves, après
+inspection réelle de la session. Une revue Codex ne vaut pas une validation humaine. Aucun partage automatique par le banc.
 """
 import argparse
 import json
@@ -17,8 +17,11 @@ def main():
     p.add_argument('--partager',action='store_true')
     args=p.parse_args()
     r=json.loads(args.evaluation.read_text()); run=r['run']; e=r['evaluation']
-    if not e['conforme_automatique'] or e['revue_humaine']!='validee' or e['succes_valide'] is not True:
-        p.error('Le replay doit être contrôlé automatiquement puis validé par un humain')
+    revue_humaine = e.get('revue_humaine') == 'validee' and e.get('succes_valide') is True
+    revue_documentee = (e.get('revue_documentee') == 'validee' and e.get('succes_verifie') is True
+                        and bool(e.get('auteur_revue')) and bool(e.get('preuves_revue')))
+    if not e['conforme_automatique'] or not (revue_humaine or revue_documentee):
+        p.error('Une revue documentée positive, avec auteur et preuves, est requise')
     sid=run['session_id']
     if not re.fullmatch(r'[a-zA-Z0-9-]+',sid) or run['etat_final']!='completed':
         p.error('Identifiant ou état de session non partageable')

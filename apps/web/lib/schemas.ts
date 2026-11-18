@@ -171,7 +171,10 @@ export const absenceSortieSchema = z.object({
   page: z.number().nullable(),
   otv: z.object({
     ouverture_le: dateIso,
+    /** Limite la plus stricte (logement qui dépend de la police : 3 jours avant le départ). */
     limite_le: dateIso,
+    /** Limite si le logement dépend de la gendarmerie : la veille du départ. */
+    limite_gendarmerie_le: dateIso,
     delai_ok: z.boolean(),
     trop_tot: z.boolean(),
   }),

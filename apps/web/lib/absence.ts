@@ -2,12 +2,14 @@ import type { AbsenceEntree, AbsenceSortie } from "./schemas";
 
 /**
  * Fenêtre d'inscription à l'Opération tranquillité vacances, d'après service-public.gouv.fr
- * (démarche R41033, lue le 18/11) : de 45 jours avant le départ jusqu'à la veille.
- * Les délais locaux varient (certaines communes demandent plusieurs jours) : à vérifier et
- * à dater dans le Registre des sources avant d'en faire une règle du seed.
+ * (fiche F34634, lue le 18/11, et confirmée par le run réel de l'usage 3) : 45 jours à
+ * l'avance au plus tôt ; au plus tard 3 jours avant le départ si le logement dépend de la
+ * police, la veille s'il dépend de la gendarmerie. Sans savoir de qui dépend le logement,
+ * on retient la limite la plus stricte (police). À dater dans le Registre des sources.
  */
 export const OTV_OUVERTURE_JOURS_AVANT = 45;
-export const OTV_LIMITE_JOURS_AVANT = 1;
+export const OTV_LIMITE_POLICE_JOURS_AVANT = 3;
+export const OTV_LIMITE_GENDARMERIE_JOURS_AVANT = 1;
 
 const JOUR_MS = 86_400_000;
 
@@ -42,8 +44,10 @@ export function evaluerAbsence(entree: AbsenceEntree, aujourdhui: string): Absen
   const depasseSeuil = inoccupation ? duree > inoccupation.duree_max_jours : null;
 
   const ouverture = depart - OTV_OUVERTURE_JOURS_AVANT;
-  const limite = depart - OTV_LIMITE_JOURS_AVANT;
-  const delaiOtvOk = maintenant >= ouverture && maintenant <= limite;
+  const limitePolice = depart - OTV_LIMITE_POLICE_JOURS_AVANT;
+  const limiteGendarmerie = depart - OTV_LIMITE_GENDARMERIE_JOURS_AVANT;
+  // Limite la plus stricte tant qu'on ne sait pas si le logement dépend de la police.
+  const delaiOtvOk = maintenant >= ouverture && maintenant <= limitePolice;
 
   return {
     duree_jours: duree,
@@ -54,7 +58,8 @@ export function evaluerAbsence(entree: AbsenceEntree, aujourdhui: string): Absen
     page: inoccupation?.page ?? null,
     otv: {
       ouverture_le: versDate(ouverture),
-      limite_le: versDate(limite),
+      limite_le: versDate(limitePolice),
+      limite_gendarmerie_le: versDate(limiteGendarmerie),
       delai_ok: delaiOtvOk,
       trop_tot: maintenant < ouverture,
     },

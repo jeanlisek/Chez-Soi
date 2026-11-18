@@ -88,8 +88,17 @@ export function controlerSortieUsage3(sortie: SortieUsage3, attendu: AttenduUsag
   if (/[\w.+-]+@[\w-]+\.[\w.]+/.test(recap)) {
     ecarts.push("recapitulatif : contient une adresse e-mail (l'agent n'en a aucune : inventée ?)");
   }
-  if (/(?:\+33\s?|\b0)[1-9](?:[ .-]?\d{2}){4}\b/.test(recap)) {
-    ecarts.push("recapitulatif : contient un numéro de téléphone, à vérifier (celui de l'assureur est admis, aucun numéro personnel)");
+  // Un numéro déjà donné dans `assureur_moyen` (relevé sur le site de l'assureur) est admis ;
+  // tout autre numéro est signalé.
+  const chiffres = (texte: string) => texte.replace(/\D/g, "");
+  const numerosAssureur = new Set(
+    [...(sortie.assureur_moyen ?? "").matchAll(/(?:\+33\s?|\b0)[1-9](?:[ .-]?\d{2}){4}\b/g)].map((m) => chiffres(m[0])),
+  );
+  const autresNumeros = [...recap.matchAll(/(?:\+33\s?|\b0)[1-9](?:[ .-]?\d{2}){4}\b/g)]
+    .map((m) => m[0])
+    .filter((numero) => !numerosAssureur.has(chiffres(numero)));
+  if (autresNumeros.length) {
+    ecarts.push(`recapitulatif : numéro(s) de téléphone hors de assureur_moyen (${autresNumeros.join(", ")}) : à vérifier, aucun numéro personnel`);
   }
   return ecarts;
 }

@@ -1,0 +1,123 @@
+{
+  "session_id": "8fc0ec9f-4a84-427c-b27d-f92f465707a1",
+  "usage": "u3",
+  "agent": "chez-soi-demarches:1",
+  "agent_revision": 1,
+  "site": "www.service-public.gouv.fr + www.maif.fr",
+  "etat_final": "completed",
+  "outcome": null,
+  "error_code": null,
+  "erreur": null,
+  "motif_fin": "terminee",
+  "annulee_par_script": false,
+  "coupe_circuit": null,
+  "debut": "2026-11-18T10:54:12.779152Z",
+  "fin": "2026-11-18T10:55:30.036578Z",
+  "duree_s": 77.3,
+  "nb_etapes": 16,
+  "tokens": {
+    "entree": 270685,
+    "cache": 172128,
+    "sortie": 4348,
+    "raisonnement": 2401,
+    "par_modele": [
+      {
+        "modele": "holo4-35b-a3b",
+        "entree": 270685,
+        "cache": 172128,
+        "sortie": 4348,
+        "raisonnement": 2401
+      }
+    ]
+  },
+  "cout_usd": 0.0406202,
+  "decision_validation": "refuse",
+  "appels_outils": [
+    {
+      "outil": "get_contrat",
+      "args": {
+        "champs": [
+          "assureur",
+          "inoccupation"
+        ],
+        "logement_id": "logement-demo-jeanne-01"
+      },
+      "reponse": {
+        "assureur": "MAIF",
+        "formule": "Raqvam",
+        "inoccupation": {
+          "duree_max_jours": 30,
+          "protections": [
+            "Fermer à clé toutes les portes d'accès",
+            "Fermer les volets et persiennes",
+            "Mettre en service l'alarme si le logement en est équipé"
+          ],
+          "clause": "FICTIF : au-delà de 30 jours consécutifs d'inoccupation, l'assuré en informe l'assureur et met en œuvre les protections prévues.",
+          "page": 12
+        }
+      },
+      "erreur": null,
+      "duree_s": 0
+    },
+    {
+      "outil": "demander_validation",
+      "args": {
+        "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F34634",
+        "action": "envoi",
+        "resume": "Récapitulatif des deux démarches préparées : inscription OTV (lien officiel service-public.gouv.fr) et prévenance MAIF par téléphone (09 72 72 15 15).",
+        "produit": "Démarches OTV et assurance MAIF",
+        "montant_eur": 0
+      },
+      "reponse": {
+        "decision": "refuse",
+        "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, n'envoie rien, et rends ta réponse finale maintenant."
+      },
+      "erreur": null,
+      "duree_s": 0
+    }
+  ],
+  "sortie_finale": {
+    "remarque": "L'utilisateur a refusé l'envoi. Toutes les informations ont été préparées et présentées pour qu'il puisse effectuer les démarches lui-même.",
+    "otv_delai": "45 jours à l'avance et au plus tard 3 jours avant le départ (si votre domicile est sous la responsabilité d'une brigade de police) ou la veille du départ (si sous la responsabilité de la gendarmerie)",
+    "otv_trouve": true,
+    "assureur_url": "https://www.maif.fr/services-en-ligne/nous-telephoner/particulier/choix-motif/suivi-contrat/",
+    "recapitulatif": "DATES DE VACANCES :\n- Départ : 15/12/2026\n- Retour : 19/01/2027\n- Durée : 35 jours\n\nSEUIL D'INOCUPATION (contrat MAIF - formule Raqvam) :\n- Seuil du contrat : 30 jours consécutifs\n- Votre absence de 35 jours DÉPASSE le seuil → vous devez prévenir l'assureur.\n\nPROTECTIONS EXIGÉES PAR LE CONTRAT (clause page 12) :\n- Fermer à clé toutes les portes d'accès\n- Fermer les volets et persiennes\n- Mettre en service l'alarme si le logement en est équipe\n\nDÉMARCHE OTV (Opération tranquillité vacances) :\n- Page officielle : https://www.service-public.gouv.fr/particuliers/vosdroits/F34634\n- Connexion requise : FranceConnect\n- Informations/piècis demandées : aucun justificatif nécessaire pour l'inscription en ligne\n- Délai : s'inscrire 45 jours à l'avance, au plus tard 3 jours avant le départ (police) ou la veille (gendarmerie)\n\nDÉMARCHE ASSUREUR (MAIF) :\n- Téléphone : 09 72 72 15 15 (appel non surtaxé)\n- Horaires : lundi-vendredi 8h-19h, samedi 8h-17h15\n- Autre option : Espace personnel MAIF (en ligne) ou délégation locale",
+    "assureur_moyen": "Téléphone : 09 72 72 15 15 (appel non surtaxé, coût selon opérateur). Horaires : du lundi au vendredi de 8h à 19h et le samedi de 8h à 17h15 (heures de l'Hexagone).",
+    "assureur_trouve": true,
+    "otv_url_demarche": "https://www.service-public.gouv.fr/particuliers/vosdroits/F34634",
+    "validation_demandee": true,
+    "otv_connexion_requise": "FranceConnect",
+    "otv_informations_demandees": "Pas de justificatifs nécessaires pour l'inscription sur Internet"
+  },
+  "schema_valide": true,
+  "erreurs_schema": [],
+  "ecarts_metier": [],
+  "pages_vues": [
+    "https://www.service-public.gouv.fr/",
+    "https://www.service-public.gouv.fr/particuliers/recherche-generale",
+    "https://www.service-public.gouv.fr/particuliers/vosdroits/F34634",
+    "https://www.maif.fr/",
+    "https://www.maif.fr/infos-conseils",
+    "https://www.maif.fr/assistance-sinistre",
+    "https://www.maif.fr/services-en-ligne/nous-telephoner/",
+    "https://www.maif.fr/services-en-ligne/nous-telephoner/particulier/choix-motif/",
+    "https://www.maif.fr/services-en-ligne/nous-telephoner/particulier/choix-motif/suivi-contrat/"
+  ],
+  "actions_agent": {
+    "get_contrat": 1,
+    "click_web": 8,
+    "write": 1,
+    "scroll_web": 3,
+    "go_to_web": 1,
+    "demander_validation": 1
+  },
+  "observations_api": {
+    "appels_sans_id": 0,
+    "attente_outils_s": 0,
+    "appels_encore_listes_apres_reponse": 0,
+    "renvois_de_resultat": 0,
+    "reponse_presente_apres_annulation": null,
+    "approbations_natives_vues": 0,
+    "outcome_brut": null
+  }
+}

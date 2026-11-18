@@ -1,4 +1,4 @@
--- agent_test.sql : tests de la migration 0008 (analyses, messages_agent, webhooks_recus, assureurs, actions).
+-- agent_test.sql : tests des migrations 0008 et 0009 (analyses, messages_agent, webhooks_recus, assureurs, actions).
 -- Tout se passe dans une transaction annulée à la fin : aucune donnée ne reste.
 -- Lancer après seed.sql, dans l'éditeur SQL ou avec psql. Succès : « AGENT OK » ; échec : une exception.
 
@@ -55,6 +55,30 @@ begin
     raise exception 'Analyse en échec acceptée sans erreur';
   exception when check_violation then null;
   end;
+  -- 0009 : statut et origine alignés sur le Space vision.
+  begin
+    insert into public.analyses (logement_id, type, statut, origine) values ('00000000-0000-0000-0000-0000000000b1', 'video', 'terminee', 'pipeline');
+    raise exception 'Statut « terminee » accepté (le Space renvoie « termine »)';
+  exception when check_violation then null;
+  end;
+  begin
+    insert into public.analyses (logement_id, type, statut) values ('00000000-0000-0000-0000-0000000000b1', 'video', 'termine');
+    raise exception 'Analyse vidéo terminée acceptée sans origine';
+  exception when check_violation then null;
+  end;
+  begin
+    insert into public.analyses (logement_id, type, statut, origine) values ('00000000-0000-0000-0000-0000000000b1', 'video', 'termine', 'manuel');
+    raise exception 'Origine hors liste acceptée';
+  exception when check_violation then null;
+  end;
+  insert into public.analyses (logement_id, type, statut, origine, service_analyse_id)
+  values ('00000000-0000-0000-0000-0000000000b1', 'video', 'termine', 'precalcule', 'space-test-1');
+  begin
+    insert into public.analyses (logement_id, type, service_analyse_id) values ('00000000-0000-0000-0000-0000000000b1', 'video', 'space-test-1');
+    raise exception 'Deux analyses acceptées avec le même service_analyse_id';
+  exception when unique_violation then null;
+  end;
+
   begin
     insert into public.actions (faille_id, contre_mesure, force)
     values ('00000000-0000-0000-0000-0000000000fb', 'x', 'contrat');
@@ -128,7 +152,7 @@ do $$
 declare
   n int;
 begin
-  select count(*) into n from public.analyses;        assert n = 1, 'B ne voit pas son analyse';
+  select count(*) into n from public.analyses;        assert n = 2, 'B ne voit pas ses deux analyses';
   select count(*) into n from public.messages_agent;  assert n = 1, 'B ne voit pas son message';
   select count(*) into n from public.runs_agent where controle_document->>'reference' = 'trouvee';
   assert n = 1, 'B ne voit pas le contrôle du document';

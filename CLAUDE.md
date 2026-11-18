@@ -22,7 +22,7 @@ Drive de l'équipe (pour les humains) : https://drive.google.com/drive/folders/1
 
 | Couche | Rôle | Techno | Hébergement |
 |---|---|---|---|
-| Voir | Reconstruction 3D, cotes, détection des failles ; lecture du contrat | FastAPI, ffmpeg, OpenCV, modèle 3D (voir points ouverts), Grounding DINO ou OWLv2, open3d, trimesh, Docling, LLM + Pydantic | Space GPU Hugging Face (Docker) |
+| Voir | Reconstruction 3D, cotes, détection des failles ; lecture du contrat | FastAPI, OpenCV, MoGe-2, Grounding DINO, SAM 2.1, MapAnything (variante Apache), trimesh, Docling, LLM + Pydantic | Space GPU Hugging Face (Docker) |
 | Décider | Graphe de connaissances, profils, verdicts, contre-mesures | Postgres + pgvector (GraphRAG), TypeScript, LLM via HF Inference Providers, Vercel AI SDK, Zod | Vercel + Supabase |
 | Agir | 3 usages de l'agent | H Agents API (`h/web-surfer-flash`), custom tools, skill maison, webhooks signés, pilotage en cours de run | Cloud H |
 | Montrer | Parcours, plan 3D, validation, mode absence | Next.js 15 (App Router), TypeScript, Tailwind, shadcn/ui, three, @react-three/fiber, @react-three/drei | Vercel |
@@ -50,7 +50,7 @@ L'usage 1 alimente le graphe de connaissances (v3, flux 7 et 8) : les lois arriv
 ```
 chez-soi/
 ├── apps/web/                 Next.js 15, App Router, TypeScript → Vercel
-│   ├── app/                  profil/ · logement/[id]/{capture,plan,actions,absence}/
+│   ├── app/                  profil/ · connexion/ · logement/[id]/{profil,contrat,capture,analyse,plan,faille/[failleId],actions,agent,agent/validation,absence,suivi}/
 │   │   └── api/              upload · contrat · plan · absence · agent/{run,steer,tools} · webhooks/hai
 │   ├── components/           Viewer3D · PlanAction · SourceBadge · ContratUpload · ModeAbsence
 │   │                         RunStatus · SteerInput · ValidationModal · ARButton
@@ -76,7 +76,8 @@ chez-soi/
 
 | Route | Rôle |
 |---|---|
-| `POST /api/upload` | URL signée Supabase Storage (vidéo ou contrat) |
+| `POST /api/upload` · `POST /api/upload/termine` | URL signée Supabase Storage (vidéo ou contrat, 50 Mo au plus), puis enregistrement : pièce + ligne `analyses` + appel du webhook n8n `pipeline_analyse` (vidéo), ou ligne `contrats` (contrat) |
+| `POST /api/analyse/resultat` | Retour de n8n `pipeline_analyse` quand le Space a fini (en-tête `X-Chez-Soi-Secret`) : l'app écrit `failles`, `analyses` et `pieces` (service_role, idempotent). n8n n'a donc pas de clé Supabase |
 | `POST /api/contrat` | Déclenche `analyse_contrat`, renvoie l'état d'extraction |
 | `POST /api/plan` | GraphRAG + règles + LLM explicatif → actions |
 | `POST /api/absence` | Compare les dates au seuil d'inoccupation, prépare l'usage 3 |
@@ -85,7 +86,7 @@ chez-soi/
 | `POST /api/agent/tools` | Custom tools : `get_mesures`, `get_contrat`, `demander_validation` |
 | `POST /api/webhooks/hai` | Webhooks signés H : vérification, mise à jour de `runs_agent` |
 
-Service vision : `POST /analyse {logement_id, video_url}` et `POST /contrat {contrat_id, pdf_url}`. Les deux sont asynchrones ; n8n écrit les résultats dans Supabase.
+Service vision : `POST /analyse {logement_id, video_url, piece?, pieces?}` répond 202 avec un `analyse_id` ; n8n lit ensuite `GET /analyse/{analyse_id}` (état, failles, liens du `.glb` et de l'image annotée), puis écrit dans Supabase. Avec `pieces` (nom, debut_s, fin_s), chaque pièce a sa propre reconstruction. Une cote que le pipeline ne peut pas mesurer (objet coupé par le cadre) est marquée « à confirmer » dans `position_3d.cote`, jamais écrite comme cote estimée. Si le calcul échoue, le service sert le résultat précalculé de `services/vision/precalcule/demo/` (`resultat: "precalcule"`) ; le dépôt étant public, seul `failles.json` y est suivi par git, jamais une image, un `.glb` ou une vidéo d'un vrai logement. `POST /autotest` est une route de diagnostic. `POST /contrat {contrat_id, pdf_url}` est synchrone : Docling (pypdf en secours), règles puis LLM facultatif via `HF_TOKEN` ; toute obligation dont la citation n'est pas retrouvée sur sa page est rejetée. Le Space `jeanlisek/chez-soi-vision` est privé : chaque appel porte `Authorization: Bearer <jeton Hugging Face>` et `X-Vision-Key`. Détail dans `services/vision/README.md`.
 
 ## Custom tools (contrat d'interface)
 
@@ -113,8 +114,8 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 
 ## Modèle de données (Supabase)
 
-Schéma en place sur le projet Supabase `chez-soi` (organisation « Chez Soi », Paris, eu-west-3) : migrations `0001` à `0007` dans `supabase/migrations/`, détail dans `supabase/README.md` (issue #1).
-Tables : `logements`, `pieces`, `occupants`, `declarations`, `absences`, `failles`, `actions`, `validations`, `runs_agent`, `sources`, `regles`, `regle_conditions`, `diagnostic_regles`, `contrats`, `obligations_contrat`, `elements`, `graphe_noeuds` (`embedding vector(1024)`, BAAI/bge-m3), `graphe_aretes`. Vues : `regles_en_vigueur`, `elements_inconnus`. RPC : `match_noeuds`, `sous_graphe` ; réservées au serveur : `get_contrat_champs`, `valider_regle`.
+Schéma en place sur le projet Supabase `chez-soi` (organisation « Chez Soi », Paris, eu-west-3) : migrations `0001` à `0008` dans `supabase/migrations/`, détail dans `supabase/README.md` (issue #1).
+Tables : `logements`, `pieces`, `occupants`, `declarations`, `absences`, `failles`, `actions`, `validations`, `runs_agent`, `sources`, `regles`, `regle_conditions`, `diagnostic_regles`, `contrats`, `obligations_contrat`, `elements`, `graphe_noeuds` (`embedding vector(1024)`, BAAI/bge-m3), `graphe_aretes`, `assureurs`, `analyses`, `messages_agent`, `webhooks_recus` (serveur uniquement). Vues : `regles_en_vigueur`, `elements_inconnus`. RPC : `match_noeuds`, `sous_graphe` ; réservées au serveur : `get_contrat_champs`, `valider_regle`.
 Buckets privés : `videos`, `contrats`, `modeles3d`, `exports` (50 Mo par fichier sur l'offre gratuite), chemin `{user_id}/{logement_id}/…`. RLS sur toutes les tables : un utilisateur ne voit que son logement, son contrat et les nœuds du graphe liés à son contrat ; les nœuds publics (lois, règles, contre-mesures) sont lisibles par tout utilisateur connecté.
 Le moteur de verdict lit `regles_en_vigueur`. Une nouvelle version de règle hérite des seuils et des conditions de la précédente ; seule une personne la valide (`valider_regle`). La table `elements` est le vocabulaire commun du champ `element` (vision, contrat, règles). Types TypeScript : `apps/web/lib/supabase/types.ts`.
 
@@ -134,7 +135,7 @@ Le moteur de verdict lit `regles_en_vigueur`. Une nouvelle version de règle hé
 
 ## Variables d'environnement (noms proposés)
 
-`H_API_KEY`, `H_WEBHOOK_SECRET`, `HF_TOKEN`, `VISION_SERVICE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (serveur uniquement), `N8N_URL`, `N8N_API_KEY`, `PISTE_CLIENT_ID`, `PISTE_CLIENT_SECRET`.
+`H_API_KEY`, `H_WEBHOOK_SECRET`, `HF_TOKEN`, `VISION_SERVICE_URL`, `VISION_API_KEY` (clé partagée entre n8n et le service vision, envoyée dans l'en-tête `X-Vision-Key`), `VISION_RECONSTRUCTION` (`1` pour activer MapAnything dans le service), `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (serveur uniquement), `N8N_URL`, `N8N_API_KEY`, `N8N_WEBHOOK_SECRET` (en-tête `X-Chez-Soi-Secret` des webhooks n8n), `PISTE_CLIENT_ID`, `PISTE_CLIENT_SECRET`.
 
 ## Commandes
 
@@ -163,14 +164,22 @@ Pas de workspace racine : chaque partie s'installe dans son dossier. Gestionnair
 
 Depuis un worktree (pas de `.env` à sa racine) : `npx tsx --env-file=$HOME/Documents/Chez-Soi/.env ../../agents/dev/run_u2.ts --site <domaine>`. Options : `--agent <nom[:N]>`, `--malgre-sessions-actives`. Chaque run est écrit dans `agents/bench/runs/AAAA-MM-JJ_u2_<session>.json`, sans `agent_view_url`. `schema_valide` dit si la réponse respecte le schéma Zod (`null` et chaîne vide valent « absent ») ; `ecarts_metier` liste ce qu'il reste à vérifier. Une session par lancement, jamais de relance automatique ; annoncer le run dans le canal.
 
-**services/vision** (depuis `services/vision/`, Python 3.11 dans l'image)
+**services/vision** (depuis `services/vision/`, Python 3.11 installé par `uv`)
 
 | Commande | Rôle |
 |---|---|
-| `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt` | Environnement local |
+| `uv venv --python 3.11 .venv && uv pip install --python .venv/bin/python -r requirements-dev.txt` | Environnement local (dépendances et tests) |
+| `uv pip install --python .venv/bin/python --no-deps -r requirements-modeles.txt` | Code des modèles (MoGe), installé sans ses dépendances superflues |
+| `.venv/bin/python -m pytest -q` | Tests (sans modèle ni réseau) |
+| `.venv/bin/python -m pipeline --video donnees/<vidéo> --sortie sorties/<nom> --piece <pièce>` | Analyse locale d'une vidéo : `failles.json`, `image_annotee.jpg`, `modele.glb`. Options : `--pieces <fichier.json>` (découpage par pièce, une reconstruction par pièce), `--images <dossier>`, `--nb-images`, `--calibrer-a4`, `--reconstruction` (MapAnything : `.glb` de tout ce qui est filmé), `--presence` (serrures, détecteurs… peu fiable en basse définition) |
 | `.venv/bin/uvicorn app:app --reload --port 7860` | Service en local (`/health`, `/analyse`, `/contrat`, doc sur `/docs`) |
-| `docker build -t chez-soi-vision .` | Image du Space (pas encore construite ni testée) |
+| `.venv/bin/python -m pipeline.autotest` | Auto-test : charge les quatre modèles et les fait tourner sur des images de synthèse, avec les durées par modèle (même test que `POST /autotest` sur le Space) |
+| `.venv/bin/python -m pipeline.precision --failles sorties/<nom>/failles.json --verite donnees/verite.json` | Mesure de précision : écart en cm et en % avec les dimensions relevées au mètre ruban |
+| `docker build -t chez-soi-vision .` | Image du Space, poids des modèles compris (environ 7,4 Go de poids). Si le téléchargement échoue sur « CAS Client Error », ajouter `--build-arg HF_HUB_DISABLE_XET=1` |
+| `.venv/bin/python -m pytest tests/test_contrat.py` | Tests de la lecture du contrat (PDF fictif généré, `reportlab` requis pour le test) |
 | `docker run --rm -p 7860:7860 chez-soi-vision` | Lance l'image en local |
+| `.venv/bin/python deployer_space.py --space <compte>/<nom>` | Simulation du déploiement sur le Space Hugging Face : n'envoie rien |
+| `.venv/bin/python deployer_space.py --space <compte>/<nom> --confirmer` | Envoie le service sur le Space (privé). `--materiel l4x1` demande un GPU payant : jamais sans l'accord de Jean-Li |
 
 **n8n** (depuis la racine, script `scripts/n8n-sync.mjs`, sans dépendance, Node 20.12 ou plus)
 
@@ -183,21 +192,23 @@ Depuis un worktree (pas de `.env` à sa racine) : `npx tsx --env-file=$HOME/Docu
 
 Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dans le `.env` de la racine (ignoré par git). Le script ne les affiche jamais. Il passe par l'API publique n8n (`/api/v1/workflows`, en-tête `X-N8N-API-KEY`) ; il n'active, ne désactive et n'exécute aucun workflow. Le JSON exporté est stable : clés triées, sans `createdAt`, `updatedAt`, `versionId`, `staticData`, `pinData`, `shared`, `tags` ni `meta`. Le pull signale les secrets qui semblent écrits en dur (heuristique, à relire quand même). Les amorces vides (`nodes: []`) sont ignorées par le push.
 
-**supabase** (depuis la racine, avec la CLI Supabase ; `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort)
+**supabase** (depuis la racine, CLI Supabase v3 via `npx` ; sous PowerShell, `npx.cmd` si les scripts sont bloqués ; `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort). Depuis la v3, les commandes visent la base locale par défaut : `--remote` vise le projet relié. Le Wi-Fi de l'école bloque le port 5432 : commandes `--remote` et `psql` depuis un partage de connexion. Historique des migrations aligné le 18/11 (0001 à 0007 marquées appliquées).
 
 | Commande | Rôle |
 |---|---|
-| `supabase link --project-ref hfcunqjqmtlozhiwfihl` | Relie le dépôt au projet `chez-soi` |
-| `supabase migration repair --status applied 0001 0002 0003 0004 0005 0006 0007` | Une seule fois : 0001 à 0007 ont été appliquées depuis l'éditeur SQL du dashboard |
-| `supabase db push` | Applique les migrations manquantes (une migration appliquée ne se modifie jamais) |
+| `npx supabase login` puis `npx supabase link --project-ref hfcunqjqmtlozhiwfihl` | Relie le dépôt au projet `chez-soi` (`supabase/config.toml` est versionné) |
+| `npx supabase migration list --remote` | Compare les migrations du dépôt à l'historique du projet |
+| `npx supabase db push --remote --dry-run`, puis sans `--dry-run` | Applique les migrations manquantes (une migration appliquée ne se modifie jamais) |
 | `psql "$DATABASE_URL" -f supabase/seed.sql` | Référentiel : sources, règles, graphe public (rejouable) |
 | `psql "$DATABASE_URL" -f supabase/tests/rls_test.sql` | Test RLS, annulé à la fin (attendu : « RLS OK ») |
 | `psql "$DATABASE_URL" -f supabase/tests/graphe_test.sql` | Test du graphe et des raccordements, annulé à la fin (attendu : « GRAPHE OK ») |
-| `supabase gen types typescript --project-id hfcunqjqmtlozhiwfihl > apps/web/lib/supabase/types.ts` | Régénère les types après chaque migration |
+| `npx supabase gen types typescript --remote > apps/web/lib/supabase/types.ts` | Régénère les types après chaque migration (Windows PowerShell 5 : `\| Out-File -Encoding utf8 …`, car `>` y écrit en UTF-16) |
 
-**Pas encore de commande** : tests applicatifs (seuls les tests SQL existent), déploiement du Space Hugging Face, déploiement Vercel, banc agent (`agents/bench/run_bench.py` est une amorce ; les runs locaux de `agents/dev/` écrivent déjà dans `agents/bench/runs/`).
+**Pas encore de commande** : tests de `apps/web` (seuls les tests SQL et ceux du service vision existent), déploiement Vercel, banc agent (`agents/bench/run_bench.py` est une amorce ; les runs locaux de `agents/dev/` écrivent déjà dans `agents/bench/runs/`).
 
-État du squelette : les routes API de `apps/web` et du service vision renvoient un stub typé en HTTP 501 (`StubReponse` dans `apps/web/lib/schemas.ts`, helper `apps/web/lib/stub.ts`). Le client `apps/web/lib/hai.ts` est écrit (issue #5) ; les routes `/api/agent/*` ne l'utilisent pas encore.
+État du squelette : les routes API de `apps/web` et la route `/contrat` du service vision renvoient un stub typé en HTTP 501 (`StubReponse` dans `apps/web/lib/schemas.ts`, helper `apps/web/lib/stub.ts`). Le client `apps/web/lib/hai.ts` est écrit (issue #5) ; les routes `/api/agent/*` ne l'utilisent pas encore.
+
+Interface (18/11) : les 12 écrans de la maquette (Figma « Chez soi · Parcours utilisateurs et écrans ») sont codés dans `apps/web`. Le logement `exemple` (Marc et Jeanne, fictifs) tourne sans compte ni API : données dans `lib/demo/logement-exemple.ts`, état du parcours dans `lib/demo/etat.tsx` (sessionStorage). Charte dans `app/globals.css` (crème, lavande, lilas, encre), police Inter auto-hébergée (`@fontsource-variable/inter`, le build n'appelle pas Google Fonts). Connexion (18/11) : Supabase Auth, Google et lien par e-mail (`/connexion`, retour `/auth/callback`, puis `/mon-logement` qui ouvre ou crée le logement de l'utilisateur). Les vrais logements sont lus par `lib/donnees.ts` sous RLS ; le profil s'enregistre par une action serveur (`app/logement/[id]/actions-serveur.ts`).
 
 ## Conventions
 
@@ -217,6 +228,7 @@ Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dan
 - **Relecture** : Jean-Li par défaut ; Briac pour `supabase/`, `apps/` et `services/` ; Bastian pour `n8n/`. Vérifier la preview Vercel de la PR avant de fusionner.
 - **En cas de conflit** : rebase de la branche sur `origin/main`, jamais de merge de `main` dans la branche.
 - **Claude** : crée la branche au début de la session, commite par petites étapes, pousse la branche et ouvre la PR (`gh pr create`), puis donne le lien. **Ne fusionne jamais une PR toi-même** et ne pousse jamais sur `main`.
+- **Exception (décision de Jean-Li, 18/11)** : pour les PR de l'application (`apps/web`) ouvertes par Claude, Claude fusionne lui-même une fois `lint`, `typecheck`, `build` et la preview Vercel vérifiés, puis prévient Jean-Li ; Briac relit après coup. Rien d'autre ne change : jamais de push sur `main`, jamais de fusion de la PR de quelqu'un d'autre sans accord.
 - **Suivi** : une tâche de code = une issue GitHub. Le tableau de Pilotage (Drive) reste le suivi d'équipe ; on y note le numéro d'issue.
 
 ## Priorités pour la démo de jeudi soir (proposition)
@@ -227,7 +239,7 @@ Plan B de la démo : run enregistré (replay H), 3D précalculée, partage de co
 
 ## Points ouverts (ne pas trancher seul, demander)
 
-1. **Modèles 3D** (VGGT + Depth Anything 3 dans la v3) : à confirmer par Jean-Li.
+1. **Modèles 3D** : tranché par Jean-Li le 18/11. MoGe-2, Grounding DINO base, SAM 2.1 et MapAnything (variante Apache) ; DA3-BASE et DA3METRIC-LARGE en secours ; VGGT abandonné (licence). Révisions et licences figées dans `services/vision/modeles.py`. MapAnything tourne aussi sur le GPU Apple, mais sa reconstruction n'est pas fiable sur une visite rapide de plusieurs pièces (voir `docs/mesures.md`) ; les cotes n'en dépendent pas.
 2. **Usage 3 dans le navigateur de l'utilisateur** : selon la doc H, l'environnement `user_device` ne passe que par le SDK Python ou la CLI, avec un Chrome dédié lancé avec un port de débogage, sans coffre-fort, et la session meurt si le programme Python s'arrête. Le circuit TS de la v3 ne suffit donc pas. Options : runtime Python local, agent `h/holotab`, ou navigateur cloud pour la démo. À trancher par Briac.
 3. **Webhooks** : `awaiting_tool_results` doit arriver sur `/api/webhooks/hai` (l'app répond aux outils). Pour `completed`/`failed`, choisir entre la même route et n8n `suivi_runs` (qui n'existe pas encore). À trancher par Briac et Bastian.
 4. **Schéma** : tranché le 18/11 (issue #1). v3 et doc CDO réconciliés, `pieces` et `declarations` retenues, vocabulaire `elements` commun ; détail dans `supabase/README.md`.

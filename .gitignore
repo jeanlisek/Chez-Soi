@@ -26,3 +26,13 @@ venv/
 # Données lourdes ou personnelles : jamais dans le dépôt
 *.mp4
 *.mov
+
+# Service vision : vidéos, images extraites et résultats locaux
+services/vision/donnees/
+services/vision/sorties/
+
+# Plan B du service vision : seul failles.json va au dépôt (public). Images et .glb restent en local
+# et partent vers le Space privé avec deployer_space.py.
+services/vision/precalcule/**/*
+!services/vision/precalcule/**/
+!services/vision/precalcule/**/failles.json

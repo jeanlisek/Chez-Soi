@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -11,31 +11,6 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.18"
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
   }
   public: {
     Tables: {
@@ -85,9 +60,14 @@ export type Database = {
           absence_id: string | null
           contre_mesure: string
           created_at: string
+          explication: string | null
           faille_id: string | null
+          force: string | null
           id: string
+          obligation_id: string | null
+          priorite: number | null
           prix_indicatif: number | null
+          regle_id: string | null
           resultat: Json | null
           statut: string
           usage: number | null
@@ -96,9 +76,14 @@ export type Database = {
           absence_id?: string | null
           contre_mesure: string
           created_at?: string
+          explication?: string | null
           faille_id?: string | null
+          force?: string | null
           id?: string
+          obligation_id?: string | null
+          priorite?: number | null
           prix_indicatif?: number | null
+          regle_id?: string | null
           resultat?: Json | null
           statut?: string
           usage?: number | null
@@ -107,9 +92,14 @@ export type Database = {
           absence_id?: string | null
           contre_mesure?: string
           created_at?: string
+          explication?: string | null
           faille_id?: string | null
+          force?: string | null
           id?: string
+          obligation_id?: string | null
+          priorite?: number | null
           prix_indicatif?: number | null
+          regle_id?: string | null
           resultat?: Json | null
           statut?: string
           usage?: number | null
@@ -129,11 +119,126 @@ export type Database = {
             referencedRelation: "failles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "actions_obligation_id_fkey"
+            columns: ["obligation_id"]
+            isOneToOne: false
+            referencedRelation: "obligations_contrat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "actions_regle_id_fkey"
+            columns: ["regle_id"]
+            isOneToOne: false
+            referencedRelation: "regles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "actions_regle_id_fkey"
+            columns: ["regle_id"]
+            isOneToOne: false
+            referencedRelation: "regles_en_vigueur"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      analyses: {
+        Row: {
+          contrat_id: string | null
+          created_at: string
+          debut: string | null
+          entree_path: string | null
+          erreur: string | null
+          fin: string | null
+          id: string
+          logement_id: string
+          piece: string | null
+          resultat: Json | null
+          statut: string
+          type: string
+          version_pipeline: string | null
+        }
+        Insert: {
+          contrat_id?: string | null
+          created_at?: string
+          debut?: string | null
+          entree_path?: string | null
+          erreur?: string | null
+          fin?: string | null
+          id?: string
+          logement_id: string
+          piece?: string | null
+          resultat?: Json | null
+          statut?: string
+          type: string
+          version_pipeline?: string | null
+        }
+        Update: {
+          contrat_id?: string | null
+          created_at?: string
+          debut?: string | null
+          entree_path?: string | null
+          erreur?: string | null
+          fin?: string | null
+          id?: string
+          logement_id?: string
+          piece?: string | null
+          resultat?: Json | null
+          statut?: string
+          type?: string
+          version_pipeline?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analyses_contrat_id_fkey"
+            columns: ["contrat_id"]
+            isOneToOne: false
+            referencedRelation: "contrats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analyses_logement_id_fkey"
+            columns: ["logement_id"]
+            isOneToOne: false
+            referencedRelation: "logements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assureurs: {
+        Row: {
+          created_at: string
+          domaines: string[]
+          id: string
+          nom: string
+          notes: string | null
+          url_depart: string | null
+          verifie_le: string | null
+        }
+        Insert: {
+          created_at?: string
+          domaines: string[]
+          id?: string
+          nom: string
+          notes?: string | null
+          url_depart?: string | null
+          verifie_le?: string | null
+        }
+        Update: {
+          created_at?: string
+          domaines?: string[]
+          id?: string
+          nom?: string
+          notes?: string | null
+          url_depart?: string | null
+          verifie_le?: string | null
+        }
+        Relationships: []
       }
       contrats: {
         Row: {
           assureur: string | null
+          assureur_id: string | null
           cg_date_version: string | null
           cg_path: string | null
           cg_reference_trouvee: string | null
@@ -154,6 +259,7 @@ export type Database = {
         }
         Insert: {
           assureur?: string | null
+          assureur_id?: string | null
           cg_date_version?: string | null
           cg_path?: string | null
           cg_reference_trouvee?: string | null
@@ -174,6 +280,7 @@ export type Database = {
         }
         Update: {
           assureur?: string | null
+          assureur_id?: string | null
           cg_date_version?: string | null
           cg_path?: string | null
           cg_reference_trouvee?: string | null
@@ -193,6 +300,13 @@ export type Database = {
           version_cg_verifiee?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "contrats_assureur_id_fkey"
+            columns: ["assureur_id"]
+            isOneToOne: false
+            referencedRelation: "assureurs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "contrats_logement_id_fkey"
             columns: ["logement_id"]
@@ -552,6 +666,47 @@ export type Database = {
         }
         Relationships: []
       }
+      messages_agent: {
+        Row: {
+          auteur: string
+          contenu: string
+          created_at: string
+          envoye_le: string | null
+          erreur: string | null
+          id: string
+          session_id: string
+          statut_envoi: string | null
+        }
+        Insert: {
+          auteur?: string
+          contenu: string
+          created_at?: string
+          envoye_le?: string | null
+          erreur?: string | null
+          id?: string
+          session_id: string
+          statut_envoi?: string | null
+        }
+        Update: {
+          auteur?: string
+          contenu?: string
+          created_at?: string
+          envoye_le?: string | null
+          erreur?: string | null
+          id?: string
+          session_id?: string
+          statut_envoi?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_agent_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "runs_agent"
+            referencedColumns: ["session_id"]
+          },
+        ]
+      }
       obligations_contrat: {
         Row: {
           citation: string | null
@@ -817,6 +972,7 @@ export type Database = {
           appels_outils: Json | null
           capture_path: string | null
           cause_echec: string | null
+          controle_document: Json | null
           coupe_circuit: Json | null
           cout: Json | null
           cout_usd: number | null
@@ -857,6 +1013,7 @@ export type Database = {
           appels_outils?: Json | null
           capture_path?: string | null
           cause_echec?: string | null
+          controle_document?: Json | null
           coupe_circuit?: Json | null
           cout?: Json | null
           cout_usd?: number | null
@@ -897,6 +1054,7 @@ export type Database = {
           appels_outils?: Json | null
           capture_path?: string | null
           cause_echec?: string | null
+          controle_document?: Json | null
           coupe_circuit?: Json | null
           cout?: Json | null
           cout_usd?: number | null
@@ -1042,6 +1200,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhooks_recus: {
+        Row: {
+          erreur: string | null
+          evenement_id: string | null
+          id: string
+          livraison_id: string
+          recu_le: string
+          session_id: string | null
+          signature_valide: boolean
+          traite_le: string | null
+          type: string
+        }
+        Insert: {
+          erreur?: string | null
+          evenement_id?: string | null
+          id?: string
+          livraison_id: string
+          recu_le?: string
+          session_id?: string | null
+          signature_valide: boolean
+          traite_le?: string | null
+          type: string
+        }
+        Update: {
+          erreur?: string | null
+          evenement_id?: string | null
+          id?: string
+          livraison_id?: string
+          recu_le?: string
+          session_id?: string | null
+          signature_valide?: boolean
+          traite_le?: string | null
+          type?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -1279,9 +1473,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       decision: ["approuve", "refuse", "modifier"],

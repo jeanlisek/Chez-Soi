@@ -1,0 +1,144 @@
+{
+  "logement_id": "demo",
+  "note": "Plan B de la démo, figé le 18/11/2026 : 3 failles choisies parmi les 17 de la sortie du pipeline (analyse pièce par pièce, avec reconstruction). Valeurs non modifiées. Le tapis sera remplacé quand une vidéo le montrera en entier. Les images et les .glb ne sont pas dans le dépôt.",
+  "modele_3d": null,
+  "pieces": [
+    {
+      "nom": "cuisine",
+      "segments_s": [
+        [
+          2.9,
+          11.8
+        ]
+      ],
+      "nb_images": 30,
+      "modele_3d": "pieces/cuisine/modele.glb",
+      "image_annotee": "pieces/cuisine/image_annotee.jpg"
+    },
+    {
+      "nom": "chambre",
+      "segments_s": [
+        [
+          21.0,
+          27.6
+        ]
+      ],
+      "nb_images": 26,
+      "modele_3d": "pieces/chambre/modele.glb",
+      "image_annotee": "pieces/chambre/image_annotee.jpg"
+    }
+  ],
+  "failles": [
+    {
+      "element": "porte",
+      "piece": "chambre",
+      "risque": "autre",
+      "source": "vision",
+      "origine": "pipeline",
+      "cote_estimee_cm": 72.9,
+      "marge_cm": 1.2,
+      "largeur_cm": 72.9,
+      "longueur_cm": null,
+      "hauteur_cm": 184.2,
+      "position_3d": {
+        "centre": [
+          -3.363,
+          1.189,
+          -1.493
+        ],
+        "repere": "pieces/chambre/modele.glb",
+        "instance": 0,
+        "image_cle": "pieces/chambre/images/image_012.jpg",
+        "boite_px": [
+          277,
+          10,
+          450,
+          439
+        ],
+        "nb_vues": 12,
+        "nb_vues_entieres": 6,
+        "cote": {
+          "statut": "estimee"
+        }
+      }
+    },
+    {
+      "element": "tapis",
+      "piece": "chambre",
+      "risque": "chute",
+      "source": "vision",
+      "origine": null,
+      "cote_estimee_cm": null,
+      "marge_cm": null,
+      "largeur_cm": null,
+      "longueur_cm": null,
+      "hauteur_cm": null,
+      "position_3d": {
+        "centre": [
+          -1.502,
+          -0.787,
+          -1.119
+        ],
+        "repere": "pieces/chambre/modele.glb",
+        "instance": 0,
+        "image_cle": "pieces/chambre/images/image_006.jpg",
+        "boite_px": [
+          2,
+          576,
+          448,
+          844
+        ],
+        "nb_vues": 17,
+        "nb_vues_entieres": 0,
+        "cote": {
+          "statut": "a_confirmer",
+          "raison": "hors_cadre",
+          "partie_visible_cm": {
+            "largeur_cm": 77.9,
+            "longueur_cm": 157.5
+          },
+          "message": "Cote à confirmer par l'utilisateur : l'objet est coupé par le cadre dans toutes les vues."
+        }
+      }
+    },
+    {
+      "element": "fenetre",
+      "piece": "cuisine",
+      "risque": "intrusion",
+      "source": "vision",
+      "origine": null,
+      "cote_estimee_cm": null,
+      "marge_cm": null,
+      "largeur_cm": null,
+      "longueur_cm": null,
+      "hauteur_cm": null,
+      "position_3d": {
+        "centre": [
+          -0.652,
+          1.932,
+          -3.821
+        ],
+        "repere": "pieces/cuisine/modele.glb",
+        "instance": 0,
+        "image_cle": "pieces/cuisine/images/image_015.jpg",
+        "boite_px": [
+          1,
+          7,
+          361,
+          457
+        ],
+        "nb_vues": 16,
+        "nb_vues_entieres": 0,
+        "cote": {
+          "statut": "a_confirmer",
+          "raison": "hors_cadre",
+          "partie_visible_cm": {
+            "largeur_cm": 134.2,
+            "hauteur_cm": 159.9
+          },
+          "message": "Cote à confirmer par l'utilisateur : l'objet est coupé par le cadre dans toutes les vues."
+        }
+      }
+    }
+  ]
+}

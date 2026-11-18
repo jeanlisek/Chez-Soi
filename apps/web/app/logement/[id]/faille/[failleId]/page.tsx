@@ -46,6 +46,7 @@ export default function PageFaille() {
 
       <section className="relative h-[300px] flex-none overflow-hidden rounded-card bg-pervenche">
         <Viewer3D
+          modeleUrl={logement.pieces.find((p) => p.id === f.piece_id)?.modele_url ?? null}
           className="h-full w-full"
           tourner={tourner}
           apres={apres}

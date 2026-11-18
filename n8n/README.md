@@ -91,6 +91,8 @@ Appel du service vision : `POST {VISION_SERVICE_URL}/analyse` avec `{ logement_i
 | 501 | `service_vision_non_implemente` | Le service vision n'est encore qu'un stub |
 | 502 | `erreur_service_vision` | Service injoignable ou réponse inattendue |
 
+**Suite asynchrone (18/11)** : le Space répond 202 avec son `analyse_id`. Après avoir répondu 202 à l'app, le workflow attend 20 s (« 08 »), lit `GET {VISION_SERVICE_URL}/analyse/{id}` (« 09 », credential « Chez Soi · vision Space »), recommence tant que `etat = en_cours` (au plus `ESSAIS_MAX` = 45 fois, soit 15 min), puis renvoie le résultat à l'app : `POST {APP_URL}/api/analyse/resultat` (« 11 », credential « Chez Soi · webhook », en-tête `X-Chez-Soi-Secret`) avec `{ analyse_id, logement_id, etat, resultat, service_analyse_id, failles, modele_3d_url, erreur }`. C'est l'app qui écrit `failles`, `analyses` et `pieces` : n8n n'a pas besoin de clé Supabase. L'entrée accepte en plus `analyse_id` (ligne `analyses` de l'app) et `piece`, tous deux facultatifs.
+
 Réponse 200 attendue du service vision (**à valider avec la vision**) : `{ failles: [ { risque, element, piece, cote_estimee_cm, marge_cm, gravite, priorite, position_3d } ] }`, avec `risque` parmi `chute`, `intrusion`, `incendie`, `autre`.
 
 Écriture : table `failles` (`id`, `logement_id`, `piece_id`, `risque`, `element`, `source = vision`, `cote_estimee_cm`, `marge_cm`, `gravite`, `priorite`, `position_3d`). `cote_confirmee_cm` n'est jamais écrite par n8n.

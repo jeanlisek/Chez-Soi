@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Html, OrbitControls, RoundedBox, useGLTF } from "@react-three/drei";
+import { Edges, Html, OrbitControls, RoundedBox, useGLTF } from "@react-three/drei";
 
 /**
  * Plan 3D d'une pièce (three, @react-three/fiber, @react-three/drei).
@@ -41,42 +41,39 @@ function PieceSchematique({
       {/* sol */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[L, P]} />
-        <meshStandardMaterial color="#e6e9fb" />
+        <meshBasicMaterial color="#e4eafc" />
       </mesh>
       {/* murs (fond et côtés) */}
       <mesh position={[0, H / 2, -P / 2]}>
         <planeGeometry args={[L, H]} />
-        <meshStandardMaterial color="#b9c6f6" />
+        <meshBasicMaterial color="#d5defa" />
       </mesh>
       <mesh position={[-L / 2, H / 2, 0]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[P, H]} />
-        <meshStandardMaterial color="#c9d3f8" />
+        <meshBasicMaterial color="#c7d3f8" />
       </mesh>
       <mesh position={[L / 2, H / 2, 0]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[P, H]} />
-        <meshStandardMaterial color="#c9d3f8" />
+        <meshBasicMaterial color="#afc0f4" />
       </mesh>
       {/* porte du fond */}
       <mesh position={[0, 1.02, -P / 2 + 0.005]}>
         <planeGeometry args={[0.83, 2.04]} />
-        <meshStandardMaterial color="#dfe5fb" />
+        <meshBasicMaterial color="#b9c9f6" />
       </mesh>
       {objet && (
         <group position={[0, 0.006, 0.15]}>
           <RoundedBox args={[ol, 0.012, op]} radius={0.004}>
-            <meshStandardMaterial color={apres ? "#a8d5bd" : "#f2b8c0"} />
+            <meshBasicMaterial color={apres ? "#e2f3ea" : "#f6cdd1"} />
+            <Edges color={apres ? "#3f9a72" : "#c93a48"} lineWidth={2.5} />
           </RoundedBox>
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.008, 0]}>
-            <planeGeometry args={[ol, op]} />
-            <meshBasicMaterial color={apres ? "#2e7d57" : "#c0283a"} wireframe />
-          </mesh>
           <Html position={[0, 0.02, op / 2 + 0.12]} center>
-            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-encre">
+            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-ink">
               {objet.largeur_cm} cm
             </span>
           </Html>
           <Html position={[-ol / 2 - 0.18, 0.02, 0]} center>
-            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-encre">
+            <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-ink">
               {objet.longueur_cm} cm
             </span>
           </Html>

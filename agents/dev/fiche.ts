@@ -105,16 +105,20 @@ export async function ecartsCitationFiche(sortie: { citation_decoupe?: string; l
   return ecart ? [ecart] : [];
 }
 
-/** Écart métier à ajouter au run, ou `null` si la citation est sur la page mot pour mot. */
+/**
+ * Écart métier à ajouter au run, ou `null` si la citation est sur la page mot pour mot.
+ * Règle stricte (Bastian, PR #32) : seule une citation exacte prouve la découpe. Une citation
+ * approchée ou une fiche illisible ne vaut pas preuve : produit à REFUSER.
+ */
 export function ecartCitation(verification: VerificationCitation): string | null {
   switch (verification.statut) {
     case "exacte":
       return null;
     case "approchee":
-      return `citation_decoupe retrouvée sur la fiche à ${verification.mots_differents} mot(s) près (${verification.differences.join(", ")}) : sens à confirmer dans le replay`;
+      return `citation_decoupe retrouvée sur la fiche à ${verification.mots_differents} mot(s) près (${verification.differences.join(", ")})  : pas une citation littérale, produit à REFUSER`;
     case "absente":
       return "citation_decoupe introuvable sur la fiche : produit à REFUSER";
     default:
-      return `citation_decoupe non vérifiable sur la fiche (${verification.erreur ?? "page illisible"}) : à vérifier dans le replay`;
+      return `citation_decoupe non vérifiable sur la fiche (${verification.erreur ?? "page illisible"}) : aucune preuve de découpe, produit à REFUSER`;
   }
 }

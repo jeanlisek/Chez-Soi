@@ -113,7 +113,7 @@ export function ecartDecoupe(citation: string | undefined): string | null {
     return `citation_decoupe « ${citation} » ne dit pas que le produit se découpe : produit à REFUSER`;
   }
   if (citation.trim().split(/\s+/).length < 3) {
-    return `citation_decoupe « ${citation} » trop courte pour être une phrase de la fiche : à vérifier dans le replay`;
+    return `citation_decoupe « ${citation} » trop courte pour être une phrase de la fiche : produit à REFUSER`;
   }
   return null;
 }

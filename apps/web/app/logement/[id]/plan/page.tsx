@@ -2,200 +2,171 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AlertCircle, Bell, Check, ChevronRight } from "lucide-react";
 
-import { BarreOnglets } from "@/components/chez-soi/BarreOnglets";
-import { LogoMaison, RepereSourire } from "@/components/chez-soi/illustrations";
-import { BandeauExemple, BoutonRond, Corps, Ecran, PastilleNiveau, Puce } from "@/components/chez-soi/ui";
+import { Chip, ExempleTag, Illus, Logo, RoundButton, Ring, Screen, Signal, SignalShape, cx, useValidationEnAttente } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
-import type { Faille, Niveau, Risque } from "@/lib/domaine";
-import { cn } from "@/lib/utils";
+import { LIBELLE_NIVEAU, type Faille, type Niveau, type Piece, type Risque } from "@/lib/domaine";
 
 const ORDRE: Niveau[] = ["critique", "eleve", "modere", "surveiller"];
 
-/** Disposition schématique du T2, comme sur la maquette (3 colonnes). */
-const DISPOSITION: { id: string; col: string }[] = [
-  { id: "chambre", col: "col-span-1" },
-  { id: "salon", col: "col-span-1" },
-  { id: "cuisine", col: "col-span-1" },
-  { id: "couloir", col: "col-span-3" },
-  { id: "salle-de-bain", col: "col-span-1" },
-  { id: "", col: "col-span-1" },
-  { id: "entree", col: "col-span-1" },
-];
+const BADGE: Record<Niveau | "ok", string> = {
+  critique: "bg-danger-solid text-white border-danger-solid",
+  eleve: "bg-danger-bg text-danger-text border-danger-border",
+  modere: "bg-white text-danger-text border-danger-border",
+  surveiller: "bg-veille-bg text-veille-text border-veille-border border-dashed",
+  ok: "bg-succes-solid text-white border-succes-solid",
+};
 
-function Compteur({ failles }: { failles: Faille[] }) {
-  if (failles.length === 0)
-    return (
-      <span className="grid size-6 place-items-center rounded-full bg-vert text-white">
-        <Check className="size-3.5" />
-      </span>
-    );
-  const pire = ORDRE.find((n) => failles.some((f) => f.niveau === n))!;
-  return (
-    <span
-      className={cn(
-        "grid size-6 place-items-center rounded-full border text-xs font-bold",
-        pire === "critique" && "border-rouge bg-rouge text-white",
-        (pire === "eleve" || pire === "modere") && "border-rouge text-rouge",
-        pire === "surveiller" && "border-dashed border-encre-douce text-encre-douce",
-      )}
-    >
-      {failles.length}
-    </span>
-  );
+/** Plan du T2 de la maquette (zone 350 × 196), retrouvé par le nom de la pièce. */
+const PLAN_T2: Record<string, { l: number; t: number; w: number; h: number }> = {
+  Chambre: { l: 0, t: 0, w: 110, h: 100 },
+  Salon: { l: 118, t: 0, w: 130, h: 100 },
+  Cuisine: { l: 256, t: 0, w: 94, h: 100 },
+  Couloir: { l: 0, t: 108, w: 350, h: 40 },
+  "Salle de bain": { l: 0, t: 154, w: 110, h: 42 },
+  Entrée: { l: 256, t: 154, w: 94, h: 42 },
+};
+
+/** Positions des pièces : le plan de la maquette si les noms s'y prêtent, sinon une grille de 3 colonnes. */
+function disposer(pieces: Piece[]) {
+  if (pieces.length > 0 && pieces.every((p) => PLAN_T2[p.nom]))
+    return { hauteur: 196, cases: pieces.map((p) => ({ p, ...PLAN_T2[p.nom] })), vide: true };
+  const cases = pieces.map((p, i) => ({ p, l: (i % 3) * 120, t: Math.floor(i / 3) * 88, w: 110, h: 80 }));
+  return { hauteur: Math.max(1, Math.ceil(pieces.length / 3)) * 88 - 8, cases, vide: false };
 }
 
 /** Écran 6 · Accueil et plan du logement : points à traiter, filtres chute / intrusion, failles par pièce. */
 export default function PagePlan() {
-  const { logement } = useParcours();
+  const { logement, etat } = useParcours();
   const base = `/logement/${logement.id}`;
+  const enAttente = useValidationEnAttente();
   const [filtre, setFiltre] = useState<Risque | "toutes">("toutes");
-  const [piece, setPiece] = useState(
-    logement.exemple ? "couloir" : (logement.failles[0]?.piece_id ?? logement.pieces[0]?.id ?? ""),
-  );
-  const disposition = logement.exemple
-    ? DISPOSITION
-    : logement.pieces.map((p, i, t) => ({ id: p.id, col: t.length % 3 === 1 && i === t.length - 1 ? "col-span-3" : "col-span-1" }));
+  const [sel, setSel] = useState(logement.exemple ? "couloir" : (logement.failles[0]?.piece_id ?? logement.pieces[0]?.id ?? ""));
 
-  const failles = useMemo(
-    () => logement.failles.filter((f) => filtre === "toutes" || f.risque === filtre),
-    [logement.failles, filtre],
-  );
-  const total = logement.failles.length;
-  const regles = logement.failles.filter((f) => f.statut === "regle").length;
-  const compte = (n: Niveau) => logement.failles.filter((f) => f.niveau === n).length;
+  const toutes = logement.failles;
+  const compte = (n: Niveau) => toutes.filter((f) => f.niveau === n).length;
+  const reglees = toutes.filter((f) => f.statut === "regle").length + (etat.decision === "approuve" ? 1 : 0);
   const resume = [
     compte("critique") && `${compte("critique")} critique`,
-    compte("eleve") && `${compte("eleve")} élevés`,
-    compte("modere") && `${compte("modere")} modérés`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  const nomPiece = logement.pieces.find((p) => p.id === piece)?.nom ?? "";
-  const listePiece = failles.filter((f) => f.piece_id === piece);
+    compte("eleve") && `${compte("eleve")} élevé${compte("eleve") > 1 ? "s" : ""}`,
+    compte("modere") && `${compte("modere")} modéré${compte("modere") > 1 ? "s" : ""}`,
+  ].filter(Boolean).join(" · ");
+  const piece = logement.pieces.find((p) => p.id === sel);
+  const failles = useMemo(
+    () => toutes.filter((f) => f.piece_id === sel && (filtre === "toutes" || f.risque === filtre)),
+    [toutes, sel, filtre],
+  );
+  const plan = disposer(logement.pieces);
+  const prenom = logement.occupant.libelle;
 
   return (
-    <Ecran>
-      <header className="flex items-center gap-3 px-5 pt-5 pb-3">
-        <LogoMaison className="size-12" />
-        <div className="flex-1">
-          <p className="text-lg leading-tight font-bold">Bonjour {logement.aidant}</p>
-          <p className="text-sm text-encre-douce">
-            Logement de {logement.occupant.libelle} · {logement.type}
-          </p>
-        </div>
-        <BoutonRond label="Notifications">
-          <Bell className="size-5" />
-        </BoutonRond>
-      </header>
-      {logement.exemple && <BandeauExemple />}
-      <Corps>
-        <div className="relative overflow-hidden rounded-[28px] bg-lavande p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-extrabold">
-                {total} point{total > 1 ? "s" : ""} à traiter
-              </h1>
-              <p className="text-sm text-encre-douce">{resume || "Analyse en attente"}</p>
-            </div>
-            <span className="grid size-12 place-items-center rounded-full border-2 border-white text-sm font-bold">
-              {regles}/{total}
-            </span>
-          </div>
-          <div className="mt-6 flex items-end justify-between">
-            <Link
-              href={`${base}/actions`}
-              className="rounded-full bg-encre px-5 py-3 text-sm font-bold tracking-wide text-white uppercase"
-            >
-              Voir le plan
-            </Link>
-            <RepereSourire className="-mb-6 h-20" />
-          </div>
-        </div>
+    <Screen nav="accueil" className="gap-3">
+      <div className="flex items-center gap-3">
+        <Logo size={52} />
+        <span className="flex flex-1 flex-col">
+          <b className="text-[17px]">Bonjour {logement.aidant}</b>
+          <span className="text-[13px] text-ink-muted">Logement de {prenom}{logement.type ? ` · ${logement.type}` : ""}</span>
+        </span>
+        <span className="relative">
+          <RoundButton icon="bell" label={enAttente ? "Notifications, 1 validation en attente" : "Notifications"} href={enAttente ? `${base}/agent/validation` : undefined} />
+          {enAttente && <span className="absolute top-[9px] right-[11px] h-[9px] w-[9px] rounded-full border-2 border-white bg-attention-solid" />}
+        </span>
+      </div>
+      {logement.exemple && <ExempleTag />}
 
-        <div className="flex gap-2">
-          <Puce actif={filtre === "toutes"} onClick={() => setFiltre("toutes")}>
-            Toutes
-          </Puce>
-          <Puce actif={filtre === "chute"} onClick={() => setFiltre("chute")}>
-            Chute · {logement.failles.filter((f) => f.risque === "chute").length}
-          </Puce>
-          <Puce actif={filtre === "intrusion"} onClick={() => setFiltre("intrusion")}>
-            Intrusion · {logement.failles.filter((f) => f.risque === "intrusion").length}
-          </Puce>
-        </div>
+      <section className="relative h-[170px] flex-none overflow-hidden rounded-card bg-pervenche px-5 py-[18px]">
+        <span className="absolute top-4 right-4"><Ring value={reglees} total={Math.max(toutes.length, 1)} /></span>
+        <h1 className="text-[23px] leading-7 font-extrabold">
+          {toutes.length - reglees} point{toutes.length - reglees > 1 ? "s" : ""} à traiter
+        </h1>
+        <p className="text-sm text-ink-soft">{resume || (logement.pieces.length ? "Analyse en cours" : "Filmez une pièce pour commencer")}</p>
+        <Link href={toutes.length ? `${base}/actions` : `${base}/capture`} className="absolute bottom-[18px] left-5 flex h-[46px] items-center rounded-full bg-nuit px-5 text-sm font-bold text-white">
+          {toutes.length ? "VOIR LE PLAN" : "FILMER UNE PIÈCE"}
+        </Link>
+        <Illus name="repere" width={72} className="absolute right-5 -bottom-3" />
+      </section>
 
-        {logement.pieces.length === 0 && (
-          <div className="rounded-[28px] bg-white p-5 text-center">
-            <p className="font-bold">Aucune pièce filmée pour l&apos;instant</p>
-            <p className="mt-1 text-sm text-encre-douce">Filmez une pièce pour obtenir son plan et ses points à traiter.</p>
-            <Link href={`${base}/capture`} className="mt-3 inline-block rounded-full bg-encre px-5 py-3 text-sm font-bold text-white">
-              Filmer une pièce
-            </Link>
-          </div>
-        )}
-        <div className="grid grid-cols-3 gap-2 rounded-[28px] bg-white/50 p-3" aria-label="Plan du logement">
-          {disposition.map(({ id, col }, i) => {
-            if (!id) return <span key={i} className="rounded-2xl bg-gris-ligne/50" />;
-            const p = logement.pieces.find((x) => x.id === id);
-            if (!p) return null;
-            const fp = failles.filter((f) => f.piece_id === id);
-            const actif = piece === id;
+      <div className="flex gap-2">
+        <Chip active={filtre === "toutes"} onClick={() => setFiltre("toutes")}>Toutes</Chip>
+        <Chip active={filtre === "chute"} onClick={() => setFiltre("chute")}>Chute · {toutes.filter((f) => f.risque === "chute").length}</Chip>
+        <Chip active={filtre === "intrusion"} onClick={() => setFiltre("intrusion")}>Intrusion · {toutes.filter((f) => f.risque === "intrusion").length}</Chip>
+      </div>
+
+      {logement.pieces.length > 0 && (
+        <div className="relative mx-auto w-[350px] flex-none" style={{ height: plan.hauteur }} aria-label="Plan du logement, touchez une pièce">
+          {plan.vide && <div className="absolute top-[154px] left-[118px] h-[42px] w-[130px] rounded-2xl bg-[#EEF0F6]" />}
+          {plan.cases.map(({ p, l, t, w, h }) => {
+            const fp = toutes.filter((f) => f.piece_id === p.id && (filtre === "toutes" || f.risque === filtre));
+            const on = p.id === sel;
+            const pire = ORDRE.find((n) => fp.some((f) => f.niveau === n));
+            const ligne = h < 50;
             return (
               <button
-                key={id}
+                key={p.id}
                 type="button"
-                onClick={() => setPiece(id)}
-                className={cn(
-                  "flex justify-between rounded-2xl p-3 text-left text-sm font-bold transition",
-                  col,
-                  id === "couloir" ? "items-center" : "min-h-24 flex-col",
-                  actif ? "border-2 border-encre bg-lavande" : "bg-white",
+                onClick={() => setSel(p.id)}
+                aria-pressed={on}
+                aria-label={`${p.nom}, ${fp.length ? `${fp.length} point(s)` : "rien à signaler"}`}
+                className={cx(
+                  "absolute flex rounded-[18px] border-2 px-2.5 py-2 text-left",
+                  ligne ? "flex-row items-center justify-between" : "flex-col items-start justify-between",
+                  on ? "border-nuit bg-pervenche" : "border-white bg-white",
                 )}
+                style={{ left: l, top: t, width: w, height: h }}
               >
-                {p.nom}
-                <Compteur failles={fp} />
+                <span className="text-[13px] font-bold">{p.nom}</span>
+                <span className={cx("flex h-[22px] min-w-[22px] items-center justify-center rounded-full border-[1.5px] px-1.5 text-xs font-bold", BADGE[pire ?? "ok"])}>
+                  {fp.length || "✓"}
+                </span>
               </button>
             );
           })}
         </div>
+      )}
 
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-bold">{nomPiece}</h2>
-          <span className="text-sm font-semibold text-[#1a3a86]">
-            {listePiece.length} point{listePiece.length > 1 ? "s" : ""}
-          </span>
-        </div>
-        <ul className="flex flex-col gap-2">
-          {listePiece.length === 0 && (
-            <li className="rounded-3xl bg-vert-clair p-4 text-sm font-semibold text-vert">Rien à faire dans cette pièce.</li>
+      {piece && (
+        <>
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-lg font-bold">{piece.nom}</h2>
+            <span className="text-[13px] font-bold text-cobalt">{failles.length} point{failles.length > 1 ? "s" : ""}</span>
+          </div>
+          {failles.length === 0 ? (
+            <p className="rounded-[20px] bg-succes-bg px-4 py-3.5 text-sm font-semibold text-succes-text">
+              {piece.analyse === "terminee" ? `Rien à signaler pour ${prenom} ici.` : "Analyse de la pièce en cours."}
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {failles.map((f) => (
+                <FailleRow key={f.id} f={f} href={`${base}/faille/${f.id}`} />
+              ))}
+            </ul>
           )}
-          {listePiece.map((f) => (
-            <li key={f.id}>
-              <Link href={`${base}/faille/${f.id}`} className="flex items-center gap-3 rounded-3xl bg-white p-3">
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-rouge-clair text-rouge">
-                  <AlertCircle className={cn("size-5", f.niveau === "critique" && "fill-rouge text-white")} />
-                </span>
-                <span className="flex-1">
-                  <span className="block font-bold">{f.titre}</span>
-                  <span className="text-sm text-encre-douce">
-                    {f.risque === "chute" ? "Chute" : "Intrusion"} ·{" "}
-                    {f.cote
-                      ? `${f.cote.largeur_cm} × ${f.cote.longueur_cm} cm ${f.cote.statut === "a_confirmer" ? "à confirmer" : "confirmé"}`
-                      : f.source.force === "contrat"
-                        ? `Contrat p. ${f.source.page}`
-                        : "Recommandé"}
-                  </span>
-                </span>
-                <PastilleNiveau niveau={f.niveau} />
-                <ChevronRight className="size-4 text-encre-douce" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Corps>
-      <BarreOnglets />
-    </Ecran>
+        </>
+      )}
+    </Screen>
+  );
+}
+
+function FailleRow({ f, href }: { f: Faille; href: string }) {
+  const detail = f.cote
+    ? `${f.cote.largeur_cm} × ${f.cote.longueur_cm} cm ${f.cote.statut === "a_confirmer" ? "à confirmer" : "confirmé"}`
+    : f.source.force === "contrat"
+      ? `exigé par le contrat p. ${f.source.page}`
+      : f.source.force === "loi"
+        ? "Loi"
+        : "Recommandé";
+  return (
+    <li>
+      <Link href={href} className="flex items-center gap-3 rounded-[22px] bg-white px-3 py-2.5">
+        <span className={cx("flex h-10 w-10 flex-none items-center justify-center rounded-full", f.niveau === "surveiller" ? "bg-veille-bg" : "bg-danger-bg")}>
+          <SignalShape kind={f.niveau === "critique" ? "eleve" : f.niveau} />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <b className="text-sm">{f.titre}</b>
+          <span className="text-xs text-ink-muted">{f.risque === "chute" ? "Chute" : f.risque === "intrusion" ? "Intrusion" : "Autre"} · {detail}</span>
+        </span>
+        <Signal kind={f.niveau}>{LIBELLE_NIVEAU[f.niveau]}</Signal>
+      </Link>
+    </li>
   );
 }

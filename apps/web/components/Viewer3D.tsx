@@ -97,7 +97,7 @@ export function Viewer3D({
   return (
     <div className={className}>
       <Canvas camera={{ position: [0.35, 1.45, 2.3], fov: 52 }} dpr={[1, 2]}>
-        <color attach="background" args={["#9db0f2"]} />
+        <color attach="background" args={["#9db2f2"]} />
         <ambientLight intensity={0.9} />
         <directionalLight position={[2, 4, 3]} intensity={1.1} />
         <Suspense fallback={null}>

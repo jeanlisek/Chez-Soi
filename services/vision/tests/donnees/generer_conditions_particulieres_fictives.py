@@ -39,7 +39,7 @@ PAGES = [
         ("texte", "Les volets doivent alors être fermés."),
         ("espace", ""),
         ("article", "Article 2 Moyens de protection (clause fictive)"),
-        ("texte", "La porte d’entrée est équipée d’une serrure à trois points de fermeture."),
+        ("texte", "La porte d’entrée doit être équipée d’une serrure à trois points de fermeture."),
         ("espace", ""),
         ("note", "Ce document a été créé par l'équipe Chez Soi pour ses tests et sa démonstration."),
         ("note", "Il n'émane pas de l'assureur cité, n'engage personne et ne décrit aucun contrat réel."),

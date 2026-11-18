@@ -147,8 +147,9 @@ def obligations_par_regles(pages: list[Page]) -> list[Obligation]:
                             )
                         )
                         continue
-            # Prévention contre le vol : obligations de fermeture, serrures, volets.
-            if re.search(r"(vous devez|doivent|est exig|obligatoire|condition de garantie|sous peine|a defaut)", n):
+            # Prévention contre le vol : obligations de fermeture, serrures, volets. Les conditions particulières
+            # décrivent aussi les moyens de protection sans mot d'obligation (« est équipée d'une serrure… »).
+            if re.search(r"(vous devez|doivent|est exig|obligatoire|condition de garantie|sous peine|a defaut|est equipe|sont equipe)", n):
                 for element, motif in ELEMENTS.items():
                     if re.search(motif, n, flags=re.IGNORECASE):
                         trouvees.append(

@@ -36,21 +36,55 @@ def test_la_clause_fictive_d_inoccupation_donne_30_jours_avec_sa_clause_et_sa_pa
     (inoccupation,) = [o for o in resultat.obligations if o.type == "inoccupation"]
     assert (inoccupation.seuil, inoccupation.unite, inoccupation.page) == (30, "jours", 1)
     assert inoccupation.clause == "Article 1 Inoccupation des locaux (clause fictive)"
+    assert len([o for o in resultat.obligations if o.type == "inoccupation"]) == 1
     assert "informe l'assureur avant le départ" in inoccupation.citation
     assert inoccupation.citation_retrouvee
 
 
-def test_les_protections_exigees_sont_les_portes_fermees_a_cle_et_les_volets_fermes():
+ARTICLE_1 = "Article 1 Inoccupation des locaux (clause fictive)"
+ARTICLE_2 = "Article 2 Moyens de protection (clause fictive)"
+PHRASE_SERRURE = "La porte d’entrée est équipée d’une serrure à trois points de fermeture."
+
+
+def test_les_protections_sont_les_portes_fermees_a_cle_les_volets_fermes_et_la_serrure_trois_points():
     # get_contrat_champs (migration 0006) lit les protections dans les obligations de type « prevention ».
     resultat = extraire("cp-fictives-jeanne", lire_pypdf(PDF), "pypdf")
 
-    protections = [o for o in resultat.obligations if o.type == "prevention"]
-    assert {o.element: o.texte_court for o in protections} == {
-        "porte_entree": "Toutes les portes d'accès, dont la porte d'entrée, doivent alors être fermées à clé.",
-        "fenetre": "Les volets doivent alors être fermés.",
+    protections = {o.element: o for o in resultat.obligations if o.type == "prevention"}
+    assert {element: (o.texte_court, o.clause) for element, o in protections.items()} == {
+        "porte_entree": ("Toutes les portes d'accès, dont la porte d'entrée, doivent alors être fermées à clé.", ARTICLE_1),
+        "fenetre": ("Les volets doivent alors être fermés.", ARTICLE_1),
+        "serrure": (PHRASE_SERRURE, ARTICLE_2),
     }
-    assert all(o.page == 1 and o.citation_retrouvee for o in protections)
-    assert all(o.clause == "Article 1 Inoccupation des locaux (clause fictive)" for o in protections)
+    assert all(o.page == 1 and o.citation_retrouvee for o in protections.values())
+
+
+def test_la_serrure_trois_points_est_citee_mot_pour_mot_dans_l_article_2():
+    resultat = extraire("cp-fictives-jeanne", lire_pypdf(PDF), "pypdf")
+
+    (serrure,) = [o for o in resultat.obligations if o.element == "serrure"]
+    assert (serrure.type, serrure.citation, serrure.clause, serrure.page) == ("prevention", PHRASE_SERRURE, ARTICLE_2, 1)
+    assert "trois points" in serrure.texte_court
+    assert serrure.citation_retrouvee
+
+
+def test_un_equipement_decrit_sans_mot_d_obligation_est_une_mesure_de_prevention():
+    # Les conditions particulières décrivent les moyens de protection (« est équipée de… ») sans dire « doit ».
+    from contrat.extraction import obligations_par_regles
+    from contrat.schema import Page
+
+    page = Page(numero=1, texte="Article 2 Moyens de protection\n" + PHRASE_SERRURE + "\n")
+
+    assert [(o.type, o.element) for o in obligations_par_regles([page])] == [("prevention", "serrure")]
+
+
+def test_une_phrase_sans_element_de_protection_ne_devient_pas_une_obligation():
+    from contrat.extraction import obligations_par_regles
+    from contrat.schema import Page
+
+    page = Page(numero=1, texte="Le logement est équipé d'une cuisine aménagée et d'un balcon.\n")
+
+    assert obligations_par_regles([page]) == []
 
 
 def test_aucune_clause_du_document_n_est_rejetee():

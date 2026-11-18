@@ -5,7 +5,8 @@ et en bas de chaque page. Il porte :
 - l'assureur, la formule et la référence des conditions générales, pour que l'usage 1 de l'agent aille
   chercher les conditions générales publiques ;
 - une clause d'inoccupation INVENTÉE pour la démo (30 jours, information de l'assureur, portes fermées à clé,
-  volets fermés). Les conditions générales publiques citées ne contiennent pas de telle clause.
+  volets fermés). Les conditions générales publiques citées ne contiennent pas de telle clause ;
+- une clause de moyens de protection INVENTÉE elle aussi : une serrure à trois points sur la porte d'entrée.
 
 La clause est écrite en trois phrases, une par exigence : la lecture du contrat range la durée dans une
 obligation « inoccupation » et chaque protection dans une obligation « prevention », et c'est dans ces
@@ -36,6 +37,9 @@ PAGES = [
         ("texte", "avant le départ."),
         ("texte", "Toutes les portes d'accès, dont la porte d'entrée, doivent alors être fermées à clé."),
         ("texte", "Les volets doivent alors être fermés."),
+        ("espace", ""),
+        ("article", "Article 2 Moyens de protection (clause fictive)"),
+        ("texte", "La porte d’entrée est équipée d’une serrure à trois points de fermeture."),
         ("espace", ""),
         ("note", "Ce document a été créé par l'équipe Chez Soi pour ses tests et sa démonstration."),
         ("note", "Il n'émane pas de l'assureur cité, n'engage personne et ne décrit aucun contrat réel."),

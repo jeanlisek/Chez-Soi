@@ -67,9 +67,9 @@ export type Action = {
   niveau: Niveau;
   source: Source;
   detail: string;
-  /** Mission confiée à l'agent H, et son usage (1, 2 ou 3). */
+  /** Mission confiée à l'agent H, et son usage (1, 2 ou 3) ; `null` : pas pour l'agent (travaux, artisan). */
   mission: string;
-  usage: 1 | 2 | 3;
+  usage: 1 | 2 | 3 | null;
   groupe: "priorite" | "contrat" | "plus_tard";
 };
 

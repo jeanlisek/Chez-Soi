@@ -2,7 +2,8 @@
 
 import { z } from "zod";
 
-import { clientServeur } from "@/lib/supabase/server";
+import { calculerPlan } from "@/lib/plan";
+import { clientAdmin, clientServeur } from "@/lib/supabase/server";
 
 const profilSchema = z.object({
   logement_id: z.uuid(),
@@ -52,5 +53,10 @@ export async function enregistrerProfil(entree: z.input<typeof profilSchema>): P
       .from("logements")
       .update({ type: d.type, etage: d.etage, statut_occupation: d.statut_occupation })
       .eq("id", d.logement_id);
+
+  // Le profil change les règles applicables : on recalcule le plan (l'écriture ci-dessus, sous RLS,
+  // a déjà prouvé que le logement est à l'utilisateur).
+  const admin = clientAdmin();
+  if (admin) await calculerPlan(admin, d.logement_id).catch(() => undefined);
   return { ok: true };
 }

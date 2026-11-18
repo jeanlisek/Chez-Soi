@@ -34,7 +34,7 @@ export default function PageActions() {
   const visibles = actions.filter((a) =>
     onglet === "contrat" ? a.source.force === "contrat" : onglet === "priorite" ? a.groupe === "priorite" : a.groupe === "plus_tard",
   );
-  const missions = actions.filter((a) => etat.missions[a.id] === "agent" && a.groupe === "priorite");
+  const missions = actions.filter((a) => a.usage !== null && etat.missions[a.id] === "agent" && a.groupe === "priorite");
   const compte = (o: Onglet) =>
     o === "contrat" ? actions.filter((a) => a.source.force === "contrat").length : actions.filter((a) => a.groupe === o).length;
 
@@ -74,7 +74,7 @@ export default function PageActions() {
       ) : (
         <ul className="flex flex-col gap-3">
           {visibles.map((a, i) => {
-            const ag = etat.missions[a.id] === "agent";
+            const ag = a.usage !== null && etat.missions[a.id] === "agent";
             const c = CARTE[Math.min(i, 2)];
             const rang = onglet === "priorite" ? i + 1 : a.priorite;
             return (
@@ -87,6 +87,9 @@ export default function PageActions() {
                   </span>
                   <Signal kind={a.niveau} />
                 </div>
+                {a.usage === null ? (
+                  <p className={cx("text-xs leading-[17px]", c.sub)}>À faire vous-même ou avec un artisan : l&apos;agent ne s&apos;en charge pas.</p>
+                ) : (
                 <div className="grid grid-cols-2 gap-1 rounded-full bg-white/60 p-1" role="radiogroup" aria-label={`Qui s'occupe de : ${a.titre}`}>
                   <button type="button" role="radio" aria-checked={ag} onClick={() => maj({ missions: { ...etat.missions, [a.id]: "agent" } })} className={cx("h-[38px] rounded-full text-[13px] font-bold", ag ? "bg-nuit text-white" : "")}>
                     L&apos;agent prépare
@@ -95,6 +98,7 @@ export default function PageActions() {
                     Je m&apos;en occupe
                   </button>
                 </div>
+                )}
                 {ag && (
                   <p className={cx("flex items-start gap-2 text-xs leading-[17px]", c.sub)}>
                     <Cursor size={13} className="mt-0.5 text-nuit" />

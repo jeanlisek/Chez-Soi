@@ -143,8 +143,8 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
       niveau: f.niveau,
       source,
       detail: source.force === "contrat" ? `Exigé par votre contrat · p. ${source.page}` : source.force === "loi" ? source.reference : "Recommandé",
-      mission: "Compare les produits compatibles et vérifie la dimension sur chaque fiche.",
-      usage: (a.usage as 1 | 2 | 3 | null) ?? 2,
+      mission: a.usage === 3 ? "Prépare la démarche, sans rien envoyer." : "Compare les produits compatibles et vérifie la dimension sur chaque fiche.",
+      usage: (a.usage as 1 | 2 | 3 | null) ?? null,
       groupe: (a.priorite ?? i + 1) <= 3 ? "priorite" : "plus_tard",
     };
   });

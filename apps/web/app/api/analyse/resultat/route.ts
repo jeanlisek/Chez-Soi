@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { calculerPlan } from "@/lib/plan";
 import { clientAdmin } from "@/lib/supabase/server";
 
 /**
@@ -141,5 +142,16 @@ export async function POST(request: Request) {
   const piece = pieceParNom(analyse.piece);
   if (piece) await admin.from("pieces").update({ statut: e.etat === "termine" ? "ok" : "a_corriger" }).eq("id", piece.id);
 
-  return NextResponse.json({ statut: "ok", failles_ecrites: retenues.length, failles_rejetees: rejetees, analyse: statutEcrit });
+  // Plan d'action recalculé dès que de nouvelles failles arrivent (issue #13). Un échec ici
+  // n'annule pas l'analyse : le plan peut être relancé par POST /api/plan.
+  let plan: Awaited<ReturnType<typeof calculerPlan>> | { erreur: string } | null = null;
+  if (e.etat === "termine" && retenues.length) {
+    try {
+      plan = await calculerPlan(admin, e.logement_id);
+    } catch (err) {
+      plan = { erreur: err instanceof Error ? err.message : String(err) };
+    }
+  }
+
+  return NextResponse.json({ statut: "ok", failles_ecrites: retenues.length, failles_rejetees: rejetees, analyse: statutEcrit, plan });
 }

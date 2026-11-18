@@ -82,7 +82,7 @@ chez-soi/
 | `POST /api/analyse/resultat` | Retour de n8n `pipeline_analyse` quand le Space a fini (en-tête `X-Chez-Soi-Secret`) : l'app écrit `failles`, `analyses` et `pieces` (service_role, idempotent). n8n n'a donc pas de clé Supabase |
 | `POST /api/vision/reveil` | Réveille le Space vision (en veille après 30 min) par le webhook n8n `reveil_vision`, dès l'écran Contrat ou Capture : il démarre pendant qu'on filme. Aucune clé Hugging Face côté Vercel |
 | `POST /api/contrat` | Déclenche `analyse_contrat`, renvoie l'état d'extraction |
-| `POST /api/plan` | GraphRAG + règles + LLM explicatif → actions |
+| `POST /api/plan` | Recalcule le plan : failles + `regles_en_vigueur` + contrat → `actions` et `diagnostic_regles` (`lib/plan.ts`, verdict déterministe). Appelé aussi après chaque analyse et chaque profil. GraphRAG et explication LLM : pas encore |
 | `POST /api/absence` | Compare les dates au seuil d'inoccupation, prépare l'usage 3 |
 | `POST /api/agent/run` · `GET ?id=` | Crée une session H (usage 1, 2 ou 3), lit son état |
 | `POST /api/agent/steer` | Message envoyé à une session en cours (ex. « moins de 50 € ») |

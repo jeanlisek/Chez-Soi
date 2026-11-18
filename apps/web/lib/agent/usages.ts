@@ -31,7 +31,7 @@ export type DefinitionUsage = {
 
 const usage2: DefinitionUsage = {
   usage: 2,
-  agent: "chez-soi-acheteur:2",
+  agent: "chez-soi-acheteur:1",
   site: "www.ikea.com/fr/fr",
   urlDepart: "https://www.ikea.com/fr/fr",
   formatReponse: versJsonSchema(sortieUsage2Schema),

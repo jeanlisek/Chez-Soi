@@ -23,6 +23,12 @@ export async function construireAgent(fichier: string): Promise<Record<string, u
   const corps: Record<string, unknown> = Object.fromEntries(
     Object.entries(definition).filter(([cle]) => CHAMPS_H.includes(cle)),
   );
+  // Instructions permanentes dans un fichier Markdown à côté de la définition (commentaires retirés).
+  const fichierInstructions = definition.instructions_fichier as string | undefined;
+  if (fichierInstructions) {
+    const texte = await readFile(path.join(path.dirname(fichier), fichierInstructions), "utf8");
+    corps.instructions = texte.replace(/<!--[\s\S]*?-->/g, "").replace(/\r\n/g, "\n").trim();
+  }
   const outils = (definition.outils as string[] | undefined) ?? [];
   if (outils.length) {
     corps.tools = await Promise.all(

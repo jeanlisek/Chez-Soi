@@ -5,5 +5,6 @@
   "environments": ["h/browser"],
   "model": "holo4-35b-a3b",
   "skills": ["h/company", "h/user-collaboration", "h/answering", "h/planning", "verifier-dimension:1"],
+  "instructions_fichier": "chez-soi-acheteur.instructions.md",
   "outils": ["get_mesures", "demander_validation"]
 }

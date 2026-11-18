@@ -16,7 +16,7 @@
           "texte": "7.2 - Dispositions concernant les sociétaires relevant des tranches de tarification H à J. Dans les hypothèses visées ci dessous, la franchise applicable est de 135 € : – s'il est constaté que les moyens de protection décrits aux conditions particulières ont été mis en place et activés pendant l'absence, […]",
           "page": 19,
           "article": "Vol, article 7 (franchise), 7.2",
-          "_lecture": "Pas de durée d'inoccupation ni de déclaration à faire. Seulement pour les tranches de tarification H à J : franchise vol ramenée à 135 € si les moyens de protection des CONDITIONS PARTICULIÈRES ont été activés pendant l'absence. Les protections ne sont pas dans les conditions générales. Non servi à l'agent tant que le contrat d'interface de get_contrat n'a pas de champ pour une obligation sans seuil (à voir avec Briac)."
+          "_lecture": "Pas de durée d'inoccupation ni de déclaration à faire. Enjeu : pour les tranches de tarification H à J, la franchise vol est de 1 500 € par défaut (art. 4, p. 18) ; elle est ramenée à 135 € si les moyens de protection des CONDITIONS PARTICULIÈRES ont été activés pendant l'absence. Pour les tranches A à G, la franchise est de 135 € dans tous les cas : la clause ne change rien. La démo suppose donc que les conditions particulières (fictives) de Jeanne la classent en tranche H à J. Les protections ne sont pas dans les conditions générales : celles de la démo sont inventées et doivent être présentées comme telles. Non servi à l'agent tant que le contrat d'interface de get_contrat n'a pas de champ pour une obligation sans seuil (à voir avec Briac)."
         }
       }
     },
@@ -31,11 +31,15 @@
             "Interrompre la distribution d'eau",
             "Du 1er novembre au 1er avril, si les locaux ne sont pas chauffés : vidanger les conduites, réservoirs et installations de chauffage non pourvus d'antigel"
           ],
-          "clause": "Prévention : Lorsque vous vous absentez de votre habitation plus de 10 jours consécutifs, vous devez interrompre la distribution d'eau. Pendant la période du 1er novembre au 1er avril, si les locaux ne sont pas chauffés, vous devez vidanger les conduites, réservoirs et installations de chauffage non pourvus d'antigel. Si vous ne respectez pas ces mesures de prévention et qu'un sinistre survient ou est aggravé de ce fait, vous conserverez à votre charge 30 % de l'indemnité.",
+          "clause": "Prévention : Lorsque vous vous absentez de votre habitation plus de 10 jours consécutifs, vous devez interrompre la distribution d'eau. Pendant la période du 1er novembre au 1er avril, si les locaux ne sont pas chauffés, vous devez vidanger les conduites, réservoirs et installations de chauffage non pourvus d'antigel. […] Si vous ne respectez pas ces mesures de prévention et qu'un sinistre survient ou est aggravé de ce fait, vous conserverez à votre charge 30 % de l'indemnité.",
           "page": 6
         }
       },
-      "controle": { "domaines": ["altima-assurances.fr"], "url_depart": "https://www.altima-assurances.fr" }
+      "controle": {
+        "domaines": ["altima-assurances.fr"],
+        "url_depart": "https://www.altima-assurances.fr",
+        "_lecture": "Clause p. 6 : le « […] » remplace une liste d'exclusions intercalée dans le PDF entre les mesures de prévention et la sanction. La retenue de 30 % ne s'applique que si un sinistre survient ou est aggravé du fait du manquement. La vidange ne dépend pas de l'absence : elle vaut du 1er novembre au 1er avril dès que les locaux ne sont pas chauffés. Elle reste dans protections parce que l'absence de démo (décembre-janvier) tombe dans cette période."
+      }
     }
   },
   "otv": {

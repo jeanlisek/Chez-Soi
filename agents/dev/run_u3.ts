@@ -16,7 +16,7 @@ import path from "node:path";
 import { createInterface } from "node:readline/promises";
 
 import { evaluerAbsence } from "../../apps/web/lib/absence";
-import { HAI_AGENT, outilHaiSchema, type OutilHai } from "../../apps/web/lib/hai";
+import { outilHaiSchema, type OutilHai } from "../../apps/web/lib/hai";
 import {
   demanderValidationEntreeSchema,
   demanderValidationSortieSchema,
@@ -177,7 +177,8 @@ async function main(): Promise<void> {
     tunnel: MOTIFS_INTERDITS_PAR_DEFAUT.tunnel,
   };
 
-  const agent = option("agent") ?? HAI_AGENT;
+  // Agent maison créé sur H (agents/definitions/), figé sur sa révision.
+  const agent = option("agent") ?? "chez-soi-demarches:1";
   console.log(`Usage 3 · démarches avant absence · assureur : ${cle} · agent : ${agent}`);
   const resultat = await executerRun<SortieUsage3>({
     usage: "u3",

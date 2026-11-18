@@ -94,7 +94,8 @@ Service vision : `POST /analyse {logement_id, video_url, piece?, pieces?}` répo
 
 ```
 get_mesures        { faille_id } → { element, piece, cote_confirmee_cm, largeur_cm, hauteur_cm, contraintes_profil: string[] }
-get_contrat        { logement_id, champs: string[] } → { assureur, formule, reference_cg?, inoccupation?: { duree_max_jours, protections[], clause, page } }
+get_contrat        { logement_id, champs: string[] } → { assureur, formule, reference_cg?, inoccupation?: { duree_max_jours, protections[], clause, page },
+                         absence?: { type, element?, valeur?, unite?, texte, clause, page, source: "cg" | "cp" }[] }
                    Ne renvoie que les champs demandés, JAMAIS le PDF ni l'adresse.
 demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?, url? } → { decision: "approuve" | "refuse" | "modifier", message? }
 ```
@@ -116,7 +117,7 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 
 ## Modèle de données (Supabase)
 
-Schéma en place sur le projet Supabase `chez-soi` (organisation « Chez Soi », Paris, eu-west-3) : migrations `0001` à `0009` dans `supabase/migrations/`, détail dans `supabase/README.md` (issue #1).
+Schéma en place sur le projet Supabase `chez-soi` (organisation « Chez Soi », Paris, eu-west-3) : migrations `0001` à `0010` dans `supabase/migrations/`, détail dans `supabase/README.md` (issue #1).
 Tables : `logements`, `pieces`, `occupants`, `declarations`, `absences`, `failles`, `actions`, `validations`, `runs_agent`, `sources`, `regles`, `regle_conditions`, `diagnostic_regles`, `contrats`, `obligations_contrat`, `elements`, `graphe_noeuds` (`embedding vector(1024)`, BAAI/bge-m3), `graphe_aretes`, `assureurs`, `analyses`, `messages_agent`, `webhooks_recus` (serveur uniquement). Vues : `regles_en_vigueur`, `elements_inconnus`. RPC : `match_noeuds`, `sous_graphe` ; réservées au serveur : `get_contrat_champs`, `valider_regle`.
 Buckets privés : `videos`, `contrats`, `modeles3d`, `exports` (50 Mo par fichier sur l'offre gratuite), chemin `{user_id}/{logement_id}/…`. RLS sur toutes les tables : un utilisateur ne voit que son logement, son contrat et les nœuds du graphe liés à son contrat ; les nœuds publics (lois, règles, contre-mesures) sont lisibles par tout utilisateur connecté.
 Le moteur de verdict lit `regles_en_vigueur`. Une nouvelle version de règle hérite des seuils et des conditions de la précédente ; seule une personne la valide (`valider_regle`). La table `elements` est le vocabulaire commun du champ `element` (vision, contrat, règles). Types TypeScript : `apps/web/lib/supabase/types.ts`.

@@ -83,9 +83,13 @@ export type ResultatPlan = {
   explications_llm: number;
 };
 
+/**
+ * Texte de recherche d'une faille : même forme que le texte des nœuds Element (« Element : Tapis »).
+ * La pièce, le risque et les cotes n'y figurent pas : mesurés en production, ils tiraient toutes
+ * les failles vers le même nœud.
+ */
 function texteFaille(f: Faille): string {
-  const dims = [f.largeur_cm, f.longueur_cm ?? f.hauteur_cm].filter((x): x is number => x !== null).map((x) => `${Math.round(x)} cm`);
-  return `Element : ${f.element.replace(/_/g, " ")}${f.piece ? `, pièce ${f.piece}` : ""}, risque ${f.risque}${dims.length ? `, ${dims.join(" × ")}` : ""}`;
+  return `Element : ${f.element.replace(/_/g, " ")}`;
 }
 
 /** Libellés du sous-graphe qui concernent l'élément ou la règle retenue : matière de l'explication. */

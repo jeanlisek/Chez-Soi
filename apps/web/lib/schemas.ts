@@ -112,7 +112,10 @@ export const sortieUsage1Schema = z.object({
   trouve: z.boolean().describe("Vrai si les conditions générales de la bonne formule ont été trouvées sur le site de l'assureur."),
   url_cg: z.string().optional().describe("Adresse complète du document des conditions générales, de préférence le PDF."),
   url_fiche_information: z.string().optional().describe("Adresse de la fiche d'information (IPID), si elle existe."),
-  reference_trouvee: z.string().optional().describe("Référence du document lue sur la page ou dans le lien."),
+  reference_trouvee: z
+    .string()
+    .optional()
+    .describe("Code de référence du document lu écrit sur la page ou dans le document (ex. M2442), jamais le nom du fichier. Vide si non vu."),
   titre: z.string().optional().describe("Titre du document ou du lien, tel qu'affiché."),
   date_version: z.string().optional().describe("Date ou édition du document, si elle est affichée."),
   raison: z.string().optional().describe("Raison de l'échec, ou doute utile."),

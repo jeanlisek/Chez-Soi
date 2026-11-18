@@ -38,7 +38,7 @@ Rends un objet JSON conforme au format demandé :
 - `trouve` : vrai si tu as trouvé les conditions générales de la bonne formule sur le site de l'assureur ;
 - `url_cg` : adresse complète du document des conditions générales (de préférence le lien direct vers le PDF), recopiée telle qu'affichée ;
 - `url_fiche_information` : adresse de la fiche d'information, si elle existe ;
-- `reference_trouvee` : la référence du document telle que tu l'as lue sur la page ou dans le nom du lien ; laisse vide si tu ne l'as pas vue ;
+- `reference_trouvee` : le **code de référence** du document (lettres et chiffres comme celui que `get_contrat` t'a donné dans `reference_cg`), tel que tu l'as lu écrit sur la page ou dans le document. **Jamais le nom du fichier ni l'adresse du lien.** Laisse vide si tu ne l'as pas vu écrit : le code vérifiera lui-même la référence dans le PDF ;
 - `titre` : le titre du document ou du lien, tel qu'affiché ;
 - `date_version` : la date ou l'édition du document, si elle est affichée ;
 - `raison` : en cas d'échec, la raison ; sinon, tout doute utile (par exemple : référence non visible sur la page).

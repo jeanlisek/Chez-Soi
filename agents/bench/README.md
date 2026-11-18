@@ -97,3 +97,7 @@ La relecture inclut seulement les panneaux IKEA `product-details` et `measuremen
 observés sur les fiches (onglets dépliables), exclut l’emballage, les scripts et les
 contenus cachés arbitraires. Une citation incorrecte reste refusée après cette lecture.
 Les réponses brutes ne sont jamais corrigées pour gonfler le taux de réussite.
+
+## Scénario T11 retenu
+
+La décision de Jean-Li du 18/11 est préparée dans `cas_t11.json` : sous-tapis 60 × 160 cm et pilotage « moins de 50 € ». Voir `preparation/t11-vendredi.md` pour l’accès à l’agent d’équipe et à la clé de l’app, les critères de réussite et le replay de secours. Ce cas est séparé des 20 comparatifs déjà mesurés ; sa préparation à blanc ne constitue pas un run réel réussi.

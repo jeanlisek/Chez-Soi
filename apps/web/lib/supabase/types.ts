@@ -337,6 +337,7 @@ export type Database = {
           logement_id: string
           longueur_cm: number | null
           marge_cm: number | null
+          origine: string | null
           piece: string | null
           piece_id: string | null
           position_3d: Json | null
@@ -357,6 +358,7 @@ export type Database = {
           logement_id: string
           longueur_cm?: number | null
           marge_cm?: number | null
+          origine?: string | null
           piece?: string | null
           piece_id?: string | null
           position_3d?: Json | null
@@ -377,6 +379,7 @@ export type Database = {
           logement_id?: string
           longueur_cm?: number | null
           marge_cm?: number | null
+          origine?: string | null
           piece?: string | null
           piece_id?: string | null
           position_3d?: Json | null

@@ -1,8 +1,6 @@
+import { redirect } from "next/navigation";
+
+/** La route `/profil` de la v3 mène au profil du logement exemple tant qu'aucun compte n'est connecté. */
 export default function PageProfil() {
-  return (
-    <main className="mx-auto max-w-xl p-8">
-      <h1 className="text-2xl font-semibold">Profil des occupants</h1>
-      <p className="text-muted-foreground">À implémenter.</p>
-    </main>
-  );
+  redirect("/logement/exemple/profil");
 }

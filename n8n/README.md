@@ -162,3 +162,13 @@ Rien n'est activé. Les tests se font nœud par nœud, avec des données fictive
 4. **Embeddings** : dans `analyse_contrat`, activer « 08 · Calculer les embeddings (HF) », l'exécuter sur la sortie de « 07 · Préparer le graphe », puis vérifier dans « 09 · Assembler les écritures » que `embeddings` vaut `calcules`.
 5. **veille_reglementaire** : « Lancer à la main », puis lire « 14 · Bilan de la veille ». Chaque exécution fait jusqu'à 40 appels à l'API Légifrance. Sans Supabase, tous les textes lus sont `non_compares`.
 6. **Supabase**, après les migrations : créer le credential, renseigner `SUPABASE_URL`, activer les nœuds « (Supabase) » un par un, passer `SUPABASE_BRANCHE` à `true`, puis faire un pull et commiter.
+
+
+## Relecture de la PR #4
+
+Le filtre exige une citation non vide et `citation_retrouvee === true` avant de
+conserver une clause (valeur absente, null, false ou chaîne rejetée). La vision
+conserve le nom `piece` pour le trigger Supabase introduit dans #16, sans écrire
+la cote confirmée par l’utilisateur. Régressions locales, sans service externe :
+`node --test scripts/n8n-clauses.test.mjs`. Les workflows restent désactivés ;
+aucune synchronisation ni exécution sur l’instance pendant cette relecture.

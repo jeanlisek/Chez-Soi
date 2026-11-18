@@ -1,12 +1,12 @@
 {
   "active": false,
   "connections": {
-    "01 · Vidéo et profil": {
+    "01 · Logement et vidéo": {
       "main": [
         [
           {
             "index": 0,
-            "node": "02 · Contrôler l’entrée",
+            "node": "Config",
             "type": "main"
           }
         ]
@@ -17,58 +17,242 @@
         [
           {
             "index": 0,
-            "node": "03 · Analyser le logement",
+            "node": "Entrée valide ?",
             "type": "main"
           }
         ]
       ]
     },
-    "03 · Analyser le logement": {
+    "03 · Appeler le service vision": {
       "main": [
         [
           {
             "index": 0,
-            "node": "04 · Identifier les risques",
+            "node": "04 · Interpréter la réponse",
             "type": "main"
           }
         ]
       ]
     },
-    "04 · Identifier les risques": {
+    "04 · Interpréter la réponse": {
       "main": [
         [
           {
             "index": 0,
-            "node": "05 · Proposer un plan",
+            "node": "Résultat disponible ?",
             "type": "main"
           }
         ]
       ]
     },
-    "05 · Proposer un plan": {
+    "05 · Préparer les failles": {
       "main": [
         [
           {
             "index": 0,
-            "node": "06 · Enregistrer le diagnostic",
+            "node": "06 · Écrire les failles (Supabase)",
             "type": "main"
           }
         ]
       ]
     },
-    "06 · Enregistrer le diagnostic": {
+    "06 · Écrire les failles (Supabase)": {
+      "main": [
+        []
+      ]
+    },
+    "08 · Attendre le calcul": {
       "main": [
         [
           {
             "index": 0,
-            "node": "07 · Renvoyer le plan",
+            "node": "09 · Lire l'analyse du Space",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "09 · Lire l'analyse du Space": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Analyse finie ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "10 · Préparer le retour à l'app": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Analyse liée à l'app ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "12 · Réessayer ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Space en démarrage ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "13 · Attendre le réveil": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "03 · Appeler le service vision",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "14 · Préparer l'échec": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Analyse liée à l'app ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Analyse acceptée ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "08 · Attendre le calcul",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "12 · Réessayer ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Analyse finie ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "10 · Préparer le retour à l'app",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "08 · Attendre le calcul",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Analyse liée à l'app ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "11 · Renvoyer le résultat à l'app",
+            "type": "main"
+          }
+        ],
+        []
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "02 · Contrôler l’entrée",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Entrée valide ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Répondre 202 · vidéo reçue",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Répondre 400 · entrée invalide",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Répondre 202 · vidéo reçue": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "03 · Appeler le service vision",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Résultat disponible ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "05 · Préparer les failles",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Analyse acceptée ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Space en démarrage ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "13 · Attendre le réveil",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "14 · Préparer l'échec",
             "type": "main"
           }
         ]
       ]
     }
   },
-  "id": "XRdZDg8wbDc8KUGb",
+  "id": "G7t6n4VWc34IKeJr",
   "name": "pipeline_analyse",
   "nodes": [
     {
@@ -76,9 +260,9 @@
       "name": "Titre et légende",
       "parameters": {
         "color": 7,
-        "content": "# 🎬 01 · ANALYSE VIDÉO\nTransformer une vidéo du logement en observations, risques et plan d’amélioration.\n\n**ARCHITECTURE À COMPLÉTER** · Lecture de gauche à droite · Les services grisés attendent leur branchement.",
+        "content": "# 🎬 01 · ANALYSE VIDÉO\nUne vidéo du logement devient des failles enregistrées, prêtes pour le plan d’action.\n\n**PRÊT À BRANCHER** · Lecture de gauche à droite · Les nœuds grisés (Supabase) attendent les migrations de l’issue #1. Workflow désactivé : ne pas l’activer avant les tests.",
         "height": 190,
-        "width": 2200
+        "width": 2440
       },
       "position": [
         0,
@@ -92,9 +276,9 @@
       "name": "01 · RECEVOIR",
       "parameters": {
         "color": 5,
-        "content": "## 01 · RECEVOIR\nVidéo + profil + consentement\n\nContrôles d’entrée à compléter.",
+        "content": "## 01 · RECEVOIR\n`logement_id` + `video_url` (URL signée Supabase)\n\nWebhook protégé par Header Auth, entrée contrôlée avant tout appel.",
         "height": 400,
-        "width": 560
+        "width": 900
       },
       "position": [
         0,
@@ -108,12 +292,12 @@
       "name": "02 · COMPRENDRE",
       "parameters": {
         "color": 6,
-        "content": "## 02 · COMPRENDRE\nVision Hugging Face → observations → risques\n\nServices à connecter.",
+        "content": "## 02 · COMPRENDRE\n`POST /analyse` du service vision\n\n202 = accepté · 503/502/404/sans réponse = Space en démarrage, nouvel essai toutes les 20 s (`ESSAIS_REVEIL`) · autre = échec renvoyé à l'app.",
         "height": 400,
-        "width": 560
+        "width": 680
       },
       "position": [
-        620,
+        920,
         0
       ],
       "type": "n8n-nodes-base.stickyNote",
@@ -124,12 +308,12 @@
       "name": "03 · PRÉPARER",
       "parameters": {
         "color": 1,
-        "content": "## 03 · PRÉPARER\nContre-mesures proposées + priorités\n\nPlan et stockage à connecter.",
+        "content": "## 03 · PRÉPARER\nLignes de la table `failles`\n\nIdentifiants déterministes : rejouer ne crée pas de doublon.",
         "height": 400,
-        "width": 560
+        "width": 460
       },
       "position": [
-        1240,
+        1620,
         0
       ],
       "type": "n8n-nodes-base.stickyNote",
@@ -140,13 +324,29 @@
       "name": "04 · RESTITUER",
       "parameters": {
         "color": 4,
-        "content": "## 04 · RESTITUER\nUn diagnostic et un plan lisibles\n\nContrat de réponse à finaliser.",
+        "content": "## 04 · RESTITUER\nRéponse 202 immédiate à l'app (« vidéo reçue »), puis le résultat ou l'échec part sur `POST /api/analyse/resultat`.\n\n400 si l'entrée est invalide.",
         "height": 400,
         "width": 340
       },
       "position": [
-        1860,
+        2100,
         0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "95b2b2cd-e4df-8896-acac-2b9fe041b598",
+      "name": "Branches d’erreur et d’attente",
+      "parameters": {
+        "color": 3,
+        "content": "## ⚠ Branches d’erreur et d’attente\nAucun silence : chaque cas renvoie un statut et un message à l’application.",
+        "height": 700,
+        "width": 1520
+      },
+      "position": [
+        920,
+        440
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -156,13 +356,13 @@
       "name": "📥 Données attendues",
       "parameters": {
         "color": 5,
-        "content": "## 📥 Données attendues\n`video_id` ou `video_url`\n\n`profil` · consentement · contexte du logement",
+        "content": "## 📥 Données attendues\nCorps JSON : `{ \"logement_id\": \"<uuid>\", \"video_url\": \"<URL signée https>\" }`\n\nEn-tête `X-Chez-Soi-Secret` (credential « Chez Soi · webhook »). `video_id` et `document_id` ne sont plus acceptés.",
         "height": 260,
-        "width": 706
+        "width": 800
       },
       "position": [
         0,
-        460
+        1200
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -172,13 +372,13 @@
       "name": "📤 Résultat cible",
       "parameters": {
         "color": 4,
-        "content": "## 📤 Résultat cible\n`diagnostic_id` · observations · risques justifiés\n\nplan · version des règles",
+        "content": "## 📤 Résultat cible\n200 : `{ statut: \"ok\", logement_id, failles_retenues, failles_rejetees, ecrit_dans_supabase }`\n\nLe plan d’action est ensuite calculé par l’application (`POST /api/plan`), pas par n8n.",
         "height": 260,
-        "width": 706
+        "width": 800
       },
       "position": [
-        746,
-        460
+        820,
+        1200
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -188,13 +388,13 @@
       "name": "🔧 À compléter",
       "parameters": {
         "color": 1,
-        "content": "## 🔧 À compléter\nVision → règles → plan → stockage.\n\nConserver l’incertitude des mesures. Les achats et démarches se feront dans un autre parcours.",
+        "content": "## 🔧 À compléter\n1. Config : `VISION_SERVICE_URL`, `SUPABASE_URL`.\n2. Service vision : forme de la réponse 200 et retour du résultat après un 202 (à valider avec Briac).\n3. Supabase : activer « 06 · Écrire les failles » après les migrations.",
         "height": 260,
-        "width": 706
+        "width": 800
       },
       "position": [
-        1492,
-        460
+        1640,
+        1200
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -204,23 +404,30 @@
       "name": "Détails de conception",
       "parameters": {
         "color": 7,
-        "content": "## 📚 Détails de conception\n## 01 · Analyse vidéo → risques → plan\n**Architecture uniquement.** Les quatre blocs de service grisés sont désactivés ; aucune analyse n’est exécutée.\n\n**Entrée cible :** video_id / video_url, profil, consentement.\n**Sortie cible :** diagnostic_id, observations, risques justifiés, plan, version_regles.\n**À compléter :** validation des entrées, service vision, règles, génération du plan, stockage et gestion des erreurs.\n**Limite :** les observations et mesures estimées doivent porter leur incertitude. Les achats et démarches ne sont pas lancés ici.\n\nLe dernier bloc renvoie volontairement « architecture_a_completer » (HTTP 501) tant que les services ne sont pas branchés.",
+        "content": "## 📚 Détails de conception\n## 01 · Vidéo → service vision → failles\n**Entrée :** `logement_id`, `video_url` signée. **Sortie :** lignes `failles` (source `vision`), cotes estimées avec leur marge ; les cotes confirmées restent à la main de l’utilisateur.\n**Idempotence :** en-tête `Idempotency-Key` vers le service vision (logement + chemin de la vidéo, sans la signature) ; identifiant de faille dérivé du logement, de l’élément, de la pièce et de la position.\n**Limite :** les mesures estimées portent leur incertitude (`marge_cm`). Les achats et démarches ne sont pas lancés ici, et aucun agent H n’est appelé.\n**Hors périmètre :** `pieces` (issue #1) : la pièce renvoyée par la vision est un nom, `piece_id` reste vide tant que la correspondance n’est pas définie.",
         "height": 330,
-        "width": 2200
+        "width": 2440
       },
       "position": [
         0,
-        800
+        1500
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
     },
     {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qb6ZVKSFAnrnOdFo",
+          "name": "Chez Soi · webhook"
+        }
+      },
       "id": "28434ee0-9620-44aa-90ba-37d78e722367",
-      "name": "01 · Vidéo et profil",
-      "notes": "Point d’entrée prévu pour l’application Chez Soi. Non publié.",
+      "name": "01 · Logement et vidéo",
+      "notes": "Point d’entrée de l’application Chez Soi (route serveur). Header Auth obligatoire.",
       "notesInFlow": false,
       "parameters": {
+        "authentication": "headerAuth",
         "httpMethod": "POST",
         "options": {},
         "path": "chez-soi/analyse-video",
@@ -235,123 +442,571 @@
       "webhookId": "1e85a1d0-b8ba-41fb-a12c-32638feb05c8"
     },
     {
+      "id": "ca8fcf86-bc04-8355-8497-1b40f8ddb867",
+      "name": "Config",
+      "notes": "Paramètres NON secrets du workflow. Les secrets passent par les credentials n8n. $env et les variables n8n ne sont pas disponibles sur l'instance.",
+      "notesInFlow": false,
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68e3908d-f7cd-8bc4-9cf0-d403cea50e1a",
+              "name": "VISION_SERVICE_URL",
+              "type": "string",
+              "value": "https://jeanlisek-chez-soi-vision.hf.space"
+            },
+            {
+              "id": "59dd29cb-abb8-8d62-bfa0-4de10581a0b0",
+              "name": "SUPABASE_URL",
+              "type": "string",
+              "value": "https://hfcunqjqmtlozhiwfihl.supabase.co"
+            },
+            {
+              "id": "d7e0301d-8b87-8e94-9a6a-14bfbd145c26",
+              "name": "SUPABASE_BRANCHE",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "2f6b8c1e-5a0d-4c7e-9b3a-7d1e2c4f6a80",
+              "name": "APP_URL",
+              "type": "string",
+              "value": "https://chez-soi-nu.vercel.app"
+            },
+            {
+              "id": "7c2d9e4a-1b3f-4e8d-a6c5-0f9b8e7d6c51",
+              "name": "ESSAIS_MAX",
+              "type": "number",
+              "value": 45
+            },
+            {
+              "id": "20746fd6-eae9-441e-983b-0aaa0c28dcb2",
+              "name": "ESSAIS_REVEIL",
+              "type": "number",
+              "value": 70
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        300,
+        190
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
       "id": "0c0a8a70-6892-4529-9a8c-846b74a1aee3",
       "name": "02 · Contrôler l’entrée",
-      "notes": "À définir : référence vidéo, profil, consentement, format et limites. Ajouter une branche erreur avant tout traitement.",
-      "notesInFlow": false,
-      "parameters": {},
-      "position": [
-        320,
-        190
-      ],
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1
-    },
-    {
-      "disabled": true,
-      "id": "4bbf18dd-49e1-4b89-a0fc-63f7c7399a42",
-      "name": "03 · Analyser le logement",
-      "notes": "Entrée : video_url ou video_id, profil. Sortie : observations, pièces, objets, dimensions estimées et incertitude. L’équipe vision définit le service.",
+      "notes": "Refuse toute entrée incomplète avant d’appeler le service vision.",
       "notesInFlow": false,
       "parameters": {
-        "method": "POST",
-        "options": {
-          "timeout": 30000
-        },
-        "url": "https://example.invalid/a-configurer"
+        "jsCode": "// Entrée attendue (corps JSON du webhook) : { logement_id, video_url }\nconst corps = $(\"01 · Logement et vidéo\").first().json.body ?? {};\nconst UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst logement_id = typeof corps.logement_id === 'string' ? corps.logement_id.trim() : '';\nconst video_url = typeof corps.video_url === 'string' ? corps.video_url.trim() : '';\n\nconst erreurs = [];\nif (!UUID.test(logement_id)) erreurs.push('logement_id : UUID attendu');\nif (!/^https:\\/\\/\\S+$/.test(video_url)) erreurs.push('video_url : URL signée en https attendue');\nif ('video_id' in corps || 'document_id' in corps) {\n  erreurs.push('video_id et document_id ne sont plus acceptés : envoyer logement_id et video_url');\n}\n\n// Clé d'idempotence : logement + chemin de la vidéo, sans la signature de l'URL.\nconst cle_idempotence = 'analyse:' + logement_id + ':' + video_url.split('?')[0];\n\nconst analyse_id = typeof corps.analyse_id === 'string' && UUID.test(corps.analyse_id) ? corps.analyse_id : null;\nconst piece = typeof corps.piece === 'string' ? corps.piece.trim().slice(0, 60) : null;\n\nreturn [{ json: { valide: erreurs.length === 0, erreurs, logement_id, video_url, cle_idempotence, analyse_id, piece } }];\n"
       },
       "position": [
-        700,
+        520,
         190
       ],
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
     },
     {
-      "disabled": true,
-      "id": "5a29dfd5-9b19-4395-8590-212deeb62a35",
-      "name": "04 · Identifier les risques",
-      "notes": "Entrée : observations + profil + règles validées. Sortie : risques priorisés avec justification et références. Aucune mesure ne doit être traitée comme certaine sans validation.",
-      "notesInFlow": false,
+      "id": "5e67cc75-5405-8f1c-a9b5-98afe7571c0e",
+      "name": "Entrée valide ?",
       "parameters": {
-        "method": "POST",
-        "options": {
-          "timeout": 30000
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "2b96f9bb-8419-8b6a-b2db-49b5416c2f94",
+              "leftValue": "={{ $json.valide }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
         },
-        "url": "https://example.invalid/a-configurer"
+        "options": {}
       },
       "position": [
-        940,
+        740,
         190
       ],
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
     },
     {
-      "disabled": true,
-      "id": "b4e8cfbe-fdc9-49bd-88e5-20c875117a40",
-      "name": "05 · Proposer un plan",
-      "notes": "Entrée : risques. Sortie : contre-mesures proposées, priorité, contraintes et estimation éventuelle du coût. Le déclenchement d’actions H Company sera un parcours distinct soumis à validation.",
-      "notesInFlow": false,
-      "parameters": {
-        "method": "POST",
-        "options": {
-          "timeout": 30000
-        },
-        "url": "https://example.invalid/a-configurer"
-      },
-      "position": [
-        1320,
-        190
-      ],
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2
-    },
-    {
-      "disabled": true,
-      "id": "2890736b-0aaa-41d2-9b6d-ecafd255f222",
-      "name": "06 · Enregistrer le diagnostic",
-      "notes": "Destination à décider avec le CTO/CDO : Supabase ou service applicatif. Contrat cible : diagnostic_id, observations, risques, plan, version_regles.",
-      "notesInFlow": false,
-      "parameters": {
-        "method": "POST",
-        "options": {
-          "timeout": 30000
-        },
-        "url": "https://example.invalid/a-configurer"
-      },
-      "position": [
-        1560,
-        190
-      ],
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2
-    },
-    {
-      "id": "2c4155b4-9579-4580-8651-e754b20913e4",
-      "name": "07 · Renvoyer le plan",
-      "notes": "Réponse explicite de maquette : aucun diagnostic ni analyse réelle. À remplacer après branchement des services.",
-      "notesInFlow": false,
+      "id": "e81cbb25-3b06-84a6-8cb8-07f79983ea98",
+      "name": "Répondre 400 · entrée invalide",
       "parameters": {
         "options": {
-          "responseCode": 501
+          "responseCode": 400
         },
         "respondWith": "json",
-        "responseBody": "{\"statut\": \"architecture_a_completer\", \"workflow\": \"pipeline_analyse\", \"sortie_cible\": [\"diagnostic_id\", \"observations\", \"risques\", \"plan\", \"version_regles\"]}"
+        "responseBody": "={{ JSON.stringify({ statut: 'entree_invalide', workflow: 'pipeline_analyse', erreurs: $json.erreurs }) }}"
       },
       "position": [
-        1940,
-        190
+        1000,
+        560
       ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4
+    },
+    {
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "GonCoee08q3s4Crd",
+          "name": "Chez Soi · vision Space"
+        }
+      },
+      "id": "37aed065-0310-819a-a940-4a375feaa264",
+      "name": "03 · Appeler le service vision",
+      "notes": "POST /analyse { logement_id, video_url }. Un code HTTP d’erreur ou un service injoignable ne lèvent pas d’exception : le nœud suivant décide.",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $('02 · Contrôler l’entrée').first().json.cle_idempotence }}"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify(Object.assign({ logement_id: $('02 · Contrôler l’entrée').first().json.logement_id, video_url: $('02 · Contrôler l’entrée').first().json.video_url }, $('02 · Contrôler l’entrée').first().json.piece ? { piece: $('02 · Contrôler l’entrée').first().json.piece } : {})) }}",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 20000
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.VISION_SERVICE_URL }}/analyse"
+      },
+      "position": [
+        1000,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "0bfe33dc-383e-8661-92f1-cd0a55fdbe7f",
+      "name": "04 · Interpréter la réponse",
+      "notes": "Classe la réponse : resultat (200 avec failles), accepte (202), stub (501) ou erreur.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Sortie du nœud HTTP : { statusCode, body } ; ou { error } si le service est injoignable.\nconst reponse = $json;\nconst statut = typeof reponse.statusCode === 'number' ? reponse.statusCode : null;\nconst corps = reponse.body && typeof reponse.body === 'object' ? reponse.body : {};\nconst entree = $(\"02 · Contrôler l’entrée\").first().json;\n\nlet cas = 'erreur';\nif (statut === 200 && Array.isArray(corps.failles)) cas = 'resultat';\nelse if (statut === 202) cas = 'accepte';\nelse if (statut === 501) cas = 'stub'; // le service vision n'est encore qu'un stub\n\nlet detail = null;\nif (cas === 'erreur') {\n  detail = statut === null ? 'service vision injoignable' : 'réponse inattendue du service vision (HTTP ' + statut + ')';\n}\n\nreturn [{\n  json: {\n    cas,\n    est_resultat: cas === 'resultat',\n    est_accepte: cas === 'accepte',\n    est_stub: cas === 'stub',\n    statut_http: statut,\n    logement_id: entree.logement_id,\n    analyse_id: entree.analyse_id,\n    service_analyse_id: typeof corps.analyse_id === 'string' ? corps.analyse_id : null,\n    failles: cas === 'resultat' ? corps.failles : [],\n    detail,\n  },\n}];\n"
+      },
+      "position": [
+        1220,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "a65f0d78-7d31-8fe5-a1d8-d1be302e84b3",
+      "name": "Résultat disponible ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "8228e56e-f6fc-814b-80b1-9f6419afea71",
+              "leftValue": "={{ $json.est_resultat }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        1440,
+        190
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "4d828ed9-7c49-8b08-836f-1b6ff8cd4bc6",
+      "name": "05 · Préparer les failles",
+      "notes": "Colonnes de la table failles (v3, section 9, et issue #1). cote_confirmee_cm n’est jamais écrite ici : elle appartient à l’utilisateur.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Identifiant déterministe au format UUID (version 8) : rejouer le workflow réécrit les mêmes lignes.\nfunction idDeterministe(texte) {\n  let h = '';\n  for (let k = 0; k < 4; k++) {\n    let x = 0x811c9dc5;\n    const s = k + ':' + texte;\n    for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; }\n    h += x.toString(16).padStart(8, '0');\n  }\n  const variante = ((parseInt(h[16], 16) & 0x3) | 0x8).toString(16);\n  return h.slice(0, 8) + '-' + h.slice(8, 12) + '-8' + h.slice(13, 16) + '-' + variante + h.slice(17, 20) + '-' + h.slice(20, 32);\n}\n\n// Faille attendue du service vision :\n// { risque, element, piece, cote_estimee_cm, marge_cm, gravite, priorite, position_3d }\nconst RISQUES = ['chute', 'intrusion', 'incendie', 'autre'];\nconst { logement_id, failles } = $json;\nconst lignes = [];\nconst rejetees = [];\n\nfor (const faille of failles) {\n  const element = typeof faille.element === 'string' ? faille.element.trim() : '';\n  if (!element) { rejetees.push({ motif: 'element manquant', faille }); continue; }\n  if (!RISQUES.includes(faille.risque)) { rejetees.push({ motif: 'risque inconnu', element }); continue; }\n  const piece = typeof faille.piece === 'string' ? faille.piece.trim() : '';\n  lignes.push({\n    id: idDeterministe([logement_id, element, piece, JSON.stringify(faille.position_3d ?? null)].join('|')),\n    logement_id,\n    piece: piece || null, // le trigger Supabase retrouve/crée la pièce à partir de ce nom\n    piece_id: null,\n    risque: faille.risque,\n    element,\n    source: 'vision',\n    cote_estimee_cm: faille.cote_estimee_cm ?? null,\n    marge_cm: faille.marge_cm ?? null,\n    gravite: faille.gravite ?? null,\n    priorite: faille.priorite ?? null,\n    position_3d: faille.position_3d ?? null,\n  });\n}\n\nreturn [{ json: { logement_id, lignes, rejetees } }];\n"
+      },
+      "position": [
+        1700,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "disabled": true,
+      "id": "f16a3352-e5af-8671-8b2d-6244d21cd6c3",
+      "name": "06 · Écrire les failles (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud. Écriture par upsert sur id : rejouer l’analyse met à jour les mêmes lignes sans toucher à cote_confirmee_cm.",
+      "notesInFlow": true,
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify($('05 · Préparer les failles').first().json.lignes) }}",
+        "method": "POST",
+        "nodeCredentialType": "supabaseApi",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/failles?on_conflict=id"
+      },
+      "position": [
+        1920,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "cd056230-9aa0-8397-8625-8b121e9567e9",
+      "name": "Analyse acceptée ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "40687c56-2217-8ead-8a26-18a0835411f7",
+              "leftValue": "={{ $json.est_accepte }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        1700,
+        560
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "6e6985e4-6e05-59eb-bec0-09d70920c02a",
+      "name": "08 · Attendre le calcul",
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "position": [
+        2140,
+        560
+      ],
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "webhookId": "0a215701-34c9-500b-b281-62f046ab4a9a"
+    },
+    {
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "GonCoee08q3s4Crd",
+          "name": "Chez Soi · vision Space"
+        }
+      },
+      "id": "f719e5f9-9c7e-54d3-8fc5-367c7f195ecd",
+      "name": "09 · Lire l'analyse du Space",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "method": "GET",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "url": "={{ $('Config').first().json.VISION_SERVICE_URL }}/analyse/{{ $('04 · Interpréter la réponse').first().json.service_analyse_id }}"
+      },
+      "position": [
+        2360,
+        560
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "c35fbfa6-d471-5b8d-a65a-8f238717a4e4",
+      "name": "Analyse finie ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "a1",
+              "leftValue": "={{ ($json.body || {}).etat }}",
+              "operator": {
+                "operation": "notEquals",
+                "type": "string"
+              },
+              "rightValue": "en_cours"
+            },
+            {
+              "id": "a2",
+              "leftValue": "={{ $runIndex }}",
+              "operator": {
+                "operation": "gte",
+                "type": "number"
+              },
+              "rightValue": "={{ $('Config').first().json.ESSAIS_MAX }}"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        2580,
+        560
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "c06aa686-14c4-53df-8b82-c274e9103414",
+      "name": "10 · Préparer le retour à l'app",
+      "parameters": {
+        "jsCode": "// Résultat du Space (GET /analyse/{id}) → corps attendu par l'app (POST /api/analyse/resultat).\nconst r = $json.statusCode === 200 && $json.body && typeof $json.body === 'object' ? $json.body : {};\nconst i = $('04 · Interpréter la réponse').first().json;\nconst fini = r.etat === 'termine';\nreturn [{ json: {\n  analyse_id: i.analyse_id,\n  logement_id: i.logement_id,\n  etat: fini ? 'termine' : 'echec',\n  resultat: r.resultat ?? null,\n  service_analyse_id: i.service_analyse_id,\n  failles: fini && Array.isArray(r.failles) ? r.failles : [],\n  modele_3d_url: r.modele_3d_url ?? null,\n  erreur: fini ? null : (r.erreur ?? (r.etat === 'en_cours' ? 'Analyse trop longue : délai dépassé' : 'Service vision injoignable (HTTP ' + $json.statusCode + ')')),\n} }];\n"
+      },
+      "position": [
+        2800,
+        440
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "b86fc67b-7130-5fd4-9ecd-936ed26b63b3",
+      "name": "Analyse liée à l'app ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b1",
+              "leftValue": "={{ $json.analyse_id }}",
+              "operator": {
+                "operation": "notEmpty",
+                "singleValue": true,
+                "type": "string"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        3020,
+        440
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qb6ZVKSFAnrnOdFo",
+          "name": "Chez Soi · webhook"
+        }
+      },
+      "id": "af7b0010-8893-571f-b25e-31de7ef35079",
+      "name": "11 · Renvoyer le résultat à l'app",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.APP_URL }}/api/analyse/resultat"
+      },
+      "position": [
+        3240,
+        440
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "898f9055-a643-48b1-b79f-4b77f7d1018d",
+      "name": "Répondre 202 · vidéo reçue",
+      "parameters": {
+        "options": {
+          "responseCode": 202
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ statut: 'video_recue', workflow: 'pipeline_analyse', logement_id: $json.logement_id }) }}"
+      },
+      "position": [
+        870,
+        40
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4
+    },
+    {
+      "id": "628271df-b750-4c59-af38-e3d91ea6e0ad",
+      "name": "12 · Réessayer ?",
+      "parameters": {
+        "jsCode": "// Le Space Hugging Face se met en veille après 30 min : au réveil, il répond 503/502/404 ou rien pendant\n// plusieurs minutes. Ces cas sont transitoires : on réessaie. Une erreur 4xx du service (clé, entrée) ou un stub ne l'est pas.\nconst r = $json;\nconst essai = $runIndex + 1;\nconst max = Number($('Config').first().json.ESSAIS_REVEIL ?? 70);\nconst s = r.statut_http;\nconst transitoire = !r.est_stub && (s === null || s >= 500 || s === 404 || s === 429);\nreturn [{ json: { ...r, essai, retenter: transitoire && essai < max } }];\n"
+      },
+      "position": [
+        1920,
+        760
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "cce4a71e-e11c-4f0b-97f9-f976ff70b11a",
+      "name": "Space en démarrage ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "192581f0-de52-4b13-8d35-e0d4d6426118",
+              "leftValue": "={{ $json.retenter }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        2140,
+        760
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "e1cf557b-7053-487b-947f-e3cb8bb8a009",
+      "name": "13 · Attendre le réveil",
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "position": [
+        2360,
+        760
+      ],
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "webhookId": "0d5634e5-031e-4393-9286-1db6380d8ca3"
+    },
+    {
+      "id": "9e74550b-3acf-48b7-a1bc-0d2599041eac",
+      "name": "14 · Préparer l'échec",
+      "parameters": {
+        "jsCode": "// Échec définitif : l'app l'affiche (« analyse en échec, refilmez ») au lieu d'attendre sans fin.\nconst r = $json;\nconst erreur = r.est_stub\n  ? 'Service vision pas encore disponible'\n  : (r.retenter === false && r.essai >= Number($('Config').first().json.ESSAIS_REVEIL ?? 70)\n      ? 'Service vision toujours en démarrage après ' + r.essai + ' essais'\n      : (r.detail ?? 'Service vision en erreur'));\nreturn [{ json: {\n  analyse_id: r.analyse_id,\n  logement_id: r.logement_id,\n  etat: 'echec',\n  resultat: null,\n  service_analyse_id: null,\n  failles: [],\n  modele_3d_url: null,\n  erreur,\n} }];\n"
+      },
+      "position": [
+        2360,
+        960
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
     }
   ],
   "settings": {
     "availableInMCP": false,
     "callerPolicy": "workflowsFromSameOwner",
     "executionOrder": "v1",
-    "executionTimeout": 300,
+    "executionTimeout": 3600,
     "timezone": "Europe/Paris"
   }
 }

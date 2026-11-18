@@ -67,7 +67,8 @@ chez-soi/
 │   ├── pipeline/             frames · reconstruction · profondeur · detection · cotes · export
 │   └── contrat/              lecture.py (Docling) · extraction.py · schema.py
 ├── supabase/migrations/      0001_schema · 0002_rls · 0003_regles · 0004_contrats · 0005_graphe (+ seed.sql)
-├── n8n/                      pipeline_analyse · analyse_contrat · suivi_runs · veille_reglementaire (.json)
+├── n8n/                      pipeline_analyse · analyse_contrat · veille_reglementaire (.json) · articles_suivis.json
+├── scripts/                  n8n-sync.mjs (synchronisation repo ↔ n8n)
 ├── docs/                     architecture.md · mesures.md · regles.md
 ├── .env.example
 └── README.md
@@ -86,7 +87,7 @@ chez-soi/
 | `POST /api/agent/run` · `GET ?id=` | Crée une session H (usage 1, 2 ou 3), lit son état |
 | `POST /api/agent/steer` | Message envoyé à une session en cours (ex. « moins de 50 € ») |
 | `POST /api/agent/tools` | Custom tools : `get_mesures`, `get_contrat`, `demander_validation` |
-| `POST /api/webhooks/hai` | Webhooks signés H : vérification, mise à jour de `runs_agent` |
+| `POST /api/webhooks/hai` | Tous les webhooks signés H (`awaiting_tool_results`, `completed`, `failed`) : vérification, écriture dans `runs_agent` |
 
 Service vision : `POST /analyse {logement_id, video_url, piece?, pieces?}` répond 202 avec un `analyse_id` ; n8n lit ensuite `GET /analyse/{analyse_id}` (état, failles, liens du `.glb` et de l'image annotée), puis écrit dans Supabase. Avec `pieces` (nom, debut_s, fin_s), chaque pièce a sa propre reconstruction. Une cote que le pipeline ne peut pas mesurer (objet coupé par le cadre) est marquée « à confirmer » dans `position_3d.cote`, jamais écrite comme cote estimée. Si le calcul échoue, le service sert le résultat précalculé de `services/vision/precalcule/demo/` (`resultat: "precalcule"`) ; le dépôt étant public, seul `failles.json` y est suivi par git, jamais une image, un `.glb` ou une vidéo d'un vrai logement. `POST /autotest` est une route de diagnostic. `POST /contrat {contrat_id, pdf_url}` est synchrone : Docling (pypdf en secours), règles puis LLM facultatif via `HF_TOKEN` ; toute obligation dont la citation n'est pas retrouvée sur sa page est rejetée. Le Space `jeanlisek/chez-soi-vision` est privé : chaque appel porte `Authorization: Bearer <jeton Hugging Face>` et `X-Vision-Key`. Détail dans `services/vision/README.md`.
 
@@ -104,6 +105,7 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 
 - Les fonctions Vercel s'arrêtent vite, donc pas de SDK qui attend la session. Circuit retenu : une route crée la session (`POST /api/v2/sessions`) en déclarant les outils. Le webhook `session.awaiting_tool_results` arrive, la route lit `pending_tool_calls` puis répond via `tool_results`. Pour `demander_validation`, on ne répond qu'après le clic de l'utilisateur dans `ValidationModal`.
 - Un appel d'outil peut être exécuté **deux fois** : chaque outil doit être idempotent.
+- Webhooks : tous les événements H (`awaiting_tool_results`, `completed`, `failed`) arrivent sur `/api/webhooks/hai`, qui écrit dans `runs_agent`. Il n'y a pas de workflow n8n `suivi_runs` (décision de Jean-Li, 17/11 ; la v3 le prévoyait en section 10).
 - Webhooks : vérifier la signature, ignorer les doublons (même identifiant de livraison), répondre en moins de 10 s. L'URL doit être publique en https, c'est-à-dire le déploiement Vercel, pas localhost.
 - Le bouton natif « Approve or deny » de H vise les commandes shell. L'arrêt avant un panier ou un envoi passe **uniquement** par `demander_validation`.
 - Vérifié dans la doc (hub.hcompany.ai, 17/11) : un custom tool se déclare `{ name, description, input_schema }`, sans schéma de sortie. Sur un agent du catalogue, les outils passent par `overrides["agent.tools"]` et la sortie structurée par `overrides["agent.answer_format"]` (JSON Schema). Chaque résultat renvoie le `tool_req` reçu, tel quel.
@@ -191,9 +193,12 @@ Depuis un worktree (pas de `.env` à sa racine) : `npx tsx --env-file=$HOME/Docu
 | `npm run n8n:pull` | Exporte de l'instance vers `n8n/<nom>.json` les workflows qui ont déjà un fichier dans `n8n/` |
 | `npm run n8n:pull -- <nom>` | Exporte en plus un workflow qui n'a pas encore de fichier |
 | `npm run n8n:push` | Simulation : compare `n8n/*.json` à l'instance et affiche ce qui serait créé ou mis à jour, sans rien modifier |
-| `npm run n8n:push -- --confirmer` | Envoie réellement vers l'instance. Jamais sans prévenir Bastian |
+| `npm run n8n:push -- --confirmer` | Envoie réellement vers l'instance. Jamais sans prévenir Jean-Li et Bastian |
+| `npm run n8n:articles` | Régénère dans `veille_reglementaire` la copie de `n8n/articles_suivis.json` (à lancer après toute modification de la liste) |
 
-Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dans le `.env` de la racine (ignoré par git). Le script ne les affiche jamais. Il passe par l'API publique n8n (`/api/v1/workflows`, en-tête `X-N8N-API-KEY`) ; il n'active, ne désactive et n'exécute aucun workflow. Le JSON exporté est stable : clés triées, sans `createdAt`, `updatedAt`, `versionId`, `staticData`, `pinData`, `shared`, `tags` ni `meta`. Le pull signale les secrets qui semblent écrits en dur (heuristique, à relire quand même). Les amorces vides (`nodes: []`) sont ignorées par le push.
+Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dans le `.env` de la racine (ignoré par git). Le script ne les affiche jamais. Il passe par l'API publique n8n (`/api/v1/workflows`, en-tête `X-N8N-API-KEY`) ; il n'active, ne désactive et n'exécute aucun workflow. L'API publique ne permet pas de lancer une exécution : les tests se font dans l'interface.
+
+Ciblage : un fichier `n8n/<nom>.json` désigne son workflow par l'`id` qu'il contient, pas par son nom. Sans `id`, le push crée le workflow puis écrit l'`id` dans le fichier. Les workflows préfixés « archive · » (originaux de Bastian, conservés) sont ignorés partout. Le JSON exporté est stable : clés triées, sans `createdAt`, `updatedAt`, `versionId`, `staticData`, `pinData`, `shared`, `tags` ni `meta`. Le pull signale les secrets qui semblent écrits en dur (heuristique, à relire quand même). Le push échoue si le nœud « Articles suivis » ne correspond plus à `n8n/articles_suivis.json`.
 
 **supabase** (depuis la racine, CLI Supabase v3 via `npx` ; sous PowerShell, `npx.cmd` si les scripts sont bloqués ; `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort). Depuis la v3, les commandes visent la base locale par défaut : `--remote` vise le projet relié. Le Wi-Fi de l'école bloque le port 5432 : commandes `--remote` et `psql` depuis un partage de connexion. Historique des migrations aligné le 18/11 (0001 à 0007 marquées appliquées).
 
@@ -217,8 +222,10 @@ Interface (18/11) : les 12 écrans de la maquette (Figma « Chez soi · Parcours
 
 - TypeScript strict. Schémas Zod partagés dans `apps/web/lib/schemas.ts`, Pydantic côté Python.
 - Noms métier en français, en snake_case pour la base (`cote_confirmee_cm`, `runs_agent`…), comme dans la v3.
-- Workflows n8n : les JSON de `n8n/` sont la référence. Quand on modifie un workflow dans l'interface, on fait un `npm run n8n:pull` et on commite. On ne fait jamais de push sans prévenir Bastian.
-- Workflows n8n : aucun secret en dur dans les nœuds (en-têtes HTTP, paramètres, nœuds Code). On passe par un credential n8n ou une variable d'environnement ; seules les références de credentials (id et nom) apparaissent dans le JSON.
+- Workflows n8n : les JSON de `n8n/` sont la référence. Quand on modifie un workflow dans l'interface, on fait un `npm run n8n:pull` et on commite. On ne fait jamais de push sans prévenir Jean-Li (propriétaire des workflows sur l'instance) et Bastian (relecteur de `n8n/`).
+- Workflows n8n : aucun secret en dur dans les nœuds (en-têtes HTTP, paramètres, nœuds Code). Les secrets passent par un credential n8n ; seules les références de credentials (id et nom) apparaissent dans le JSON. `$env` est bloqué sur l'instance et les variables n8n sont indisponibles (édition Community) : les paramètres non secrets vivent dans le nœud « Config » de chaque workflow.
+- Workflows n8n : chaque webhook exige Header Auth (credential « Chez Soi · webhook », en-tête `X-Chez-Soi-Secret`). Les nœuds Supabase restent désactivés jusqu'aux migrations de l'issue #1. Entrées, sorties et ordre de test : `n8n/README.md`.
+- Graphe : n8n l'alimente, l'app l'interroge (`/api/plan`). Embeddings `BAAI/bge-m3`, dimension 1024 (`embedding vector(1024)`). La veille Légifrance ne crée que des règles au statut `proposee` ; seule une règle passée à `validee` par une personne entre dans le graphe.
 - Petits commits ciblés. Une session parallèle = un worktree.
 
 ## Git et GitHub (obligatoire, pour l'équipe comme pour Claude)
@@ -244,7 +251,12 @@ Plan B de la démo : run enregistré (replay H), 3D précalculée, partage de co
 
 1. **Modèles 3D** : tranché par Jean-Li le 18/11. MoGe-2, Grounding DINO base, SAM 2.1 et MapAnything (variante Apache) ; DA3-BASE et DA3METRIC-LARGE en secours ; VGGT abandonné (licence). Révisions et licences figées dans `services/vision/modeles.py`. MapAnything tourne aussi sur le GPU Apple, mais sa reconstruction n'est pas fiable sur une visite rapide de plusieurs pièces (voir `docs/mesures.md`) ; les cotes n'en dépendent pas.
 2. **Usage 3 dans le navigateur de l'utilisateur** : selon la doc H, l'environnement `user_device` ne passe que par le SDK Python ou la CLI, avec un Chrome dédié lancé avec un port de débogage, sans coffre-fort, et la session meurt si le programme Python s'arrête. Le circuit TS de la v3 ne suffit donc pas. Options : runtime Python local, agent `h/holotab`, ou navigateur cloud pour la démo. À trancher par Briac.
-3. **Webhooks** : `awaiting_tool_results` doit arriver sur `/api/webhooks/hai` (l'app répond aux outils). Pour `completed`/`failed`, choisir entre la même route et n8n `suivi_runs` (qui n'existe pas encore). À trancher par Briac et Bastian.
+3. ~~**Webhooks**~~ : **tranché** (Jean-Li, 17/11). Tous les webhooks H arrivent sur `/api/webhooks/hai`, qui écrit dans `runs_agent`. Le workflow n8n `suivi_runs` est abandonné.
 4. **Schéma** : tranché le 18/11 (issue #1). v3 et doc CDO réconciliés, `pieces` et `declarations` retenues, vocabulaire `elements` commun ; détail dans `supabase/README.md`.
 5. ~~**Action montrée en live vendredi**~~ : **tranché** (Jean-Li, 18/11). Usage 2 « sous-tapis antidérapant 60 × 160 cm » pour le tapis de Jeanne, avec le pilotage « moins de 50 € ». Bastian continue jusqu'à vendredi pour obtenir un panier entièrement validé sur ce cas. Plan B : son run 35 (pilotage « point relais uniquement », arrêt et `demander_validation` sans ajout au panier, replay K36 dans Mesures agent).
 6. Auth : Apple, Google ou lien par e-mail (proposition du CPO), plus un logement exemple avant l'inscription.
+
+
+Relecture n8n #4 : `node --test scripts/n8n-clauses.test.mjs` contrôle le rejet
+des clauses sans citation vérifiée et la conservation de `piece` pour le trigger
+Supabase (#16). Aucune requête externe dans ces tests.

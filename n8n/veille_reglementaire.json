@@ -6,91 +6,208 @@
         [
           {
             "index": 0,
-            "node": "02 · Choisir les sources",
+            "node": "Config",
             "type": "main"
           }
         ]
       ]
     },
-    "02 · Choisir les sources": {
+    "02 · Construire la recherche": {
       "main": [
         [
           {
             "index": 0,
-            "node": "03 · Rechercher avec H",
+            "node": "03 · Rechercher sur Légifrance",
             "type": "main"
           }
         ]
       ]
     },
-    "03 · Rechercher avec H": {
+    "03 · Rechercher sur Légifrance": {
       "main": [
         [
           {
             "index": 0,
-            "node": "04 · Extraire les nouveautés",
+            "node": "04 · Retenir l’identifiant",
             "type": "main"
           }
         ]
       ]
     },
-    "04 · Extraire les nouveautés": {
+    "04 · Retenir l’identifiant": {
       "main": [
         [
           {
             "index": 0,
-            "node": "05 · Comparer les règles",
+            "node": "Texte trouvé ?",
             "type": "main"
           }
         ]
       ]
     },
-    "05 · Comparer les règles": {
+    "05 · Lire la version en vigueur": {
       "main": [
         [
           {
             "index": 0,
-            "node": "06 · Préparer un brouillon",
+            "node": "06 · Extraire la version",
             "type": "main"
           }
         ]
       ]
     },
-    "06 · Préparer un brouillon": {
+    "06 · Extraire la version": {
       "main": [
         [
           {
             "index": 0,
-            "node": "07 · Faire valider",
+            "node": "Rassembler les textes",
             "type": "main"
           }
         ]
       ]
     },
-    "07 · Faire valider": {
+    "07 · Lire le graphe (Supabase)": {
       "main": [
         [
           {
             "index": 0,
-            "node": "08 · Versionner les règles",
+            "node": "08 · Comparer les versions",
             "type": "main"
           }
         ]
       ]
     },
-    "08 · Versionner les règles": {
+    "08 · Comparer les versions": {
       "main": [
         [
           {
             "index": 0,
-            "node": "09 · Résumer la veille",
+            "node": "09 · Lire les règles (Supabase)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "09 · Lire les règles (Supabase)": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "10 · Préparer les règles proposées",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "10 · Préparer les règles proposées": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "11 · Écrire les règles proposées (Supabase)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "11 · Écrire les règles proposées (Supabase)": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "12 · Préparer la publication",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "12 · Préparer la publication": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "13 · Publier dans le graphe (Supabase)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "13 · Publier dans le graphe (Supabase)": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "14 · Bilan de la veille",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Articles suivis": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "02 · Construire la recherche",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Articles suivis",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Lancer à la main": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Config",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Rassembler les textes": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "07 · Lire le graphe (Supabase)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Texte trouvé ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "05 · Lire la version en vigueur",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 1,
+            "node": "Rassembler les textes",
             "type": "main"
           }
         ]
       ]
     }
   },
-  "id": "fuI6WIXjttq5UHAP",
+  "id": "UNZeubCqlg5cVDVw",
   "name": "veille_reglementaire",
   "nodes": [
     {
@@ -98,9 +215,9 @@
       "name": "Titre et légende",
       "parameters": {
         "color": 7,
-        "content": "# 🔎 03 · VEILLE RÉGLEMENTAIRE\nSurveiller les sources officielles et proposer des mises à jour avant validation humaine.\n\n**ARCHITECTURE À COMPLÉTER** · Lecture de gauche à droite · Les services grisés attendent leur branchement.",
+        "content": "# 🔎 03 · VEILLE RÉGLEMENTAIRE\nChaque lundi : lire sur Légifrance la version en vigueur des textes suivis, la comparer à la version enregistrée, proposer une nouvelle version de règle. **Rien n’entre dans le graphe sans validation humaine.**\n\n**PRÊT À BRANCHER** · Lecture de gauche à droite · Les nœuds grisés (Supabase) attendent les migrations de l’issue #1. Workflow désactivé : ne pas l’activer avant les tests.",
         "height": 190,
-        "width": 2660
+        "width": 4160
       },
       "position": [
         0,
@@ -114,9 +231,9 @@
       "name": "01 · DÉCLENCHER",
       "parameters": {
         "color": 5,
-        "content": "## 01 · DÉCLENCHER\nLundi, 09:00 · Europe/Paris\n\nSources et thèmes à définir.",
+        "content": "## 01 · DÉCLENCHER\nLundi, 09:00 · Europe/Paris, ou à la main pour un test\n\nTextes suivis : copie générée de `n8n/articles_suivis.json`.",
         "height": 400,
-        "width": 560
+        "width": 700
       },
       "position": [
         0,
@@ -127,15 +244,15 @@
     },
     {
       "id": "d14fb5c6-0037-4b7d-aaf5-32fd4fdb2476",
-      "name": "02 · RECHERCHER",
+      "name": "02 · LIRE LÉGIFRANCE",
       "parameters": {
         "color": 6,
-        "content": "## 02 · RECHERCHER\nAgent H → publications → changements\n\nSession et attente à implémenter.",
+        "content": "## 02 · LIRE LÉGIFRANCE\nAPI Légifrance via PISTE (credential « PISTE · Légifrance ») : `POST /search`, puis `POST /consult/getArticle` ou `/consult/legiPart`\n\nAucun agent H : les textes de loi se lisent par l’API officielle.",
         "height": 400,
-        "width": 560
+        "width": 1540
       },
       "position": [
-        620,
+        720,
         0
       ],
       "type": "n8n-nodes-base.stickyNote",
@@ -146,12 +263,12 @@
       "name": "03 · PRÉPARER",
       "parameters": {
         "color": 1,
-        "content": "## 03 · PRÉPARER\nComparaison → propositions sourcées\n\nEnregistrement du brouillon.",
+        "content": "## 03 · PRÉPARER\nComparaison avec la version enregistrée → règle au statut `proposee` (source, date, version)\n\nUne nouvelle version = une nouvelle ligne : les diagnostics passés gardent la leur.",
         "height": 400,
-        "width": 560
+        "width": 1120
       },
       "position": [
-        1240,
+        2280,
         0
       ],
       "type": "n8n-nodes-base.stickyNote",
@@ -162,13 +279,29 @@
       "name": "04 · VALIDER ET PUBLIER",
       "parameters": {
         "color": 3,
-        "content": "## 04 · VALIDER ET PUBLIER\nValidation humaine obligatoire\n\nPuis version du référentiel et bilan.",
+        "content": "## 04 · VALIDER ET PUBLIER\nValidation humaine BLOQUANTE : seules les règles passées à `validee` par une personne sont publiées dans le graphe.\n\nPuis bilan de la veille, sans envoi automatique.",
         "height": 400,
-        "width": 800
+        "width": 740
       },
       "position": [
-        1860,
+        3420,
         0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "c88d5bb5-4490-8a96-8717-924f1a48ad98",
+      "name": "Test du credential PISTE",
+      "parameters": {
+        "color": 4,
+        "content": "## 🧪 Test du credential PISTE\nNœud isolé, relié à rien : il ne s’exécute jamais tout seul. Ouvrir le nœud, cliquer sur **Execute step**, une seule fois. Il fait la même recherche que le workflow pour l’article L113-2 du Code des assurances, par son numéro (`NUM_ARTICLE`). Attendu : HTTP 200 et un seul identifiant LEGIARTI, celui de L113-2.",
+        "height": 300,
+        "width": 700
+      },
+      "position": [
+        0,
+        440
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -178,13 +311,13 @@
       "name": "📥 Références de départ",
       "parameters": {
         "color": 5,
-        "content": "## 📥 Références de départ\nSources officielles · thèmes suivis\n\nRègles validées · date de dernière veille.",
+        "content": "## 📥 Références de départ\n`n8n/articles_suivis.json` : 20 textes P1 et P2 du Registre des sources présents sur Légifrance, chacun avec sa règle Chez Soi et son rang.\n\nVersion enregistrée : `graphe_noeuds.proprietes` du nœud `Article` (`cle`, `version`, `date_verification`, `url_legifrance`).",
         "height": 260,
-        "width": 860
+        "width": 1360
       },
       "position": [
         0,
-        460
+        800
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -194,13 +327,13 @@
       "name": "📤 Résultat cible",
       "parameters": {
         "color": 4,
-        "content": "## 📤 Résultat cible\nChangements proposés + sources + dates\n\nDécisions de validation + version des règles.",
+        "content": "## 📤 Résultat cible\nRègles `proposee` dans `regles` (code, version + 1, `source_ref`, `source_url`, `verifie_le`) et bilan : lus, inchangés, modifiés, premières lectures, introuvables, ambigus, sources indisponibles.\n\nAprès validation : nœud `Règle` pointé sur la nouvelle version, nœud `Article` mis à jour.",
         "height": 260,
-        "width": 860
+        "width": 1360
       },
       "position": [
-        900,
-        460
+        1400,
+        800
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -210,13 +343,13 @@
       "name": "🔧 À compléter",
       "parameters": {
         "color": 1,
-        "content": "## 🔧 À compléter\nAgent H, attente bornée, comparaison et stockage.\n\nRemplacer le bloc de validation par une étape réellement bloquante. Prévoir « aucun changement » et « source indisponible ».",
+        "content": "## 🔧 À compléter\n1. Credential PISTE et recherche d’un article par son numéro : vérifiés le 17/11/2026. Restent à confirmer par une exécution manuelle : la lecture (`getArticle`, `legiPart`) et la recherche d’un texte entier.\n2. Trois recherches marquées `a_confirmer` dans la liste (par NOR, par date de signature).\n3. Supabase : activer les nœuds 07, 09, 11 et 13 après les migrations, et définir qui valide une règle `proposee`.",
         "height": 260,
-        "width": 860
+        "width": 1360
       },
       "position": [
-        1800,
-        460
+        2800,
+        800
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -226,13 +359,13 @@
       "name": "Détails de conception",
       "parameters": {
         "color": 7,
-        "content": "## 📚 Détails de conception\n## 03 · Veille hebdomadaire → propositions → validation → règles\n**Architecture uniquement.** La planification est définie, mais le workflow reste désactivé.\n\n**Entrée cible :** sources officielles, thèmes et référentiel validé.\n**Sortie cible :** changements sourcés, décisions et version du référentiel.\n**À compléter :** agent H de veille, attente/récupération des sessions, extraction, comparaison, stockage et validation réellement bloquante.\n**Principe :** une découverte ne met jamais automatiquement à jour une règle. Prévoir « aucun changement » et « source indisponible ».\n\nLes blocs grisés sont des emplacements réservés, pas des appels opérationnels.",
+        "content": "## 📚 Détails de conception\n## 03 · Veille hebdomadaire → propositions → validation → graphe\n**Sources :** uniquement Légifrance, par l’API officielle (PISTE). Service-Public, HAS, CNSA, AFNOR et A2P restent en saisie manuelle dans `seed.sql`. Une statistique (P3) ne produit jamais de règle : seules les entrées P1 et P2 sont traitées.\n**Version d’un texte :** pour un article, l’identifiant LEGIARTI en vigueur à la date du jour ; pour un texte entier, une empreinte de la liste de ses articles en vigueur.\n**Jamais de mise à jour automatique d’une règle :** une version modifiée crée une ligne `regles` au statut `proposee`. La publication ne lit que les règles `validee` : le passage de `proposee` à `validee` est un geste humain, hors de ce workflow.\n**Aucun identifiant Légifrance en dur :** chaque texte est retrouvé par recherche (numéro d’article, numéro de texte, NOR), puis l’article lu doit porter le numéro demandé.\n**Cas prévus :** aucun changement, première lecture, texte introuvable, plusieurs résultats (ambigu, jamais deviné), numéro d’article incohérent, source indisponible. Tous figurent dans le bilan.\n**Sans Supabase :** les textes sont lus, mais rien n’est comparé ni proposé (`non_compare`).",
         "height": 330,
-        "width": 2660
+        "width": 4160
       },
       "position": [
         0,
-        800
+        1100
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -259,149 +392,475 @@
       },
       "position": [
         80,
-        190
+        150
       ],
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2
     },
     {
-      "id": "b4c4d0bc-c3c7-4246-9e70-e3b3435cbb25",
-      "name": "02 · Choisir les sources",
-      "notes": "Définir une liste de sources officielles, les thèmes suivis et les références déjà validées. Prévoir une date de dernière veille et un responsable.",
+      "id": "aaa48839-3648-8d3a-bdbf-36b7516f5258",
+      "name": "Lancer à la main",
+      "notes": "Pour un test dans l’interface. Chaque exécution appelle l’API Légifrance pour les 20 textes suivis.",
       "notesInFlow": false,
       "parameters": {},
       "position": [
-        320,
-        190
+        80,
+        310
       ],
-      "type": "n8n-nodes-base.noOp",
+      "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1
     },
     {
-      "disabled": true,
-      "id": "850ed6c6-3523-4384-9279-abf9a9782f6f",
-      "name": "03 · Rechercher avec H",
-      "notes": "Agent de veille à définir : consulter uniquement les sources autorisées et relever URL, date, publication et contenu. Implémenter ensuite lancement de session → attente bornée → statut → lecture du résultat.",
+      "id": "7fad5740-000d-858b-ba29-b5ca8417ef05",
+      "name": "Config",
+      "notes": "Paramètres NON secrets du workflow. Les secrets passent par les credentials n8n. $env et les variables n8n ne sont pas disponibles sur l'instance.",
       "notesInFlow": false,
       "parameters": {
-        "method": "POST",
-        "options": {
-          "timeout": 30000
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2db4ad10-884a-8d11-b9f6-7a32ddd5e60b",
+              "name": "LEGIFRANCE_API_URL",
+              "type": "string",
+              "value": "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app"
+            },
+            {
+              "id": "267681e1-e6b0-875c-a3bd-f2372b675f92",
+              "name": "SUPABASE_URL",
+              "type": "string",
+              "value": "https://a-configurer.invalid"
+            },
+            {
+              "id": "d56f88bf-ed66-87d2-ad13-a6c97337f564",
+              "name": "SUPABASE_BRANCHE",
+              "type": "boolean",
+              "value": false
+            }
+          ]
         },
-        "url": "https://example.invalid/a-configurer"
+        "options": {}
       },
       "position": [
-        700,
+        300,
+        190
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "a73df6e8-a559-8f91-9cbe-49324b05aaab",
+      "name": "Articles suivis",
+      "notes": "Copie générée de n8n/articles_suivis.json. Ne pas modifier ici : modifier le fichier du dépôt, lancer npm run n8n:articles, puis pousser.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Copie générée depuis n8n/articles_suivis.json par `npm run n8n:articles`. Ne pas modifier ici :\n// modifier le fichier du dépôt, régénérer, puis pousser.\nconst elements = [\n  {\n    \"cle\": \"loi-2010-238\",\n    \"reference\": \"Loi n° 2010-238 du 9 mars 2010 (détecteurs de fumée)\",\n    \"recherche\": {\n      \"type\": \"texte\",\n      \"numero\": \"2010-238\"\n    },\n    \"regles\": [\n      \"DAAF\"\n    ],\n    \"rang_registre\": 1,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"cch-l142-1\",\n    \"reference\": \"Code de la construction et de l'habitation, art. L142-1\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code de la construction et de l'habitation\",\n      \"article\": \"L142-1\"\n    },\n    \"regles\": [\n      \"DAAF\"\n    ],\n    \"rang_registre\": 1,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"cch-r142-2\",\n    \"reference\": \"Code de la construction et de l'habitation, art. R142-2\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code de la construction et de l'habitation\",\n      \"article\": \"R142-2\"\n    },\n    \"regles\": [\n      \"DAAF\"\n    ],\n    \"rang_registre\": 1,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"cch-r142-3\",\n    \"reference\": \"Code de la construction et de l'habitation, art. R142-3\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code de la construction et de l'habitation\",\n      \"article\": \"R142-3\"\n    },\n    \"regles\": [\n      \"DAAF\"\n    ],\n    \"rang_registre\": 1,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"cch-r142-4\",\n    \"reference\": \"Code de la construction et de l'habitation, art. R142-4\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code de la construction et de l'habitation\",\n      \"article\": \"R142-4\"\n    },\n    \"regles\": [\n      \"DAAF\"\n    ],\n    \"rang_registre\": 1,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"cch-r142-5\",\n    \"reference\": \"Code de la construction et de l'habitation, art. R142-5\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code de la construction et de l'habitation\",\n      \"article\": \"R142-5\"\n    },\n    \"regles\": [\n      \"DAAF\"\n    ],\n    \"rang_registre\": 1,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"arrete-2013-02-05\",\n    \"reference\": \"Arrêté du 5 février 2013 (application des ex-art. R129-12 à R129-15 du CCH)\",\n    \"recherche\": {\n      \"type\": \"texte_par_date\",\n      \"date_signature\": \"2013-02-05\",\n      \"titre\": \"R. 129-12 à R. 129-15\"\n    },\n    \"regles\": [\n      \"DAAF\"\n    ],\n    \"rang_registre\": 2,\n    \"priorite\": \"P1\",\n    \"a_confirmer\": true\n  },\n  {\n    \"cle\": \"assurances-l113-2\",\n    \"reference\": \"Code des assurances, art. L113-2\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code des assurances\",\n      \"article\": \"L113-2\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 3,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"assurances-l113-4\",\n    \"reference\": \"Code des assurances, art. L113-4\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code des assurances\",\n      \"article\": \"L113-4\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 3,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"decret-2002-120\",\n    \"reference\": \"Décret n° 2002-120 du 30 janvier 2002 (logement décent)\",\n    \"recherche\": {\n      \"type\": \"texte\",\n      \"numero\": \"2002-120\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 6,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"loi-89-462-art-7\",\n    \"reference\": \"Loi n° 89-462 du 6 juillet 1989, art. 7 (f : travaux d'adaptation par le locataire)\",\n    \"recherche\": {\n      \"type\": \"article_texte\",\n      \"numero\": \"89-462\",\n      \"article\": \"7\"\n    },\n    \"regles\": [\n      \"LOC-TRAVAUX\"\n    ],\n    \"rang_registre\": 7,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"decret-2016-1282\",\n    \"reference\": \"Décret n° 2016-1282 du 29 septembre 2016 (travaux d'adaptation du logement)\",\n    \"recherche\": {\n      \"type\": \"texte\",\n      \"numero\": \"2016-1282\"\n    },\n    \"regles\": [\n      \"LOC-TRAVAUX\"\n    ],\n    \"rang_registre\": 7,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"loi-89-462-art-3-3\",\n    \"reference\": \"Loi n° 89-462 du 6 juillet 1989, art. 3-3 (dossier de diagnostic technique)\",\n    \"recherche\": {\n      \"type\": \"article_texte\",\n      \"numero\": \"89-462\",\n      \"article\": \"3-3\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 8,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"decret-2016-1104\",\n    \"reference\": \"Décret n° 2016-1104 du 11 août 2016 (état de l'installation intérieure de gaz)\",\n    \"recherche\": {\n      \"type\": \"texte\",\n      \"numero\": \"2016-1104\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 8,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"decret-2016-1105\",\n    \"reference\": \"Décret n° 2016-1105 du 11 août 2016 (état de l'installation intérieure d'électricité)\",\n    \"recherche\": {\n      \"type\": \"texte\",\n      \"numero\": \"2016-1105\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 8,\n    \"priorite\": \"P1\"\n  },\n  {\n    \"cle\": \"arrete-2015-12-24-etll1511145a\",\n    \"reference\": \"Arrêté du 24 décembre 2015 (NOR ETLL1511145A), accessibilité des logements neufs\",\n    \"recherche\": {\n      \"type\": \"texte_nor\",\n      \"nor\": \"ETLL1511145A\"\n    },\n    \"regles\": [\n      \"ACC-PORTE-ENT\",\n      \"ACC-PORTE-INT\",\n      \"ACC-RESSAUT\",\n      \"ESC-MAIN-COUR\",\n      \"ESC-MARCHES\",\n      \"ESC-VIGILANCE\"\n    ],\n    \"rang_registre\": 11,\n    \"priorite\": \"P2\",\n    \"a_confirmer\": true\n  },\n  {\n    \"cle\": \"decret-2019-305\",\n    \"reference\": \"Décret n° 2019-305 du 11 avril 2019 (logements accessibles et évolutifs)\",\n    \"recherche\": {\n      \"type\": \"texte\",\n      \"numero\": \"2019-305\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 12,\n    \"priorite\": \"P2\"\n  },\n  {\n    \"cle\": \"arrete-2007-02-26-socu0612413a\",\n    \"reference\": \"Arrêté du 26 février 2007 (NOR SOCU0612413A), travaux dans les bâtiments collectifs existants\",\n    \"recherche\": {\n      \"type\": \"texte_nor\",\n      \"nor\": \"SOCU0612413A\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 13,\n    \"priorite\": \"P2\",\n    \"a_confirmer\": true\n  },\n  {\n    \"cle\": \"cch-l134-12\",\n    \"reference\": \"Code de la construction et de l'habitation, art. L134-12\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code de la construction et de l'habitation\",\n      \"article\": \"L134-12\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 14,\n    \"priorite\": \"P2\"\n  },\n  {\n    \"cle\": \"cch-r134-59\",\n    \"reference\": \"Code de la construction et de l'habitation, art. R134-59\",\n    \"recherche\": {\n      \"type\": \"article_code\",\n      \"code\": \"Code de la construction et de l'habitation\",\n      \"article\": \"R134-59\"\n    },\n    \"regles\": [],\n    \"rang_registre\": 14,\n    \"priorite\": \"P2\"\n  }\n];\n\nreturn elements.map((element) => ({ json: element }));\n"
+      },
+      "position": [
+        520,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "caa48e7f-ca4c-8648-8c9d-42ddc720aa8e",
+      "name": "02 · Construire la recherche",
+      "notes": "Requêtes construites d’après les exemples officiels de la DILA. Les recherches par NOR et par date de signature sont marquées a_confirmer dans la liste.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Construit la requête POST /search de chaque texte suivi, d'après les exemples officiels\n// de la DILA (« Utilisation de l'API Légifrance : exemples de cas pratique », 17/09/2025).\nconst maintenant = Date.now();\nconst critere = (typeChamp, valeur) => ({\n  typeChamp,\n  criteres: [{ typeRecherche: 'EXACTE', valeur, operateur: 'ET' }],\n  operateur: 'ET',\n});\nconst dateVersion = { facette: 'DATE_VERSION', singleDate: maintenant };\nconst enVigueur = { facette: 'TEXT_LEGAL_STATUS', valeur: 'VIGUEUR' };\n\nconst sortie = [];\nfor (const item of $input.all()) {\n  const article = item.json;\n  // Une statistique (P3) ou une source secondaire ne produit jamais de règle.\n  if (!['P1', 'P2'].includes(article.priorite)) continue;\n\n  const r = article.recherche ?? {};\n  let champs, filtres, fond, typePagination, cible;\n  if (r.type === 'article_code') {\n    champs = [critere('NUM_ARTICLE', r.article)];\n    filtres = [{ facette: 'NOM_CODE', valeurs: [r.code] }, dateVersion];\n    fond = 'CODE_DATE'; typePagination = 'ARTICLE'; cible = 'article';\n  } else if (r.type === 'article_texte') {\n    champs = [critere('NUM', r.numero), critere('NUM_ARTICLE', r.article)];\n    filtres = [dateVersion];\n    fond = 'LODA_DATE'; typePagination = 'DEFAUT'; cible = 'article';\n  } else if (r.type === 'texte') {\n    champs = [critere('NUM', r.numero)];\n    filtres = [dateVersion, enVigueur];\n    fond = 'LODA_ETAT'; typePagination = 'DEFAUT'; cible = 'texte';\n  } else if (r.type === 'texte_nor') {\n    champs = [critere('NOR', r.nor)];\n    filtres = [dateVersion, enVigueur];\n    fond = 'LODA_ETAT'; typePagination = 'DEFAUT'; cible = 'texte';\n  } else if (r.type === 'texte_par_date') {\n    champs = [critere('TITLE', r.titre)];\n    filtres = [{ facette: 'DATE_SIGNATURE', dates: { start: r.date_signature, end: r.date_signature } }, dateVersion, enVigueur];\n    fond = 'LODA_ETAT'; typePagination = 'DEFAUT'; cible = 'texte';\n  } else {\n    throw new Error('articles_suivis.json : type de recherche inconnu pour ' + article.cle);\n  }\n\n  sortie.push({\n    json: {\n      ...article,\n      cible,\n      date_ms: maintenant,\n      corps_recherche: {\n        recherche: { champs, filtres, pageNumber: 1, pageSize: 10, operateur: 'ET', sort: 'PERTINENCE', typePagination },\n        fond,\n      },\n    },\n  });\n}\nreturn sortie;\n"
+      },
+      "position": [
+        780,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "oAuth2Api": {
+          "id": "BEcg31Yejirok4Ho",
+          "name": "PISTE · Légifrance"
+        }
+      },
+      "id": "f8e8cdcb-a72c-8670-a264-48b118fffd56",
+      "name": "03 · Rechercher sur Légifrance",
+      "notes": "POST /search, un appel par texte suivi, espacés de 500 ms. Une erreur HTTP ne lève pas d’exception : le nœud suivant la classe.",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "jsonBody": "={{ JSON.stringify($json.corps_recherche) }}",
+        "method": "POST",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchInterval": 500,
+              "batchSize": 1
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.LEGIFRANCE_API_URL }}/search"
+      },
+      "position": [
+        1000,
         190
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2
     },
     {
-      "disabled": true,
-      "id": "e346cd9a-7b72-4b85-9cdc-aebe6cc55923",
-      "name": "04 · Extraire les nouveautés",
-      "notes": "Entrée : publications consultées. Sortie : changements candidats sourcés. Séparer date de publication, date d’entrée en vigueur et hypothèses.",
+      "id": "6e76569c-4828-852f-8fe3-adae3155a6e1",
+      "name": "04 · Retenir l’identifiant",
+      "notes": "Article : lit results → sections → extracts (id, num, dateVersion), chemin confirmé par test. Un seul résultat portant le bon numéro : retenu. Aucun : introuvable. Plusieurs : ambigu. Mauvais numéro : incoherent. Jamais deviné.",
       "notesInFlow": false,
       "parameters": {
-        "method": "POST",
-        "options": {
-          "timeout": 30000
-        },
-        "url": "https://example.invalid/a-configurer"
+        "jsCode": "// Associe chaque réponse de recherche à son texte, puis retient l'identifiant Légifrance.\n// Article : chemin confirmé par un test réel (17/11/2026) :\n//   results[].sections[].extracts[] porte id (LEGIARTI…), num et dateVersion.\n// Texte entier : forme non confirmée, on cherche les identifiants par leur format.\n// Dans tous les cas, un résultat n'est retenu que s'il est unique.\nconst articles = $(\"02 · Construire la recherche\").all();\nconst reponses = $input.all();\n\nfunction identifiants(valeur, motif, trouves = new Set()) {\n  if (typeof valeur === 'string') { if (motif.test(valeur)) trouves.add(valeur); }\n  else if (Array.isArray(valeur)) valeur.forEach((element) => identifiants(element, motif, trouves));\n  else if (valeur && typeof valeur === 'object') Object.values(valeur).forEach((element) => identifiants(element, motif, trouves));\n  return trouves;\n}\n// « L. 113-2 » et « L113-2 » désignent le même article.\nconst sansEspace = (numero) => String(numero).replace(/[\\s.]/g, '').toUpperCase();\n\nreturn articles.map((item, i) => {\n  const { corps_recherche, ...article } = item.json;\n  const reponse = reponses[i] ? reponses[i].json : {};\n  const statut = typeof reponse.statusCode === 'number' ? reponse.statusCode : null;\n\n  let etat = 'trouve';\n  let identifiant = null;\n  let candidats = [];\n  let numero_lu = null;\n  let date_version = null;\n  let etat_juridique = null;\n  const corps = reponse.body && typeof reponse.body === 'object' ? reponse.body : {};\n  if (statut !== 200) {\n    etat = 'source_indisponible';\n  } else {\n    let ids;\n    if (article.cible === 'article') {\n      const extraits = (Array.isArray(corps.results) ? corps.results : [])\n        .flatMap((resultat) => (resultat && Array.isArray(resultat.sections) ? resultat.sections : []))\n        .flatMap((section) => (section && Array.isArray(section.extracts) ? section.extracts : []))\n        .filter((extrait) => extrait && typeof extrait.id === 'string' && /^LEGIARTI\\d{12}$/.test(extrait.id));\n      if (extraits.length === 0) {\n        // Forme inattendue : on retombe sur la recherche des identifiants par leur format.\n        ids = [...identifiants(corps, /^LEGIARTI\\d{12}$/)];\n      } else {\n        // Garde-fou : ne retenir que l'extrait qui porte le numéro d'article demandé.\n        const numerotes = extraits.filter((extrait) => typeof extrait.num === 'string');\n        const attendus = numerotes.filter((extrait) => sansEspace(extrait.num) === sansEspace(article.recherche.article));\n        const retenus = numerotes.length === 0 ? extraits : attendus;\n        ids = [...new Set(retenus.map((extrait) => extrait.id))];\n        if (numerotes.length > 0 && attendus.length === 0) {\n          etat = 'incoherent'; // des articles sont revenus, aucun ne porte le numéro demandé\n          numero_lu = [...new Set(numerotes.map((extrait) => extrait.num))].slice(0, 10).join(', ');\n        } else if (ids.length === 1) {\n          numero_lu = retenus[0].num ?? null;\n          date_version = retenus[0].dateVersion ?? null;\n          etat_juridique = retenus[0].legalStatus ?? retenus[0].etat ?? null;\n        }\n      }\n    } else {\n      // Texte entier : la version consolidée (LEGITEXT) d'abord, sinon le texte du Journal officiel.\n      ids = [...identifiants(corps, /^LEGITEXT\\d{12}$/)];\n      if (ids.length === 0) ids = [...identifiants(corps, /^JORFTEXT\\d{12}$/)];\n    }\n    if (etat === 'incoherent') { /* déjà classé */ }\n    else if (ids.length === 1) identifiant = ids[0];\n    else if (ids.length === 0) etat = 'introuvable';\n    else { etat = 'ambigu'; candidats = ids.slice(0, 10); } // jamais deviné : à préciser dans la liste\n  }\n\n  return { json: { ...article, etat, trouve: etat === 'trouve', identifiant, candidats, numero_lu, date_version, etat_juridique, statut_recherche: statut } };\n});\n"
       },
       "position": [
-        940,
+        1220,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "74530ca2-8ee9-88a5-b204-59f0d6f85523",
+      "name": "Texte trouvé ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "739e2050-d16f-808b-bb65-df962fde24c1",
+              "leftValue": "={{ $json.trouve }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        1440,
+        190
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "credentials": {
+        "oAuth2Api": {
+          "id": "BEcg31Yejirok4Ho",
+          "name": "PISTE · Légifrance"
+        }
+      },
+      "id": "25cd83ef-cc9b-84ca-8f8b-897dbbdacea0",
+      "name": "05 · Lire la version en vigueur",
+      "notes": "Article : POST /consult/getArticle { id }. Texte entier : POST /consult/legiPart { date, textId }.",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "jsonBody": "={{ JSON.stringify($json.cible === 'article' ? { id: $json.identifiant } : { date: $json.date_ms, textId: $json.identifiant }) }}",
+        "method": "POST",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchInterval": 500,
+              "batchSize": 1
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.LEGIFRANCE_API_URL }}{{ $json.cible === 'article' ? '/consult/getArticle' : '/consult/legiPart' }}"
+      },
+      "position": [
+        1660,
         190
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2
     },
     {
-      "disabled": true,
-      "id": "9e72545b-0fee-4363-8c71-90b073d09bbb",
-      "name": "05 · Comparer les règles",
-      "notes": "Comparer les changements candidats aux règles déjà validées. Sortie : inchangé / nouveau / modifié / à vérifier. Dédupliquer les textes.",
+      "id": "bf956326-231a-8861-9003-d7003aa4801b",
+      "name": "06 · Extraire la version",
+      "notes": "Version d’un article : son identifiant LEGIARTI en vigueur. Version d’un texte entier : empreinte de la liste de ses articles. Un article dont le numéro lu diffère du numéro demandé est classé incoherent et ne produit aucune règle.",
       "notesInFlow": false,
       "parameters": {
-        "method": "POST",
-        "options": {
-          "timeout": 30000
-        },
-        "url": "https://example.invalid/a-configurer"
+        "jsCode": "// Associe chaque lecture à son texte et en tire une version comparable d'une semaine à l'autre.\nconst articles = $(\"Texte trouvé ?\").all(0); // sortie « vrai »\nconst reponses = $input.all();\n\nfunction empreinte(texte) {\n  let h = '';\n  for (let k = 0; k < 2; k++) {\n    let x = 0x811c9dc5;\n    const s = k + ':' + texte;\n    for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; }\n    h += x.toString(16).padStart(8, '0');\n  }\n  return h;\n}\nfunction identifiants(valeur, motif, trouves = new Set()) {\n  if (typeof valeur === 'string') { if (motif.test(valeur)) trouves.add(valeur); }\n  else if (Array.isArray(valeur)) valeur.forEach((element) => identifiants(element, motif, trouves));\n  else if (valeur && typeof valeur === 'object') Object.values(valeur).forEach((element) => identifiants(element, motif, trouves));\n  return trouves;\n}\n\nreturn articles.map((item, i) => {\n  const article = item.json;\n  const reponse = reponses[i] ? reponses[i].json : {};\n  const statut = typeof reponse.statusCode === 'number' ? reponse.statusCode : null;\n  if (statut !== 200 || !reponse.body || typeof reponse.body !== 'object') {\n    return { json: { ...article, etat: 'source_indisponible', trouve: false, statut_lecture: statut } };\n  }\n\n  let version, date_debut = null, etat_juridique = null, url_legifrance;\n  if (article.cible === 'article') {\n    const fiche = reponse.body.article && typeof reponse.body.article === 'object' ? reponse.body.article : reponse.body;\n    // Garde-fou : l'article lu doit porter le numéro demandé. Un identifiant peut désigner\n    // un autre article (le Registre des sources citait L113-8 à la place de L113-2).\n    const sansEspace = (numero) => String(numero).replace(/[\\s.]/g, '').toUpperCase();\n    // Second contrôle, à la lecture : même règle que sur l'extrait de la recherche.\n    const numero_article = typeof fiche.num === 'string' ? fiche.num : null;\n    if (numero_article && sansEspace(numero_article) !== sansEspace(article.recherche.article)) {\n      return { json: { ...article, etat: 'incoherent', trouve: false, numero_lu: numero_article, statut_lecture: statut } };\n    }\n    // L'identifiant LEGIARTI change à chaque nouvelle version d'un article.\n    version = article.identifiant;\n    date_debut = fiche.dateDebut ?? article.date_version ?? null;\n    etat_juridique = fiche.etat ?? article.etat_juridique ?? null;\n    const chemin = article.recherche.type === 'article_code' ? 'codes' : 'loda';\n    url_legifrance = 'https://www.legifrance.gouv.fr/' + chemin + '/article_lc/' + article.identifiant;\n  } else {\n    // Texte entier : empreinte de la liste de ses articles en vigueur.\n    const ids = [...identifiants(reponse.body, /^LEGIARTI\\d{12}$/)].sort();\n    version = 'empreinte:' + empreinte(ids.length > 0 ? ids.join(',') : JSON.stringify(reponse.body));\n    url_legifrance = 'https://www.legifrance.gouv.fr/loda/id/' + article.identifiant;\n  }\n\n  return { json: { ...article, etat: 'lu', version, date_debut, etat_juridique, url_legifrance, statut_lecture: statut } };\n});\n"
       },
       "position": [
-        1320,
+        1880,
         190
       ],
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
     },
     {
-      "disabled": true,
-      "id": "76fac123-50f7-4333-aa4e-87153cbd6eb9",
-      "name": "06 · Préparer un brouillon",
-      "notes": "Enregistrer les propositions et leurs sources dans le stockage à définir. Aucun changement de règle métier sans validation.",
-      "notesInFlow": false,
-      "parameters": {
-        "method": "POST",
-        "options": {
-          "timeout": 30000
-        },
-        "url": "https://example.invalid/a-configurer"
-      },
-      "position": [
-        1560,
-        190
-      ],
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2
-    },
-    {
-      "id": "817406d6-1426-4a66-92b5-e160e3fae1c2",
-      "name": "07 · Faire valider",
-      "notes": "Étape bloquante à implémenter : responsable, canal de validation et décision approuvée/refusée. Le bloc actuel ne valide rien. Ne pas activer avant son remplacement.",
+      "id": "c175b9ad-d39f-8a54-aadb-dd63e303df5a",
+      "name": "Rassembler les textes",
+      "notes": "Réunit les textes lus et ceux qui n’ont pas pu l’être (introuvable, ambigu, source indisponible), pour que le bilan n’en oublie aucun.",
       "notesInFlow": false,
       "parameters": {},
       "position": [
-        1940,
+        2100,
         190
       ],
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3
     },
     {
       "disabled": true,
-      "id": "afcaed66-313f-4c8d-b7a9-ccc1f53c2e91",
-      "name": "08 · Versionner les règles",
-      "notes": "Uniquement après validation explicite : versionner le référentiel, enregistrer les sources et journaliser auteur/date. Cette étape est désactivée.",
-      "notesInFlow": false,
+      "id": "2a3447ff-b0c5-8f44-a4c9-ba3da4df697a",
+      "name": "07 · Lire le graphe (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud. Lit les nœuds Article (version enregistrée) et Règle.",
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
       "parameters": {
-        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "method": "GET",
+        "nodeCredentialType": "supabaseApi",
         "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
           "timeout": 30000
         },
-        "url": "https://example.invalid/a-configurer"
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/graphe_noeuds?type=in.(Article,Regle)&contrat_id=is.null&select=id,type,libelle,regle_id,proprietes"
       },
       "position": [
-        2180,
+        2360,
         190
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2
     },
     {
-      "id": "b85ce35c-6967-4e43-bc0d-afe187163f89",
-      "name": "09 · Résumer la veille",
-      "notes": "Sortie cible : veille_id, sources_consultees, changements_proposes, decisions et version_regles. Définir la destination du bilan sans envoi automatique pour le moment.",
+      "id": "81e26a97-2906-8f84-b7ea-729d4b58c54a",
+      "name": "08 · Comparer les versions",
+      "notes": "Sans Supabase, rien n’est comparé : chaque texte lu porte le changement non_compare.",
       "notesInFlow": false,
-      "parameters": {},
+      "parameters": {
+        "jsCode": "// Compare la version lue à la version enregistrée dans le nœud Article du graphe.\nconst textes = $(\"Rassembler les textes\").all().map((item) => item.json);\n\n// Nœuds du graphe : corps de la lecture Supabase quand le nœud 07 est actif, sinon rien.\nconst lecture = $input.first().json;\nconst noeuds = Array.isArray(lecture.body) ? lecture.body : null;\nconst articlesEnregistres = new Map(\n  (noeuds ?? []).filter((n) => n.type === 'Article' && n.proprietes && n.proprietes.cle).map((n) => [n.proprietes.cle, n]),\n);\n\nconst compares = textes.map((texte) => {\n  let changement;\n  let version_enregistree = null;\n  if (texte.etat !== 'lu') changement = texte.etat; // introuvable, ambigu, source_indisponible\n  else if (noeuds === null) changement = 'non_compare'; // Supabase non branché\n  else {\n    const enregistre = articlesEnregistres.get(texte.cle);\n    if (!enregistre) changement = 'premiere_lecture';\n    else {\n      version_enregistree = enregistre.proprietes.version ?? null;\n      changement = version_enregistree === texte.version ? 'inchange' : 'modifie';\n    }\n  }\n  return { ...texte, changement, version_enregistree };\n});\n\nreturn [{ json: { textes: compares, noeuds_graphe: noeuds } }];\n"
+      },
       "position": [
-        2420,
+        2580,
         190
       ],
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "disabled": true,
+      "id": "5c24d838-cc8a-86a1-99c5-5ce6189d1927",
+      "name": "09 · Lire les règles (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud. Lit toutes les versions des règles, avec leur statut de validation.",
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "GET",
+        "nodeCredentialType": "supabaseApi",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/regles?select=id,code,version,intitule,element,force,verdict_type,source_id,source_ref,source_url,statut_validation,verifie_le&order=code.asc,version.asc"
+      },
+      "position": [
+        2800,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "f8bbb248-5432-86bb-a996-eb22e7d2fdfd",
+      "name": "10 · Préparer les règles proposées",
+      "notes": "Statut toujours proposee. Idempotent : une proposition déjà enregistrée pour les mêmes versions n’est pas recréée.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Une version modifiée (ou lue pour la première fois) crée une NOUVELLE ligne regles au\n// statut « proposee ». Une règle existante n'est jamais modifiée : les diagnostics passés\n// gardent leur version.\nconst { textes, noeuds_graphe } = $(\"08 · Comparer les versions\").first().json;\n\n// Règles : corps de la lecture Supabase quand le nœud 09 est actif, sinon rien.\nconst lecture = $input.first().json;\nconst regles = Array.isArray(lecture.body) ? lecture.body : null;\nconst aujourdhui = new Date().toISOString().slice(0, 10);\n\n// Regroupe par règle les textes à proposer.\nconst parCode = new Map();\nconst sans_regle = [];\nfor (const texte of textes) {\n  if (!['modifie', 'premiere_lecture'].includes(texte.changement)) continue;\n  if (!['P1', 'P2'].includes(texte.priorite)) continue; // jamais de règle depuis une statistique\n  if (!Array.isArray(texte.regles) || texte.regles.length === 0) {\n    sans_regle.push({ cle: texte.cle, reference: texte.reference, changement: texte.changement, version: texte.version });\n    continue;\n  }\n  for (const code of texte.regles) {\n    if (!parCode.has(code)) parCode.set(code, []);\n    parCode.get(code).push(texte);\n  }\n}\n\nconst propositions = [];\nconst non_proposees = [];\nfor (const [code, sources] of parCode) {\n  const versions = (regles ?? []).filter((r) => r.code === code);\n  if (versions.length === 0) {\n    non_proposees.push({ code, motif: regles === null ? 'Supabase non branché' : 'règle absente de la table regles' });\n    continue;\n  }\n  const derniere = versions.reduce((max, r) => (r.version > max.version ? r : max));\n  // La source porte, pour chaque texte, sa clé et la version lue : « référence (cle@version) ».\n  const source_ref = sources.map((s) => s.reference + ' (' + s.cle + '@' + s.version + ')').join(' ; ');\n  if (versions.some((r) => r.source_ref === source_ref)) continue; // déjà proposée ou validée pour ces versions\n  propositions.push({\n    code,\n    version: derniere.version + 1,\n    intitule: derniere.intitule,\n    element: derniere.element,\n    force: derniere.force,\n    verdict_type: derniere.verdict_type,\n    source_id: derniere.source_id,\n    source_ref,\n    source_url: sources[0].url_legifrance,\n    statut_validation: 'proposee', // la validation est un geste humain, hors de ce workflow\n    verifie_le: aujourdhui,\n    relu_par: null,\n  });\n}\n\nreturn [{ json: { textes, noeuds_graphe, regles, propositions, sans_regle, non_proposees } }];\n"
+      },
+      "position": [
+        3020,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "disabled": true,
+      "id": "244317e3-7852-8dce-a9dc-72dd921313e0",
+      "name": "11 · Écrire les règles proposées (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud. Insertion sans écrasement : unique (code, version).",
+      "notesInFlow": true,
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=ignore-duplicates,return=minimal"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify($('10 · Préparer les règles proposées').first().json.propositions) }}",
+        "method": "POST",
+        "nodeCredentialType": "supabaseApi",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/regles?on_conflict=code,version"
+      },
+      "position": [
+        3240,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "64aed210-f95a-8037-870e-2aca74611629",
+      "name": "12 · Préparer la publication",
+      "notes": "Ne lit que les règles validee. Sans Supabase, ou sans règle validée à publier, la liste est vide.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Identifiant déterministe au format UUID (version 8) : rejouer le workflow réécrit les mêmes lignes.\nfunction idDeterministe(texte) {\n  let h = '';\n  for (let k = 0; k < 4; k++) {\n    let x = 0x811c9dc5;\n    const s = k + ':' + texte;\n    for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; }\n    h += x.toString(16).padStart(8, '0');\n  }\n  const variante = ((parseInt(h[16], 16) & 0x3) | 0x8).toString(16);\n  return h.slice(0, 8) + '-' + h.slice(8, 12) + '-8' + h.slice(13, 16) + '-' + variante + h.slice(17, 20) + '-' + h.slice(20, 32);\n}\n\n// VALIDATION HUMAINE BLOQUANTE : seules les règles au statut « validee » sont publiées.\n// Ce workflow ne passe jamais une règle de « proposee » à « validee ».\nconst { textes, noeuds_graphe, regles } = $(\"10 · Préparer les règles proposées\").first().json;\nconst lignes = new Map();\nconst journal = [];\n\nif (Array.isArray(regles) && Array.isArray(noeuds_graphe)) {\n  const codeDe = new Map(regles.map((r) => [r.id, r.code]));\n  const versionLue = new Map(textes.filter((t) => t.etat === 'lu').map((t) => [t.cle, t]));\n  const articles = new Map(noeuds_graphe.filter((n) => n.type === 'Article' && n.proprietes && n.proprietes.cle).map((n) => [n.proprietes.cle, n]));\n\n  // Dernière version VALIDÉE de chaque règle.\n  const validees = new Map();\n  for (const r of regles) {\n    if (r.statut_validation !== 'validee') continue;\n    const courante = validees.get(r.code);\n    if (!courante || r.version > courante.version) validees.set(r.code, r);\n  }\n\n  for (const regle of validees.values()) {\n    // 1. Le nœud Règle pointe vers la dernière version validée.\n    for (const noeud of noeuds_graphe.filter((n) => n.type === 'Regle' && codeDe.get(n.regle_id) === regle.code)) {\n      if (noeud.regle_id === regle.id) continue;\n      lignes.set(noeud.id, {\n        id: noeud.id, type: 'Regle', libelle: noeud.libelle, contrat_id: null, regle_id: regle.id,\n        proprietes: { ...(noeud.proprietes ?? {}), code: regle.code, version: regle.version, source_ref: regle.source_ref, source_url: regle.source_url },\n      });\n      journal.push({ noeud: 'Regle', code: regle.code, version: regle.version });\n    }\n    // 2. Le nœud Article enregistre la version validée, si c'est bien celle lue aujourd'hui.\n    for (const [, cle, version] of String(regle.source_ref ?? '').matchAll(/\\(([a-z0-9-]+)@([^)]+)\\)/g)) {\n      const lu = versionLue.get(cle);\n      const existant = articles.get(cle);\n      if (!lu || lu.version !== version) continue; // le texte a encore changé : attendre la prochaine proposition\n      if (existant && existant.proprietes.version === version) continue;\n      const id = existant ? existant.id : idDeterministe('Article|' + cle);\n      lignes.set(id, {\n        id, type: 'Article', libelle: lu.reference, contrat_id: null, regle_id: null,\n        proprietes: { ...(existant ? existant.proprietes : {}), cle, version, date_verification: regle.verifie_le, url_legifrance: lu.url_legifrance },\n      });\n      journal.push({ noeud: 'Article', cle, version });\n    }\n  }\n}\n\nreturn [{ json: { lignes: [...lignes.values()], journal } }];\n"
+      },
+      "position": [
+        3500,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "disabled": true,
+      "id": "ae9b6b5f-111b-803c-9c46-95d9d7b87186",
+      "name": "13 · Publier dans le graphe (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud. Seule écriture de ce workflow dans le graphe : elle ne porte que des règles validées par une personne.",
+      "notesInFlow": true,
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify($('12 · Préparer la publication').first().json.lignes) }}",
+        "method": "POST",
+        "nodeCredentialType": "supabaseApi",
+        "options": {
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/graphe_noeuds?on_conflict=id"
+      },
+      "position": [
+        3720,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "4a25884f-fc0b-88de-ab04-7599d2782f18",
+      "name": "14 · Bilan de la veille",
+      "notes": "Sortie cible : textes lus, changements proposés, publication. La destination du bilan reste à définir, sans envoi automatique.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Bilan lisible de l'exécution. Aucun envoi automatique.\nconst p = $(\"10 · Préparer les règles proposées\").first().json;\nconst publication = $(\"12 · Préparer la publication\").first().json;\nconst compter = (changement) => p.textes.filter((t) => t.changement === changement).length;\nconst lister = (changement) => p.textes.filter((t) => t.changement === changement).map((t) => ({ cle: t.cle, reference: t.reference, candidats: t.candidats && t.candidats.length > 0 ? t.candidats : undefined }));\n\nreturn [{\n  json: {\n    veille_du: new Date().toISOString(),\n    textes_suivis: p.textes.length,\n    lus: p.textes.filter((t) => t.etat === 'lu').length,\n    inchanges: compter('inchange'),\n    modifies: lister('modifie'),\n    premieres_lectures: lister('premiere_lecture'),\n    non_compares: compter('non_compare'),\n    introuvables: lister('introuvable'),\n    ambigus: lister('ambigu'),\n    incoherents: p.textes.filter((t) => t.changement === 'incoherent').map((t) => ({ cle: t.cle, reference: t.reference, numero_lu: t.numero_lu })),\n    sources_indisponibles: lister('source_indisponible'),\n    regles_proposees: p.propositions.map((r) => ({ code: r.code, version: r.version, source_ref: r.source_ref })),\n    changements_sans_regle: p.sans_regle,\n    regles_non_proposees: p.non_proposees,\n    publication: publication.journal,\n    ecrit_dans_supabase: $(\"Config\").first().json.SUPABASE_BRANCHE,\n    rappel: 'Une règle proposée n\\'entre dans le graphe qu\\'après validation humaine (statut validee).',\n  },\n}];\n"
+      },
+      "position": [
+        3940,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "oAuth2Api": {
+          "id": "BEcg31Yejirok4Ho",
+          "name": "PISTE · Légifrance"
+        }
+      },
+      "id": "5061439a-c85e-8335-9324-64c4dfed9a47",
+      "name": "Test PISTE · un seul appel",
+      "notes": "Relié à rien : à lancer une seule fois avec « Execute step ». POST /search : article L113-2 du Code des assurances, retrouvé par son numéro (NUM_ARTICLE), comme le fait le workflow. Attendu : statusCode 200 et un seul identifiant LEGIARTI. Aucun identifiant Légifrance n’est écrit en dur : celui que citait le Registre des sources (rang 3) désignait en réalité l’article L113-8.",
+      "notesInFlow": true,
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "jsonBody": "={{ JSON.stringify({ recherche: { champs: [{ typeChamp: 'NUM_ARTICLE', criteres: [{ typeRecherche: 'EXACTE', valeur: 'L113-2', operateur: 'ET' }], operateur: 'ET' }], filtres: [{ facette: 'NOM_CODE', valeurs: ['Code des assurances'] }, { facette: 'DATE_VERSION', singleDate: Date.now() }], pageNumber: 1, pageSize: 10, operateur: 'ET', sort: 'PERTINENCE', typePagination: 'ARTICLE' }, fond: 'CODE_DATE' }) }}",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/search"
+      },
+      "position": [
+        300,
+        580
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
     }
   ],
   "settings": {

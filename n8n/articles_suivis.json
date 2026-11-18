@@ -1,0 +1,177 @@
+{
+  "description": "Textes suivis par le workflow veille_reglementaire. Source : Registre des sources du 17/11/2026, lignes P1 et P2 présentes sur Légifrance. Ce fichier est la référence : après modification, lancer `npm run n8n:articles` pour régénérer la copie portée par le nœud « Articles suivis », puis pousser. Les sources hors Légifrance (Service-Public, HAS, CNSA, normes AFNOR, A2P) restent en saisie manuelle dans supabase/seed.sql. Une statistique (P3) ne produit jamais de règle. Aucun identifiant Légifrance (LEGIARTI, LEGITEXT, JORFTEXT) n'est écrit ici : chaque texte est retrouvé par recherche, parce qu'un identifiant recopié peut désigner un autre article (celui que le Registre donnait pour L113-2 renvoyait L113-8).",
+  "champs": {
+    "cle": "identifiant stable de l'entrée, repris dans graphe_noeuds.proprietes.cle du nœud Article",
+    "reference": "référence officielle, telle qu'elle est affichée",
+    "recherche": "comment retrouver le texte par l'API Légifrance : article_code, article_texte, texte (par numéro), texte_nor ou texte_par_date",
+    "regles": "codes des règles Chez Soi fondées sur ce texte (doc CDO) ; vide si le texte n'en fonde aucune pour l'instant",
+    "rang_registre": "rang de la ligne dans le Registre des sources",
+    "priorite": "P1 ou P2",
+    "a_confirmer": "true si la forme de recherche n'est pas couverte par un exemple officiel de la DILA et doit être vérifiée au premier test"
+  },
+  "articles": [
+    {
+      "cle": "loi-2010-238",
+      "reference": "Loi n° 2010-238 du 9 mars 2010 (détecteurs de fumée)",
+      "recherche": { "type": "texte", "numero": "2010-238" },
+      "regles": ["DAAF"],
+      "rang_registre": 1,
+      "priorite": "P1"
+    },
+    {
+      "cle": "cch-l142-1",
+      "reference": "Code de la construction et de l'habitation, art. L142-1",
+      "recherche": { "type": "article_code", "code": "Code de la construction et de l'habitation", "article": "L142-1" },
+      "regles": ["DAAF"],
+      "rang_registre": 1,
+      "priorite": "P1"
+    },
+    {
+      "cle": "cch-r142-2",
+      "reference": "Code de la construction et de l'habitation, art. R142-2",
+      "recherche": { "type": "article_code", "code": "Code de la construction et de l'habitation", "article": "R142-2" },
+      "regles": ["DAAF"],
+      "rang_registre": 1,
+      "priorite": "P1"
+    },
+    {
+      "cle": "cch-r142-3",
+      "reference": "Code de la construction et de l'habitation, art. R142-3",
+      "recherche": { "type": "article_code", "code": "Code de la construction et de l'habitation", "article": "R142-3" },
+      "regles": ["DAAF"],
+      "rang_registre": 1,
+      "priorite": "P1"
+    },
+    {
+      "cle": "cch-r142-4",
+      "reference": "Code de la construction et de l'habitation, art. R142-4",
+      "recherche": { "type": "article_code", "code": "Code de la construction et de l'habitation", "article": "R142-4" },
+      "regles": ["DAAF"],
+      "rang_registre": 1,
+      "priorite": "P1"
+    },
+    {
+      "cle": "cch-r142-5",
+      "reference": "Code de la construction et de l'habitation, art. R142-5",
+      "recherche": { "type": "article_code", "code": "Code de la construction et de l'habitation", "article": "R142-5" },
+      "regles": ["DAAF"],
+      "rang_registre": 1,
+      "priorite": "P1"
+    },
+    {
+      "cle": "arrete-2013-02-05",
+      "reference": "Arrêté du 5 février 2013 (application des ex-art. R129-12 à R129-15 du CCH)",
+      "recherche": { "type": "texte_par_date", "date_signature": "2013-02-05", "titre": "R. 129-12 à R. 129-15" },
+      "regles": ["DAAF"],
+      "rang_registre": 2,
+      "priorite": "P1",
+      "a_confirmer": true
+    },
+    {
+      "cle": "assurances-l113-2",
+      "reference": "Code des assurances, art. L113-2",
+      "recherche": { "type": "article_code", "code": "Code des assurances", "article": "L113-2" },
+      "regles": [],
+      "rang_registre": 3,
+      "priorite": "P1"
+    },
+    {
+      "cle": "assurances-l113-4",
+      "reference": "Code des assurances, art. L113-4",
+      "recherche": { "type": "article_code", "code": "Code des assurances", "article": "L113-4" },
+      "regles": [],
+      "rang_registre": 3,
+      "priorite": "P1"
+    },
+    {
+      "cle": "decret-2002-120",
+      "reference": "Décret n° 2002-120 du 30 janvier 2002 (logement décent)",
+      "recherche": { "type": "texte", "numero": "2002-120" },
+      "regles": [],
+      "rang_registre": 6,
+      "priorite": "P1"
+    },
+    {
+      "cle": "loi-89-462-art-7",
+      "reference": "Loi n° 89-462 du 6 juillet 1989, art. 7 (f : travaux d'adaptation par le locataire)",
+      "recherche": { "type": "article_texte", "numero": "89-462", "article": "7" },
+      "regles": ["LOC-TRAVAUX"],
+      "rang_registre": 7,
+      "priorite": "P1"
+    },
+    {
+      "cle": "decret-2016-1282",
+      "reference": "Décret n° 2016-1282 du 29 septembre 2016 (travaux d'adaptation du logement)",
+      "recherche": { "type": "texte", "numero": "2016-1282" },
+      "regles": ["LOC-TRAVAUX"],
+      "rang_registre": 7,
+      "priorite": "P1"
+    },
+    {
+      "cle": "loi-89-462-art-3-3",
+      "reference": "Loi n° 89-462 du 6 juillet 1989, art. 3-3 (dossier de diagnostic technique)",
+      "recherche": { "type": "article_texte", "numero": "89-462", "article": "3-3" },
+      "regles": [],
+      "rang_registre": 8,
+      "priorite": "P1"
+    },
+    {
+      "cle": "decret-2016-1104",
+      "reference": "Décret n° 2016-1104 du 11 août 2016 (état de l'installation intérieure de gaz)",
+      "recherche": { "type": "texte", "numero": "2016-1104" },
+      "regles": [],
+      "rang_registre": 8,
+      "priorite": "P1"
+    },
+    {
+      "cle": "decret-2016-1105",
+      "reference": "Décret n° 2016-1105 du 11 août 2016 (état de l'installation intérieure d'électricité)",
+      "recherche": { "type": "texte", "numero": "2016-1105" },
+      "regles": [],
+      "rang_registre": 8,
+      "priorite": "P1"
+    },
+    {
+      "cle": "arrete-2015-12-24-etll1511145a",
+      "reference": "Arrêté du 24 décembre 2015 (NOR ETLL1511145A), accessibilité des logements neufs",
+      "recherche": { "type": "texte_nor", "nor": "ETLL1511145A" },
+      "regles": ["ACC-PORTE-ENT", "ACC-PORTE-INT", "ACC-RESSAUT", "ESC-MAIN-COUR", "ESC-MARCHES", "ESC-VIGILANCE"],
+      "rang_registre": 11,
+      "priorite": "P2",
+      "a_confirmer": true
+    },
+    {
+      "cle": "decret-2019-305",
+      "reference": "Décret n° 2019-305 du 11 avril 2019 (logements accessibles et évolutifs)",
+      "recherche": { "type": "texte", "numero": "2019-305" },
+      "regles": [],
+      "rang_registre": 12,
+      "priorite": "P2"
+    },
+    {
+      "cle": "arrete-2007-02-26-socu0612413a",
+      "reference": "Arrêté du 26 février 2007 (NOR SOCU0612413A), travaux dans les bâtiments collectifs existants",
+      "recherche": { "type": "texte_nor", "nor": "SOCU0612413A" },
+      "regles": [],
+      "rang_registre": 13,
+      "priorite": "P2",
+      "a_confirmer": true
+    },
+    {
+      "cle": "cch-l134-12",
+      "reference": "Code de la construction et de l'habitation, art. L134-12",
+      "recherche": { "type": "article_code", "code": "Code de la construction et de l'habitation", "article": "L134-12" },
+      "regles": [],
+      "rang_registre": 14,
+      "priorite": "P2"
+    },
+    {
+      "cle": "cch-r134-59",
+      "reference": "Code de la construction et de l'habitation, art. R134-59",
+      "recherche": { "type": "article_code", "code": "Code de la construction et de l'habitation", "article": "R134-59" },
+      "regles": [],
+      "rang_registre": 14,
+      "priorite": "P2"
+    }
+  ]
+}

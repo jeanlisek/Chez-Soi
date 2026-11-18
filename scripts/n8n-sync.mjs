@@ -4,13 +4,18 @@
  *
  *   npm run n8n:pull [-- nom ...]        instance → n8n/<nom>.json
  *   npm run n8n:push [-- nom ...]        simulation : affiche ce qui serait envoyé
- *   npm run n8n:push -- --confirmer      n8n/*.json → instance (prévenir Bastian avant)
+ *   npm run n8n:push -- --confirmer      n8n/*.json → instance
+ *   npm run n8n:articles                 régénère la copie de n8n/articles_suivis.json dans le workflow
  *
- * Sans nom, pull et push portent sur les workflows qui ont déjà un fichier dans n8n/.
+ * Ciblage : un fichier n8n/<nom>.json désigne son workflow par l'`id` qu'il contient, pas
+ * par son nom. Le nom ne sert que tant que le fichier n'a pas encore d'id (premier export,
+ * ou création). Les workflows dont le nom commence par « archive · » sont ignorés partout.
+ *
+ * Sans nom en argument, pull et push portent sur les workflows qui ont un fichier dans n8n/.
  * Un workflow de l'instance sans fichier ici n'est donc jamais exporté par défaut.
  *
- * Variables : N8N_URL et N8N_API_KEY, lues dans l'environnement ou dans le .env de
- * la racine. Elles ne sont jamais affichées. Aucune dépendance : Node 20.12 ou plus.
+ * Variables : N8N_URL et N8N_API_KEY, lues dans l'environnement ou dans le .env de la
+ * racine. Elles ne sont jamais affichées. Aucune dépendance : Node 20.12 ou plus.
  * Le script n'active, ne désactive et n'exécute jamais un workflow.
  */
 import { existsSync } from "node:fs";
@@ -21,6 +26,16 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const RACINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DOSSIER = path.join(RACINE, "n8n");
 const NOM_VALIDE = /^[A-Za-z0-9_.-]+$/;
+const PREFIXE_ARCHIVE = "archive · ";
+
+/**
+ * Copies générées : n8n ne peut pas lire un fichier du dépôt à l'exécution. Le fichier
+ * `source` reste la référence, le nœud Code `noeud` du workflow en porte une copie, et le
+ * push échoue si les deux divergent.
+ */
+const COPIES_GENEREES = [
+  { source: "articles_suivis.json", cle: "articles", workflow: "veille_reglementaire", noeud: "Articles suivis" },
+];
 
 /** Clés de `settings` acceptées en écriture (schéma workflowSettings de l'API publique). */
 const CLES_SETTINGS = [
@@ -103,7 +118,9 @@ async function api(config, methode, chemin, corps) {
   return reponse.json();
 }
 
-/** Liste tous les workflows de l'instance (pagination par curseur). */
+const estArchive = (workflow) => String(workflow.name ?? "").startsWith(PREFIXE_ARCHIVE);
+
+/** Liste les workflows de l'instance (pagination par curseur), archives exclues. */
 async function listerDistants(config) {
   const workflows = [];
   let curseur;
@@ -114,7 +131,7 @@ async function listerDistants(config) {
     workflows.push(...(page.data ?? []));
     curseur = page.nextCursor;
   } while (curseur);
-  return workflows;
+  return { tous: workflows, suivis: workflows.filter((workflow) => !estArchive(workflow)) };
 }
 
 const lireDistant = (config, id) =>
@@ -254,12 +271,19 @@ function afficherAlertes(nom, alertes) {
 
 const cheminLocal = (nom) => path.join(DOSSIER, `${nom}.json`);
 
-async function nomsLocaux() {
-  const fichiers = await readdir(DOSSIER);
-  return fichiers
-    .filter((fichier) => fichier.endsWith(".json"))
-    .map((fichier) => path.basename(fichier, ".json"))
-    .sort();
+/**
+ * Workflows versionnés : les fichiers n8n/*.json qui portent un tableau `nodes`.
+ * Les autres JSON du dossier (articles_suivis.json…) ne sont pas des workflows.
+ */
+async function workflowsLocaux() {
+  const locaux = new Map();
+  for (const fichier of (await readdir(DOSSIER)).filter((f) => f.endsWith(".json")).sort()) {
+    const contenu = JSON.parse(await readFile(path.join(DOSSIER, fichier), "utf8"));
+    if (contenu && !Array.isArray(contenu) && Array.isArray(contenu.nodes)) {
+      locaux.set(path.basename(fichier, ".json"), contenu);
+    }
+  }
+  return locaux;
 }
 
 function verifierNoms(noms) {
@@ -272,26 +296,95 @@ function verifierNoms(noms) {
   }
 }
 
-/** Retrouve sur l'instance le workflow d'un nom donné. Refuse les homonymes. */
-function trouverParNom(distants, nom) {
-  const trouves = distants.filter((workflow) => workflow.name === nom);
+/**
+ * Retrouve sur l'instance le workflow d'un fichier local.
+ * Avec un id : c'est lui, et lui seul. Sans id : par nom, parmi les workflows non archivés.
+ */
+function resoudre(distants, nom, id) {
+  if (id) {
+    const cible = distants.tous.find((workflow) => workflow.id === id);
+    if (!cible) {
+      throw new Erreur(`n8n/${nom}.json pointe vers l'id ${id}, introuvable sur l'instance.`);
+    }
+    if (estArchive(cible)) {
+      throw new Erreur(`n8n/${nom}.json pointe vers un workflow archivé (« ${cible.name} »).`);
+    }
+    if (cible.name !== nom) {
+      throw new Erreur(
+        `n8n/${nom}.json porte l'id du workflow « ${cible.name} » : nom de fichier et nom du workflow doivent être identiques.`,
+      );
+    }
+    return cible;
+  }
+  const trouves = distants.suivis.filter((workflow) => workflow.name === nom);
   if (trouves.length > 1) {
     throw new Erreur(`${trouves.length} workflows s'appellent « ${nom} » sur l'instance : en renommer un.`);
   }
   return trouves[0];
 }
 
+/* ---------- Copies générées ---------- */
+
+function codeGenere(source, elements) {
+  return [
+    `// Copie générée depuis n8n/${source} par \`npm run n8n:articles\`. Ne pas modifier ici :`,
+    "// modifier le fichier du dépôt, régénérer, puis pousser.",
+    `const elements = ${JSON.stringify(elements, null, 2)};`,
+    "",
+    "return elements.map((element) => ({ json: element }));",
+    "",
+  ].join("\n");
+}
+
+async function lireCopie({ source, cle }) {
+  const contenu = JSON.parse(await readFile(path.join(DOSSIER, source), "utf8"));
+  if (!Array.isArray(contenu[cle])) throw new Erreur(`n8n/${source} doit contenir un tableau « ${cle} ».`);
+  return codeGenere(source, contenu[cle]);
+}
+
+/** Vérifie qu'un workflow local porte bien la copie à jour de ses fichiers sources. */
+async function verifierCopies(nom, workflow) {
+  for (const copie of COPIES_GENEREES.filter((c) => c.workflow === nom)) {
+    if (!existsSync(path.join(DOSSIER, copie.source))) continue;
+    const noeud = (workflow.nodes ?? []).find((n) => n.name === copie.noeud);
+    if (!noeud) throw new Erreur(`n8n/${nom}.json n'a pas de nœud « ${copie.noeud} ».`);
+    if (noeud.parameters?.jsCode !== (await lireCopie(copie))) {
+      throw new Erreur(
+        `Le nœud « ${copie.noeud} » de ${nom} ne correspond plus à n8n/${copie.source} : lancer \`npm run n8n:articles\`.`,
+      );
+    }
+  }
+}
+
+async function regenererCopies() {
+  const locaux = await workflowsLocaux();
+  for (const copie of COPIES_GENEREES) {
+    const workflow = locaux.get(copie.workflow);
+    const noeud = workflow?.nodes.find((n) => n.name === copie.noeud);
+    if (!noeud) throw new Erreur(`n8n/${copie.workflow}.json n'a pas de nœud « ${copie.noeud} ».`);
+    const code = await lireCopie(copie);
+    if (noeud.parameters?.jsCode === code) {
+      console.log(`  = ${copie.workflow} · « ${copie.noeud} » : déjà à jour`);
+      continue;
+    }
+    noeud.parameters = { ...noeud.parameters, jsCode: code };
+    await writeFile(cheminLocal(copie.workflow), serialiser(workflow));
+    console.log(`  ✎ ${copie.workflow} · « ${copie.noeud} » : régénéré depuis n8n/${copie.source}`);
+  }
+}
+
 /* ---------- Commandes ---------- */
 
 async function pull(noms) {
   const config = chargerConfig();
-  const cibles = noms.length > 0 ? noms : await nomsLocaux();
+  const locaux = await workflowsLocaux();
+  const cibles = noms.length > 0 ? noms : [...locaux.keys()];
   verifierNoms(cibles);
   const distants = await listerDistants(config);
   let alerte = false;
 
   for (const nom of cibles) {
-    const resume = trouverParNom(distants, nom);
+    const resume = resoudre(distants, nom, locaux.get(nom)?.id);
     if (!resume) {
       console.log(`  – ${nom} : absent de l'instance, fichier laissé tel quel`);
       continue;
@@ -337,7 +430,8 @@ async function push(arguments_) {
   ecritureAutorisee = confirmer;
   const noms = arguments_.filter((argument) => !argument.startsWith("--"));
   const config = chargerConfig();
-  const cibles = noms.length > 0 ? noms : await nomsLocaux();
+  const locaux = await workflowsLocaux();
+  const cibles = noms.length > 0 ? noms : [...locaux.keys()];
   verifierNoms(cibles);
   const distants = await listerDistants(config);
 
@@ -348,20 +442,24 @@ async function push(arguments_) {
   );
 
   for (const nom of cibles) {
-    const fichier = cheminLocal(nom);
-    if (!existsSync(fichier)) throw new Erreur(`n8n/${nom}.json n'existe pas.`);
-    const local = JSON.parse(await readFile(fichier, "utf8"));
-    if (!Array.isArray(local.nodes) || local.nodes.length === 0) {
+    const local = locaux.get(nom);
+    if (!local) throw new Erreur(`n8n/${nom}.json n'existe pas ou n'est pas un workflow.`);
+    if (local.nodes.length === 0) {
       console.log(`  – ${nom} : amorce vide, ignorée`);
       continue;
     }
     if (local.name !== nom) {
       throw new Erreur(`n8n/${nom}.json décrit le workflow « ${local.name} » : nom de fichier et nom du workflow doivent être identiques.`);
     }
-    const alertes = chercherSecrets(local);
-    afficherAlertes(nom, alertes);
+    await verifierCopies(nom, local);
+    afficherAlertes(nom, chercherSecrets(local));
 
-    const resume = distants.find((workflow) => workflow.id === local.id) ?? trouverParNom(distants, nom);
+    const resume = resoudre(distants, nom, local.id);
+    if (!local.id && resume) {
+      throw new Erreur(
+        `Un workflow « ${nom} » existe déjà sur l'instance, mais n8n/${nom}.json n'a pas d'id : lancer n8n:pull pour l'enregistrer.`,
+      );
+    }
     const { corps, ecartees } = corpsEcriture(local);
     if (ecartees.length > 0) {
       console.warn(`  ⚠ ${nom} : réglages non acceptés par l'API, non envoyés : ${ecartees.join(", ")}`);
@@ -371,7 +469,8 @@ async function push(arguments_) {
       console.log(`  + ${nom} : à créer (désactivé)`);
       if (confirmer) {
         const cree = await api(config, "POST", "/workflows", corps);
-        console.log(`      créé, identifiant ${cree.id}. Lancer n8n:pull pour l'enregistrer dans le fichier.`);
+        await writeFile(cheminLocal(nom), serialiser(await lireDistant(config, cree.id)));
+        console.log(`      créé, id ${cree.id} enregistré dans n8n/${nom}.json`);
       }
       continue;
     }
@@ -396,7 +495,8 @@ async function main() {
   const [commande, ...reste] = process.argv.slice(2);
   if (commande === "pull") return pull(reste.filter((argument) => !argument.startsWith("--")));
   if (commande === "push") return push(reste);
-  throw new Erreur("Usage : node scripts/n8n-sync.mjs pull|push [nom ...] [--confirmer]");
+  if (commande === "articles") return regenererCopies();
+  throw new Erreur("Usage : node scripts/n8n-sync.mjs pull|push|articles [nom ...] [--confirmer]");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

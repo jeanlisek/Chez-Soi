@@ -1,74 +1,223 @@
 {
   "active": false,
   "connections": {
-    "01 · PDF et contexte": {
+    "01 · Contrat et PDF": {
       "main": [
         [
           {
             "index": 0,
-            "node": "02 · Contrôler le fichier",
+            "node": "Config",
             "type": "main"
           }
         ]
       ]
     },
-    "02 · Contrôler le fichier": {
+    "02 · Contrôler l’entrée": {
       "main": [
         [
           {
             "index": 0,
-            "node": "03 · Extraire avec Docling",
+            "node": "Entrée valide ?",
             "type": "main"
           }
         ]
       ]
     },
-    "03 · Extraire avec Docling": {
+    "03 · Appeler le service vision": {
       "main": [
         [
           {
             "index": 0,
-            "node": "04 · Structurer les clauses",
+            "node": "04 · Interpréter la réponse",
             "type": "main"
           }
         ]
       ]
     },
-    "04 · Structurer les clauses": {
+    "04 · Interpréter la réponse": {
       "main": [
         [
           {
             "index": 0,
-            "node": "05 · Vérifier les sources",
+            "node": "Extraction disponible ?",
             "type": "main"
           }
         ]
       ]
     },
-    "05 · Vérifier les sources": {
+    "05 · Filtrer les clauses": {
       "main": [
         [
           {
             "index": 0,
-            "node": "06 · Enregistrer le graphe",
+            "node": "06 · Lire les nœuds Règle (Supabase)",
             "type": "main"
           }
         ]
       ]
     },
-    "06 · Enregistrer le graphe": {
+    "06 · Lire les nœuds Règle (Supabase)": {
       "main": [
         [
           {
             "index": 0,
-            "node": "07 · Renvoyer la synthèse",
+            "node": "07 · Préparer le graphe",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "07 · Préparer le graphe": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "08 · Calculer les embeddings (HF)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "08 · Calculer les embeddings (HF)": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "09 · Assembler les écritures",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "09 · Assembler les écritures": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "10 · Écrire obligations_contrat (Supabase)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "10 · Écrire obligations_contrat (Supabase)": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "11 · Écrire graphe_noeuds (Supabase)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "11 · Écrire graphe_noeuds (Supabase)": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "12 · Écrire graphe_aretes (Supabase)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "12 · Écrire graphe_aretes (Supabase)": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "13 · Répondre 200 · synthèse",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "02 · Contrôler l’entrée",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Entrée valide ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "03 · Appeler le service vision",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Répondre 400 · entrée invalide",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Extraction acceptée ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Répondre 202 · extraction en cours",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Service en stub ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Extraction disponible ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "05 · Filtrer les clauses",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Extraction acceptée ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Service en stub ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Répondre 501 · service vision en stub",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Répondre 502 · service vision en erreur",
             "type": "main"
           }
         ]
       ]
     }
   },
-  "id": "llYx5tyfcPzvdPES",
+  "id": "iXh3LyCiJTIOR43W",
   "name": "analyse_contrat",
   "nodes": [
     {
@@ -76,9 +225,9 @@
       "name": "Titre et légende",
       "parameters": {
         "color": 7,
-        "content": "# 📄 02 · ANALYSE CONTRAT\nPasser d’un contrat PDF à des clauses sourcées et un graphe exploitable.\n\n**ARCHITECTURE À COMPLÉTER** · Lecture de gauche à droite · Les services grisés attendent leur branchement.",
+        "content": "# 📄 02 · ANALYSE CONTRAT\nUn contrat PDF devient des obligations sourcées (clause et page) et des nœuds du graphe de connaissances.\n\n**PRÊT À BRANCHER** · Lecture de gauche à droite · Les nœuds grisés attendent les migrations Supabase (issue #1) ou ton test (embeddings). Workflow désactivé.",
         "height": 190,
-        "width": 2200
+        "width": 3800
       },
       "position": [
         0,
@@ -92,9 +241,9 @@
       "name": "01 · RECEVOIR",
       "parameters": {
         "color": 5,
-        "content": "## 01 · RECEVOIR\nPDF + contexte du logement\n\nFormat et accès à contrôler.",
+        "content": "## 01 · RECEVOIR\n`contrat_id` + `pdf_url` (URL signée Supabase)\n\nWebhook protégé par Header Auth, entrée contrôlée avant tout appel.",
         "height": 400,
-        "width": 560
+        "width": 900
       },
       "position": [
         0,
@@ -108,12 +257,12 @@
       "name": "02 · EXTRAIRE",
       "parameters": {
         "color": 6,
-        "content": "## 02 · EXTRAIRE\nDocling → texte → clauses structurées\n\nExtraction et modèle à connecter.",
+        "content": "## 02 · EXTRAIRE\n`POST /contrat` du service vision (Docling + extraction)\n\n200 = extraction · 202 = en cours · 501 = stub · autre = erreur.",
         "height": 400,
-        "width": 560
+        "width": 680
       },
       "position": [
-        620,
+        920,
         0
       ],
       "type": "n8n-nodes-base.stickyNote",
@@ -124,12 +273,12 @@
       "name": "03 · RELIER",
       "parameters": {
         "color": 1,
-        "content": "## 03 · RELIER\nVérification des références → graphe\n\nAmbiguïtés à traiter.",
+        "content": "## 03 · RELIER\nClause sans page → rejetée · nœuds `Clause` · arêtes `IMPOSE → Règle` · embeddings · écritures\n\nn8n ALIMENTE le graphe ; l’application l’INTERROGE (`/api/plan`).",
         "height": 400,
-        "width": 560
+        "width": 1820
       },
       "position": [
-        1240,
+        1620,
         0
       ],
       "type": "n8n-nodes-base.stickyNote",
@@ -140,13 +289,29 @@
       "name": "04 · RESTITUER",
       "parameters": {
         "color": 4,
-        "content": "## 04 · RESTITUER\nSynthèse + éléments à vérifier\n\nChaque clause renvoie au PDF.",
+        "content": "## 04 · RESTITUER\nSynthèse + clauses rejetées\n\nChaque clause renvoie au PDF.",
         "height": 400,
         "width": 340
       },
       "position": [
-        1860,
+        3460,
         0
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "32965f04-236e-80b9-8601-7496a67c385b",
+      "name": "Branches d’erreur et d’attente",
+      "parameters": {
+        "color": 3,
+        "content": "## ⚠ Branches d’erreur et d’attente\nAucun silence : chaque cas renvoie un statut et un message à l’application.",
+        "height": 700,
+        "width": 1520
+      },
+      "position": [
+        920,
+        440
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -156,13 +321,13 @@
       "name": "📥 Données attendues",
       "parameters": {
         "color": 5,
-        "content": "## 📥 Données attendues\n`document_id` · PDF ou `pdf_url`\n\nContexte du logement et accès au document.",
+        "content": "## 📥 Données attendues\nCorps JSON : `{ \"contrat_id\": \"<uuid>\", \"pdf_url\": \"<URL signée https>\" }`\n\nEn-tête `X-Chez-Soi-Secret` (credential « Chez Soi · webhook »). Le PDF ne transite pas par n8n : seul le service vision le lit, par son URL signée.",
         "height": 260,
-        "width": 706
+        "width": 1240
       },
       "position": [
         0,
-        460
+        1200
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -172,13 +337,13 @@
       "name": "📤 Résultat cible",
       "parameters": {
         "color": 4,
-        "content": "## 📤 Résultat cible\nClauses sourcées · référence du graphe\n\nGaranties, exclusions, obligations et points à vérifier.",
+        "content": "## 📤 Résultat cible\n200 : `{ statut: \"ok\", contrat_id, assureur, formule, reference_cg, obligations_retenues, clauses_rejetees, noeuds, aretes, clauses_sans_regle, embeddings, ecrit_dans_supabase }`\n\nTables : `obligations_contrat`, `graphe_noeuds` (type `Clause`), `graphe_aretes` (relation `IMPOSE`).",
         "height": 260,
-        "width": 706
+        "width": 1240
       },
       "position": [
-        746,
-        460
+        1280,
+        1200
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -188,13 +353,13 @@
       "name": "🔧 À compléter",
       "parameters": {
         "color": 1,
-        "content": "## 🔧 À compléter\nService Docling → modèle d’extraction → stockage.\n\nConserver page et passage d’origine. Prévoir les PDF scannés et la relecture des ambiguïtés.",
+        "content": "## 🔧 À compléter\n1. Config : `VISION_SERVICE_URL`, `SUPABASE_URL`.\n2. Tester puis activer « 08 · Calculer les embeddings (HF) ».\n3. Supabase : activer les nœuds 06, 10, 11 et 12 après les migrations.\n4. Vocabulaire commun du champ `element` entre extraction et règles (à valider avec Briac).",
         "height": 260,
-        "width": 706
+        "width": 1240
       },
       "position": [
-        1492,
-        460
+        2560,
+        1200
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
@@ -204,23 +369,30 @@
       "name": "Détails de conception",
       "parameters": {
         "color": 7,
-        "content": "## 📚 Détails de conception\n## 02 · PDF → Docling → clauses → graphe\n**Architecture uniquement.** Les services d’extraction, de structuration et de stockage restent à connecter.\n\n**Entrée cible :** document_id / pdf_url ou fichier, contexte du logement.\n**Sortie cible :** clauses sourcées, référence du graphe, points à vérifier.\n**À compléter :** contrôle du fichier, service Docling, modèle d’extraction, gestion des ambiguïtés et schéma de graphe.\n**Principe :** conserver la page et le passage d’origine pour chaque clause. La synthèse ne garantit pas à elle seule une couverture d’assurance.\n\nRéponse de maquette explicite : « architecture_a_completer » (HTTP 501).",
+        "content": "## 📚 Détails de conception\n## 02 · PDF → extraction → obligations → graphe\n**Règle non négociable :** une obligation sans clause, sans page, ou dont la citation n’a pas été retrouvée dans le PDF est rejetée et listée dans la réponse. n8n n’invente aucune obligation.\n**Graphe (v3, section 7) :** chaque obligation retenue devient un nœud `Clause` (clause, page, citation) lié au contrat. Une arête `IMPOSE` part de la clause vers chaque nœud `Règle` validé qui porte sur le même `element`. Une clause sans règle correspondante est créée sans arête et signalée : aucune règle n’est créée ici.\n**Embeddings :** `BAAI/bge-m3`, dimension 1024, via HF Inference Providers. Un vecteur d’une autre dimension est refusé.\n**Idempotence :** identifiants déterministes (contrat, type, élément, clause, page) et upsert ; rejouer ne crée pas de doublon et ne touche pas à `confirmee_le`.\n**Hors périmètre :** l’usage 1 de l’agent H (conditions générales manquantes) est lancé par l’application, jamais par n8n. La table `contrats` est mise à jour par l’application à partir de la réponse.",
         "height": 330,
-        "width": 2200
+        "width": 3800
       },
       "position": [
         0,
-        800
+        1500
       ],
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1
     },
     {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qb6ZVKSFAnrnOdFo",
+          "name": "Chez Soi · webhook"
+        }
+      },
       "id": "cae9cbe9-1387-4073-b374-77388b82f3fa",
-      "name": "01 · PDF et contexte",
-      "notes": "Point d’entrée prévu pour l’application Chez Soi. Non publié.",
+      "name": "01 · Contrat et PDF",
+      "notes": "Point d’entrée de l’application Chez Soi (route POST /api/contrat). Header Auth obligatoire.",
       "notesInFlow": false,
       "parameters": {
+        "authentication": "headerAuth",
         "httpMethod": "POST",
         "options": {},
         "path": "chez-soi/analyse-contrat",
@@ -235,33 +407,354 @@
       "webhookId": "39535b85-3d38-4c09-bb76-b6d1761b36ea"
     },
     {
-      "id": "8f7372c6-0537-4ce3-b186-b32a8381b8b9",
-      "name": "02 · Contrôler le fichier",
-      "notes": "À définir : document_id / pdf_url ou fichier, droit d’accès, type de document, taille et format. Ajouter une branche erreur.",
+      "id": "a20d396b-51e1-8dea-b87b-bf55b7b77884",
+      "name": "Config",
+      "notes": "Paramètres NON secrets du workflow. Les secrets passent par les credentials n8n. $env et les variables n8n ne sont pas disponibles sur l'instance.",
       "notesInFlow": false,
-      "parameters": {},
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5243912e-083e-8781-807f-afc48d056cb7",
+              "name": "VISION_SERVICE_URL",
+              "type": "string",
+              "value": "https://a-configurer.invalid"
+            },
+            {
+              "id": "e5d11dbc-4f00-89d7-a71a-a1622be4743d",
+              "name": "SUPABASE_URL",
+              "type": "string",
+              "value": "https://a-configurer.invalid"
+            },
+            {
+              "id": "7eabd232-a1e5-8fe9-8814-5294f4f46e8b",
+              "name": "SUPABASE_BRANCHE",
+              "type": "boolean",
+              "value": false
+            },
+            {
+              "id": "fb5cd09e-08c9-8821-8ae1-858c87cbd8af",
+              "name": "HF_EMBEDDING_URL",
+              "type": "string",
+              "value": "https://router.huggingface.co/hf-inference/models/BAAI/bge-m3/pipeline/feature-extraction"
+            },
+            {
+              "id": "a9691e4e-603b-8649-92e3-80c4e3ea7caf",
+              "name": "EMBEDDING_MODELE",
+              "type": "string",
+              "value": "BAAI/bge-m3"
+            },
+            {
+              "id": "8d833a8a-2fe7-8e67-a6b0-c8c0b53aac25",
+              "name": "EMBEDDING_DIMENSION",
+              "type": "number",
+              "value": 1024
+            }
+          ]
+        },
+        "options": {}
+      },
       "position": [
-        320,
+        300,
         190
       ],
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "35ea63c9-037d-8882-8437-faaf52209548",
+      "name": "02 · Contrôler l’entrée",
+      "notes": "Refuse toute entrée incomplète avant d’appeler le service vision.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Entrée attendue (corps JSON du webhook) : { contrat_id, pdf_url }\nconst corps = $(\"01 · Contrat et PDF\").first().json.body ?? {};\nconst UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst contrat_id = typeof corps.contrat_id === 'string' ? corps.contrat_id.trim() : '';\nconst pdf_url = typeof corps.pdf_url === 'string' ? corps.pdf_url.trim() : '';\n\nconst erreurs = [];\nif (!UUID.test(contrat_id)) erreurs.push('contrat_id : UUID attendu');\nif (!/^https:\\/\\/\\S+$/.test(pdf_url)) erreurs.push('pdf_url : URL signée en https attendue');\nif ('document_id' in corps || 'video_id' in corps) {\n  erreurs.push('document_id et video_id ne sont plus acceptés : envoyer contrat_id et pdf_url');\n}\n\n// Clé d'idempotence : contrat + chemin du PDF, sans la signature de l'URL.\nconst cle_idempotence = 'contrat:' + contrat_id + ':' + pdf_url.split('?')[0];\n\nreturn [{ json: { valide: erreurs.length === 0, erreurs, contrat_id, pdf_url, cle_idempotence } }];\n"
+      },
+      "position": [
+        520,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "e16d5592-a306-8829-b66f-d31ceab7f8a3",
+      "name": "Entrée valide ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "f55c7720-62ab-8db7-8ccb-bf6a3545a441",
+              "leftValue": "={{ $json.valide }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        740,
+        190
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "02796434-e38f-8421-9c28-b0a639c98843",
+      "name": "Répondre 400 · entrée invalide",
+      "parameters": {
+        "options": {
+          "responseCode": 400
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ statut: 'entree_invalide', workflow: 'analyse_contrat', erreurs: $json.erreurs }) }}"
+      },
+      "position": [
+        1000,
+        560
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4
+    },
+    {
+      "id": "767bd3f8-3785-8809-a432-0d9a721cbe8b",
+      "name": "03 · Appeler le service vision",
+      "notes": "POST /contrat { contrat_id, pdf_url }. Un code HTTP d’erreur ou un service injoignable ne lèvent pas d’exception : le nœud suivant décide.",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.cle_idempotence }}"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify({ contrat_id: $json.contrat_id, pdf_url: $json.pdf_url }) }}",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.VISION_SERVICE_URL }}/contrat"
+      },
+      "position": [
+        1000,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "3d4f5623-cab4-8ba0-ad6a-8a612ca6234e",
+      "name": "04 · Interpréter la réponse",
+      "notes": "Classe la réponse : resultat (200 avec obligations), accepte (202), stub (501) ou erreur.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Sortie du nœud HTTP : { statusCode, body } ; ou { error } si le service est injoignable.\nconst reponse = $json;\nconst statut = typeof reponse.statusCode === 'number' ? reponse.statusCode : null;\nconst corps = reponse.body && typeof reponse.body === 'object' ? reponse.body : {};\nconst entree = $(\"02 · Contrôler l’entrée\").first().json;\n\nlet cas = 'erreur';\nif (statut === 200 && Array.isArray(corps.obligations)) cas = 'resultat';\nelse if (statut === 202) cas = 'accepte';\nelse if (statut === 501) cas = 'stub'; // le service vision n'est encore qu'un stub\n\nlet detail = null;\nif (cas === 'erreur') {\n  detail = statut === null ? 'service vision injoignable' : 'réponse inattendue du service vision (HTTP ' + statut + ')';\n}\n\nreturn [{\n  json: {\n    cas,\n    est_resultat: cas === 'resultat',\n    est_accepte: cas === 'accepte',\n    est_stub: cas === 'stub',\n    statut_http: statut,\n    contrat_id: entree.contrat_id,\n    extraction: cas === 'resultat' ? corps : null,\n    detail,\n  },\n}];\n"
+      },
+      "position": [
+        1220,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "ee4ab73c-91bf-8eb3-8da1-45ba49e13229",
+      "name": "Extraction disponible ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "1f41e08a-5c75-8471-a3dc-2c789ddce7b7",
+              "leftValue": "={{ $json.est_resultat }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        1440,
+        190
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "5909ff9b-8378-8662-94bd-6691c57bbae0",
+      "name": "05 · Filtrer les clauses",
+      "notes": "Règle non négociable : une obligation sans clause ni page retrouvées dans le PDF est rejetée, et listée dans la réponse.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Identifiant déterministe au format UUID (version 8) : rejouer le workflow réécrit les mêmes lignes.\nfunction idDeterministe(texte) {\n  let h = '';\n  for (let k = 0; k < 4; k++) {\n    let x = 0x811c9dc5;\n    const s = k + ':' + texte;\n    for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; }\n    h += x.toString(16).padStart(8, '0');\n  }\n  const variante = ((parseInt(h[16], 16) & 0x3) | 0x8).toString(16);\n  return h.slice(0, 8) + '-' + h.slice(8, 12) + '-8' + h.slice(13, 16) + '-' + variante + h.slice(17, 20) + '-' + h.slice(20, 32);\n}\n\n// Extraction attendue du service vision :\n// { assureur, formule, reference_cg, obligations: [ { type, element, seuil, unite,\n//   texte_court, citation, clause, page, citation_retrouvee } ] }\nconst TYPES = ['prevention', 'inoccupation', 'exclusion', 'garantie', 'franchise', 'plafond'];\nconst texte = (valeur) => (typeof valeur === 'string' ? valeur.trim() : '');\nconst { contrat_id, extraction } = $json;\n\nconst obligations = [];\nconst rejetees = [];\nfor (const o of extraction.obligations ?? []) {\n  const clause = texte(o.clause);\n  const page = Number.isInteger(o.page) && o.page >= 1 ? o.page : null;\n  const motifs = [];\n  if (page === null) motifs.push('page non retrouvée dans le PDF');\n  if (!clause) motifs.push('clause manquante');\n  if (!texte(o.citation)) motifs.push('citation manquante');\n  if (o.citation_retrouvee !== true) motifs.push('citation non vérifiée dans le PDF');\n  if (!TYPES.includes(o.type)) motifs.push('type d\\'obligation inconnu');\n  if (motifs.length > 0) {\n    rejetees.push({ motifs, texte_court: texte(o.texte_court) || null, clause: clause || null, page });\n    continue;\n  }\n  const element = texte(o.element) || null;\n  obligations.push({\n    id: idDeterministe([contrat_id, o.type, element, clause, page].join('|')),\n    contrat_id,\n    type: o.type,\n    element,\n    seuil: o.seuil ?? null,\n    unite: texte(o.unite) || null,\n    texte_court: texte(o.texte_court) || null,\n    citation: texte(o.citation) || null,\n    clause,\n    page,\n    citation_retrouvee: o.citation_retrouvee === true,\n  });\n}\n\nreturn [{\n  json: {\n    contrat_id,\n    assureur: texte(extraction.assureur) || null,\n    formule: texte(extraction.formule) || null,\n    reference_cg: texte(extraction.reference_cg) || null,\n    obligations,\n    rejetees,\n  },\n}];\n"
+      },
+      "position": [
+        1700,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
     },
     {
       "disabled": true,
-      "id": "3dc55c50-536e-4008-b1de-7d63947bb10c",
-      "name": "03 · Extraire avec Docling",
-      "notes": "Service d’extraction à connecter. Sortie attendue : texte, sections, tableaux et références aux pages. Prévoir un cas PDF scanné ou extraction insuffisante.",
+      "id": "4fba0680-c9e7-8251-a398-6bc6880ee64f",
+      "name": "06 · Lire les nœuds Règle (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud. Tant qu’il est désactivé, aucune arête IMPOSE n’est produite.",
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "GET",
+        "nodeCredentialType": "supabaseApi",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/graphe_noeuds?type=eq.Regle&contrat_id=is.null&select=id,libelle,regle_id,regles(code,version,element,statut_validation)"
+      },
+      "position": [
+        1920,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "10dd23d2-0144-85ad-9bc4-09f01a39691b",
+      "name": "07 · Préparer le graphe",
+      "notes": "Une arête IMPOSE relie la clause à chaque règle validée qui porte sur le même element. Aucune règle n’est créée ici.",
       "notesInFlow": false,
       "parameters": {
+        "jsCode": "// Identifiant déterministe au format UUID (version 8) : rejouer le workflow réécrit les mêmes lignes.\nfunction idDeterministe(texte) {\n  let h = '';\n  for (let k = 0; k < 4; k++) {\n    let x = 0x811c9dc5;\n    const s = k + ':' + texte;\n    for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193) >>> 0; }\n    h += x.toString(16).padStart(8, '0');\n  }\n  const variante = ((parseInt(h[16], 16) & 0x3) | 0x8).toString(16);\n  return h.slice(0, 8) + '-' + h.slice(8, 12) + '-8' + h.slice(13, 16) + '-' + variante + h.slice(17, 20) + '-' + h.slice(20, 32);\n}\n\n// Nœuds Clause et arêtes IMPOSE → Règle (v3, section 7).\nconst entree = $(\"05 · Filtrer les clauses\").first().json;\n\n// Règles du graphe : corps de la lecture Supabase quand le nœud 06 est actif, sinon aucune.\nconst lecture = $json;\nconst regles = Array.isArray(lecture.body) ? lecture.body : [];\nconst parElement = new Map();\nfor (const regle of regles) {\n  const fiche = regle.regles ?? {};\n  // Seules les règles validées comptent : le verdict ne vient jamais d'une règle proposée.\n  if (fiche.statut_validation !== 'validee' || !fiche.element) continue;\n  if (!parElement.has(fiche.element)) parElement.set(fiche.element, []);\n  parElement.get(fiche.element).push({ noeud_id: regle.id, code: fiche.code, version: fiche.version });\n}\n\nconst noeuds = [];\nconst aretes = [];\nconst sans_regle = [];\nfor (const o of entree.obligations) {\n  const noeud_id = idDeterministe('Clause|' + o.id);\n  noeuds.push({\n    id: noeud_id,\n    type: 'Clause',\n    libelle: o.texte_court || o.clause,\n    proprietes: {\n      obligation_id: o.id,\n      clause: o.clause,\n      page: o.page,\n      citation: o.citation,\n      type_obligation: o.type,\n      element: o.element,\n      seuil: o.seuil,\n      unite: o.unite,\n    },\n    contrat_id: entree.contrat_id, // nœud privé : visible du seul propriétaire du contrat (RLS)\n    regle_id: null,\n    texte: [o.texte_court, o.citation].filter(Boolean).join(' — ') || o.clause,\n  });\n\n  const cibles = o.element ? parElement.get(o.element) ?? [] : [];\n  if (cibles.length === 0) sans_regle.push({ clause: o.clause, page: o.page, element: o.element });\n  for (const cible of cibles) {\n    aretes.push({\n      source_id: noeud_id,\n      cible_id: cible.noeud_id,\n      relation: 'IMPOSE',\n      proprietes: { clause: o.clause, page: o.page, code_regle: cible.code, version_regle: cible.version },\n    });\n  }\n}\n\nreturn [{ json: { contrat_id: entree.contrat_id, noeuds, aretes, sans_regle, regles_lues: regles.length } }];\n"
+      },
+      "position": [
+        2140,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "BnDJK0SwmyOdOZST",
+          "name": "Hugging Face · Inference"
+        }
+      },
+      "disabled": true,
+      "id": "4a085fe8-9059-8b33-bbc5-1f72882fd575",
+      "name": "08 · Calculer les embeddings (HF)",
+      "notes": "Désactivé jusqu’au test de Jean-Li. Modèle BAAI/bge-m3 (dimension 1024) via HF Inference Providers, credential « Hugging Face · Inference ». Réponse attendue : un vecteur par texte envoyé.",
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "jsonBody": "={{ JSON.stringify({ inputs: $json.noeuds.map((noeud) => noeud.texte), normalize: true, truncate: true }) }}",
         "method": "POST",
+        "nodeCredentialType": "huggingFaceApi",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 60000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.HF_EMBEDDING_URL }}"
+      },
+      "position": [
+        2360,
+        190
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "e1a1e869-aa8a-83f0-a449-ca3784c0e20e",
+      "name": "09 · Assembler les écritures",
+      "notes": "Un vecteur d’une autre dimension que EMBEDDING_DIMENSION est refusé : la colonne embedding n’est alors pas écrite.",
+      "notesInFlow": false,
+      "parameters": {
+        "jsCode": "// Réunit les lignes à écrire. Les colonnes suivent la v3 (section 9) et l'issue #1.\nconst entree = $(\"05 · Filtrer les clauses\").first().json;\nconst graphe = $(\"07 · Préparer le graphe\").first().json;\nconst dimension = $(\"Config\").first().json.EMBEDDING_DIMENSION;\n\n// Vecteurs : corps de la réponse Hugging Face quand le nœud 08 est actif, sinon aucun.\nconst reponse = $json;\nconst vecteurs = Array.isArray(reponse.body) ? reponse.body : [];\nconst valides = graphe.noeuds.map((_, i) => Array.isArray(vecteurs[i]) && vecteurs[i].length === dimension);\n\nlet embeddings = 'non_calcules';\nif (graphe.noeuds.length > 0 && valides.every(Boolean)) embeddings = 'calcules';\nelse if (vecteurs.length > 0) embeddings = 'refuses'; // absent, incomplet ou d'une autre dimension\n\n// Toutes les lignes d'un même envoi portent les mêmes colonnes : la colonne embedding\n// n'est écrite que si tous les vecteurs sont valides, pour ne jamais effacer un vecteur existant.\nconst noeuds = graphe.noeuds.map((noeud, i) => {\n  const { texte, ...ligne } = noeud;\n  return embeddings === 'calcules' ? { ...ligne, embedding: vecteurs[i] } : ligne;\n});\n\nreturn [{\n  json: {\n    contrat_id: entree.contrat_id,\n    assureur: entree.assureur,\n    formule: entree.formule,\n    reference_cg: entree.reference_cg,\n    obligations: entree.obligations,\n    rejetees: entree.rejetees,\n    noeuds,\n    aretes: graphe.aretes,\n    sans_regle: graphe.sans_regle,\n    embeddings,\n  },\n}];\n"
+      },
+      "position": [
+        2580,
+        190
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "disabled": true,
+      "id": "b1b30047-6bc8-8266-bdc8-983daa18a004",
+      "name": "10 · Écrire obligations_contrat (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud. Upsert sur id : confirmee_le n’est jamais écrasée.",
+      "notesInFlow": true,
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify($('09 · Assembler les écritures').first().json.obligations) }}",
+        "method": "POST",
+        "nodeCredentialType": "supabaseApi",
         "options": {
           "timeout": 30000
         },
-        "url": "https://example.invalid/a-configurer"
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/obligations_contrat?on_conflict=id"
       },
       "position": [
-        700,
+        2840,
         190
       ],
       "type": "n8n-nodes-base.httpRequest",
@@ -269,72 +762,208 @@
     },
     {
       "disabled": true,
-      "id": "cab5cfe8-a4bb-442e-9534-016aa38966fd",
-      "name": "04 · Structurer les clauses",
-      "notes": "Entrée : texte et références. Sortie : garanties, exclusions, obligations, franchises et plafonds, avec citation et page. Ne pas inventer les clauses absentes.",
-      "notesInFlow": false,
+      "id": "0135d06b-f4ff-890e-93f3-07cda14bba38",
+      "name": "11 · Écrire graphe_noeuds (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud.",
+      "notesInFlow": true,
       "parameters": {
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify($('09 · Assembler les écritures').first().json.noeuds) }}",
         "method": "POST",
+        "nodeCredentialType": "supabaseApi",
         "options": {
           "timeout": 30000
         },
-        "url": "https://example.invalid/a-configurer"
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/graphe_noeuds?on_conflict=id"
       },
       "position": [
-        940,
+        3060,
         190
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2
-    },
-    {
-      "id": "686c7bca-3497-4d2d-a308-3b2dd41d9a45",
-      "name": "05 · Vérifier les sources",
-      "notes": "À définir : complétude, clauses ambiguës ou contradictoires, références vérifiables. Prévoir une relecture humaine si nécessaire ; aucune décision assurantielle automatique.",
-      "notesInFlow": false,
-      "parameters": {},
-      "position": [
-        1320,
-        190
-      ],
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1
     },
     {
       "disabled": true,
-      "id": "275bb0e9-1573-420e-9356-259c36bdf278",
-      "name": "06 · Enregistrer le graphe",
-      "notes": "Modèle de graphe et stockage à définir avec CTO/CDO : contrat → clauses → garanties/exclusions/obligations, chaque relation rattachée à une source.",
-      "notesInFlow": false,
+      "id": "65c5f8f0-1155-85c1-9fe5-ea0a9cd6c4eb",
+      "name": "12 · Écrire graphe_aretes (Supabase)",
+      "notes": "À brancher après les migrations (issue #1) : créer le credential Supabase dans n8n, le sélectionner ici (Supabase API), mettre SUPABASE_URL et SUPABASE_BRANCHE à jour dans Config, puis activer ce nœud. Upsert sur (source_id, cible_id, relation).",
+      "notesInFlow": true,
       "parameters": {
+        "authentication": "predefinedCredentialType",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify($('09 · Assembler les écritures').first().json.aretes) }}",
         "method": "POST",
+        "nodeCredentialType": "supabaseApi",
         "options": {
           "timeout": 30000
         },
-        "url": "https://example.invalid/a-configurer"
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.SUPABASE_URL }}/rest/v1/graphe_aretes?on_conflict=source_id,cible_id,relation"
       },
       "position": [
-        1560,
+        3280,
         190
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2
     },
     {
-      "id": "9d4cc715-79ac-430d-97de-5114fcd5a394",
-      "name": "07 · Renvoyer la synthèse",
-      "notes": "Réponse explicite de maquette : aucun diagnostic ni analyse réelle. À remplacer après branchement des services.",
+      "id": "e912f77e-62e6-854f-acb9-5498d56745f1",
+      "name": "13 · Répondre 200 · synthèse",
+      "notes": "ecrit_dans_supabase vaut false tant que les nœuds Supabase sont désactivés.",
       "notesInFlow": false,
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ statut: 'ok', workflow: 'analyse_contrat', contrat_id: $('09 · Assembler les écritures').first().json.contrat_id, assureur: $('09 · Assembler les écritures').first().json.assureur, formule: $('09 · Assembler les écritures').first().json.formule, reference_cg: $('09 · Assembler les écritures').first().json.reference_cg, obligations_retenues: $('09 · Assembler les écritures').first().json.obligations.length, clauses_rejetees: $('09 · Assembler les écritures').first().json.rejetees, noeuds: $('09 · Assembler les écritures').first().json.noeuds.length, aretes: $('09 · Assembler les écritures').first().json.aretes.length, clauses_sans_regle: $('09 · Assembler les écritures').first().json.sans_regle, embeddings: $('09 · Assembler les écritures').first().json.embeddings, ecrit_dans_supabase: $('Config').first().json.SUPABASE_BRANCHE }) }}"
+      },
+      "position": [
+        3540,
+        190
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4
+    },
+    {
+      "id": "0fe1127f-96d0-8444-8ec7-9795ba2068e2",
+      "name": "Extraction acceptée ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "38711f65-4fdc-8942-a2e1-475bd79de510",
+              "leftValue": "={{ $json.est_accepte }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        1700,
+        560
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "4677a721-4601-8eac-9a73-2227960b6b12",
+      "name": "Répondre 202 · extraction en cours",
+      "notes": "Le service vision est asynchrone : le retour du résultat (rappel ou relève) reste à définir avec la vision.",
+      "notesInFlow": false,
+      "parameters": {
+        "options": {
+          "responseCode": 202
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ statut: 'extraction_en_cours', workflow: 'analyse_contrat', contrat_id: $json.contrat_id }) }}"
+      },
+      "position": [
+        1920,
+        560
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4
+    },
+    {
+      "id": "3b4773e4-a3fb-8db3-b582-61365cf72505",
+      "name": "Service en stub ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "3408c6e2-e58b-8b71-a85c-826cfae1fbeb",
+              "leftValue": "={{ $json.est_stub }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        1920,
+        760
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "6ca881b1-f6c8-8a02-8d5d-46534269ccfc",
+      "name": "Répondre 501 · service vision en stub",
       "parameters": {
         "options": {
           "responseCode": 501
         },
         "respondWith": "json",
-        "responseBody": "{\"statut\": \"architecture_a_completer\", \"workflow\": \"analyse_contrat\", \"sortie_cible\": [\"document_id\", \"clauses_sourcees\", \"graphe_ref\", \"points_a_verifier\"]}"
+        "responseBody": "={{ JSON.stringify({ statut: 'service_vision_non_implemente', workflow: 'analyse_contrat', contrat_id: $json.contrat_id }) }}"
       },
       "position": [
-        1940,
-        190
+        2180,
+        760
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4
+    },
+    {
+      "id": "4ebfa543-cdcb-8224-a0eb-5f4d22b82b46",
+      "name": "Répondre 502 · service vision en erreur",
+      "parameters": {
+        "options": {
+          "responseCode": 502
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ statut: 'erreur_service_vision', workflow: 'analyse_contrat', contrat_id: $json.contrat_id, detail: $json.detail }) }}"
+      },
+      "position": [
+        2180,
+        960
       ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4

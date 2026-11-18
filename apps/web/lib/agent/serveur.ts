@@ -180,12 +180,13 @@ export async function traiterSession(admin: Admin, hai: ClientHai, sessionId: st
     if (run.action_id) {
       const { data: action } = await admin
         .from("actions")
-        .select("failles(largeur_cm, longueur_cm, hauteur_cm, cote_confirmee_cm)")
+        .select("failles(largeur_cm, longueur_cm, cote_confirmee_cm)")
         .eq("id", run.action_id)
         .maybeSingle();
-      const f = action?.failles as { largeur_cm: number | null; longueur_cm: number | null; hauteur_cm: number | null; cote_confirmee_cm: number | null } | null;
+      const f = action?.failles as { largeur_cm: number | null; longueur_cm: number | null; cote_confirmee_cm: number | null } | null;
+      // Jamais `hauteur_cm` ici : pour un tapis, c'est l'épaisseur (contrat de la PR #46).
       const largeur = f?.largeur_cm ?? f?.cote_confirmee_cm;
-      const longueur = f?.longueur_cm ?? f?.hauteur_cm ?? f?.cote_confirmee_cm;
+      const longueur = f?.longueur_cm ?? f?.cote_confirmee_cm;
       if (largeur && longueur) cote = { largeur_cm: largeur, longueur_cm: longueur };
     }
     const evaluation = definition?.evaluer(changements.answer, cote) ?? null;

@@ -15,7 +15,7 @@ function ajouterJours(iso: string, n: number) {
 
 /**
  * Écran 11 · Mode absence (usage 3 : préparer sans jamais envoyer). Compare la durée au seuil
- * d'inoccupation du contrat (parcours A) et calcule la fenêtre de l'Opération tranquillité vacances :
+ * d'inoccupation du contrat (parcours A), propose à tous l'information de l'assureur, et calcule la fenêtre de l'Opération tranquillité vacances :
  * au plus tôt 45 jours avant le départ, au plus tard 3 jours avant (police) ou la veille (gendarmerie),
  * d'après service-public.gouv.fr (F34634). Aucun identifiant chez l'agent : l'utilisateur envoie lui-même.
  */
@@ -35,10 +35,17 @@ export default function PageAbsence() {
   const otvFin = ajouterJours(depart, zone === "police" ? -3 : -1);
   const prenom = logement.occupant.libelle;
 
+  // L'information de l'assureur est proposée à tous (décision du 18/11) : obligation du contrat si
+  // une clause d'inoccupation est dépassée (avec sa page), sinon simple recommandation.
+  const assureur = contrat?.assureur ? `Prévenir ${contrat.assureur}` : "Prévenir votre assureur";
+  const detailAssureur = contrat && depasse
+    ? `Exigé au-delà des ${seuil} jours du contrat (p. ${contrat.inoccupation!.page})`
+    : contrat && seuil != null
+      ? `Sous le seuil de ${seuil} jours du contrat : facultatif`
+      : "Recommandé pour une absence longue";
+
   const demarches: { icon: IconName; titre: string; detail: string; tone: string; sub: string }[] = [
-    ...(contrat && depasse
-      ? [{ icon: "shield" as const, titre: `Prévenir ${contrat.assureur}`, detail: `Absence au-delà des ${seuil} jours du contrat (p. ${contrat.inoccupation!.page})`, tone: "bg-nuit text-white", sub: "text-[#C9D6EE]" }]
-      : []),
+    { icon: "shield", titre: assureur, detail: detailAssureur, tone: depasse ? "bg-nuit text-white" : "bg-white", sub: depasse ? "text-[#C9D6EE]" : "text-ink-muted" },
     { icon: "police", titre: "Tranquillité vacances", detail: `Du ${formaterDate(otvDebut)} au ${formaterDate(otvFin)} (${zone === "police" ? "police" : "gendarmerie"})`, tone: "bg-pervenche", sub: "text-ink-soft" },
     { icon: "mail", titre: "Garde du courrier", detail: "En option, pour une boîte qui ne déborde pas", tone: "bg-white", sub: "text-ink-muted" },
   ];
@@ -79,10 +86,10 @@ export default function PageAbsence() {
             </p>
           </div>
         ) : (
-          <p className="rounded-xl2 bg-succes-bg px-3.5 py-3 text-[13px] font-semibold text-succes-text">Sous le seuil de {seuil} jours du contrat : pas de déclaration à faire.</p>
+          <p className="rounded-xl2 bg-succes-bg px-3.5 py-3 text-[13px] font-semibold text-succes-text">Sous le seuil de {seuil} jours du contrat : la déclaration n&apos;est pas obligatoire.</p>
         )
       ) : (
-        <p className="rounded-xl2 bg-veille-bg px-3.5 py-3 text-[13px] text-veille-text">Parcours sans contrat : seule l&apos;Opération Tranquillité Vacances est proposée.</p>
+        <p className="rounded-xl2 bg-veille-bg px-3.5 py-3 text-[13px] text-veille-text">Sans contrat déposé, prévenir votre assureur reste recommandé pour une absence longue. L&apos;Opération Tranquillité Vacances est ouverte à tous.</p>
       )}
 
       <SectionTitle aside="Usage 3">Démarches de l&apos;agent</SectionTitle>

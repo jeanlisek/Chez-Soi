@@ -52,6 +52,25 @@ export const getContratSortieSchema = z.object({
       page: z.number(),
     })
     .optional(),
+  /**
+   * Clauses liées à l'absence sans durée d'inoccupation (migration 0010, PR #34) : franchise,
+   * prévention… `source` vaut `cg` pour une citation réelle des conditions générales, `cp`
+   * pour les conditions particulières (fictives pour la persona de démo).
+   */
+  absence: z
+    .array(
+      z.object({
+        type: z.string(),
+        element: z.string().optional(),
+        valeur: z.number().optional(),
+        unite: z.string().optional(),
+        texte: z.string(),
+        clause: z.string(),
+        page: z.number(),
+        source: z.enum(["cg", "cp"]),
+      }),
+    )
+    .optional(),
 });
 
 export const demanderValidationEntreeSchema = z.object({

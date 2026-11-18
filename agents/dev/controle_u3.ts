@@ -12,6 +12,8 @@ export type AttenduUsage3 = {
   retour_le: string;
   duree_jours: number;
   seuil_jours: number | null;
+  /** Sources des clauses `absence` servies par get_contrat (`cg`, `cp`). */
+  sources_absence?: readonly ("cg" | "cp")[];
 };
 
 function minusculesSansAccents(texte: string): string {
@@ -84,6 +86,14 @@ export function controlerSortieUsage3(sortie: SortieUsage3, attendu: AttenduUsag
   }
   if (attendu.seuil_jours !== null && !texte.includes(String(attendu.seuil_jours))) {
     ecarts.push(`recapitulatif : seuil d'inoccupation (${attendu.seuil_jours} jours) absent`);
+  }
+  // Une clause des conditions particulières (fictives pour Jeanne) doit être présentée comme
+  // telle : le récapitulatif doit dire d'où elle vient (demande de Briac, 18/11).
+  if (attendu.sources_absence?.includes("cp") && !texte.includes("conditions particulieres")) {
+    ecarts.push("recapitulatif : une clause vient des conditions particulières, mais le récapitulatif ne le dit pas");
+  }
+  if (attendu.sources_absence?.includes("cg") && !texte.includes("conditions generales")) {
+    ecarts.push("recapitulatif : clauses des conditions générales servies, mais le récapitulatif ne les cite pas comme telles");
   }
   if (/[\w.+-]+@[\w-]+\.[\w.]+/.test(recap)) {
     ecarts.push("recapitulatif : contient une adresse e-mail (l'agent n'en a aucune : inventée ?)");

@@ -7,7 +7,39 @@
       "contrat": {
         "assureur": "MAIF",
         "formule": "Raqvam",
-        "reference_cg": "M2442"
+        "reference_cg": "M2442",
+        "absence": [
+          {
+            "type": "franchise",
+            "element": "vol",
+            "valeur": 1500,
+            "unite": "EUR",
+            "texte": "Franchise vol de 1 500 € (tranches de tarification H à J).",
+            "clause": "Garantie particulière en cas de vol, A, article 4 : franchise applicable en cas de vol",
+            "page": 18,
+            "source": "cg"
+          },
+          {
+            "type": "franchise",
+            "element": "vol",
+            "valeur": 135,
+            "unite": "EUR",
+            "texte": "Franchise vol ramenée à 135 € si les protections des conditions particulières sont mises en place et activées pendant l'absence (tranches H à J).",
+            "clause": "Garantie particulière en cas de vol, B (vols autres que dans un véhicule), article 7.2",
+            "page": 19,
+            "source": "cg"
+          },
+          {
+            "type": "prevention",
+            "element": "serrure",
+            "valeur": 3,
+            "unite": "points",
+            "texte": "Porte d'entrée équipée d'une serrure 3 points, fermée à clé pendant l'absence.",
+            "clause": "Conditions particulières (fictives) : moyens de protection",
+            "page": 1,
+            "source": "cp"
+          }
+        ]
       },
       "controle": {
         "domaines": ["maif.fr"],
@@ -16,7 +48,7 @@
           "texte": "7.2 - Dispositions concernant les sociétaires relevant des tranches de tarification H à J. Dans les hypothèses visées ci dessous, la franchise applicable est de 135 € : – s'il est constaté que les moyens de protection décrits aux conditions particulières ont été mis en place et activés pendant l'absence, […]",
           "page": 19,
           "article": "Vol, article 7 (franchise), 7.2",
-          "_lecture": "Pas de durée d'inoccupation ni de déclaration à faire. Enjeu : pour les tranches de tarification H à J, la franchise vol est de 1 500 € par défaut (art. 4, p. 18) ; elle est ramenée à 135 € si les moyens de protection des CONDITIONS PARTICULIÈRES ont été activés pendant l'absence. Pour les tranches A à G, la franchise est de 135 € dans tous les cas : la clause ne change rien. La démo suppose donc que les conditions particulières (fictives) de Jeanne la classent en tranche H à J. Les protections ne sont pas dans les conditions générales : celles de la démo sont inventées et doivent être présentées comme telles. Non servi à l'agent tant que le contrat d'interface de get_contrat n'a pas de champ pour une obligation sans seuil (à voir avec Briac)."
+          "_lecture": "Pas de durée d'inoccupation ni de déclaration à faire. Enjeu : pour les tranches de tarification H à J, la franchise vol est de 1 500 € par défaut (art. 4, p. 18) ; elle est ramenée à 135 € si les moyens de protection des CONDITIONS PARTICULIÈRES ont été activés pendant l'absence. Pour les tranches A à G, la franchise est de 135 € dans tous les cas : la clause ne change rien. La démo suppose donc que les conditions particulières (fictives) de Jeanne la classent en tranche H à J. Les protections ne sont pas dans les conditions générales : celles de la démo sont inventées et doivent être présentées comme telles. Servi à l'agent par le champ « absence » de get_contrat (migration 0010, PR #34), même contenu que get_contrat_champs pour le seed de démo."
         }
       }
     },

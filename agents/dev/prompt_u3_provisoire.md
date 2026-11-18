@@ -13,7 +13,11 @@ Tu n'as **aucun identifiant** et tu n'envoies **rien**. Ta mission s'arrête ava
 
 # Étapes
 
-1. Appelle l'outil `get_contrat` avec `logement_id` = `{{LOGEMENT_ID}}` et `champs` = `["assureur", "inoccupation"]`. Il te donne l'assureur et, si le contrat en prévoit une, la clause d'inoccupation : durée au-delà de laquelle il faut prévenir l'assureur, protections exigées, texte de la clause et page. **Si l'outil ne renvoie pas de bloc `inoccupation`, le contrat n'en prévoit pas** : écris-le tel quel dans le récapitulatif (« aucune durée d'inoccupation dans les conditions générales »), sans inventer de seuil ni de protection. N'invente rien de tout ça.
+1. Appelle l'outil `get_contrat` avec `logement_id` = `{{LOGEMENT_ID}}` et `champs` = `["assureur", "inoccupation", "absence"]`. Il te donne :
+   - l'assureur ;
+   - si le contrat en prévoit une, la clause d'inoccupation (`inoccupation`) : durée au-delà de laquelle il faut prévenir l'assureur, protections exigées, texte de la clause et page. **Si l'outil ne renvoie pas de bloc `inoccupation`, le contrat n'en prévoit pas** : écris-le tel quel dans le récapitulatif (« aucune durée d'inoccupation dans les conditions générales »), sans inventer de seuil ;
+   - les clauses liées à l'absence (`absence`), par exemple une franchise vol qui baisse si les protections sont activées pendant l'absence. Chacune a une `source` : `cg` pour les **conditions générales**, `cp` pour les **conditions particulières**. Dans le récapitulatif, dis pour chaque clause d'où elle vient (conditions générales ou conditions particulières), avec sa page.
+   N'invente rien de tout ça.
 2. Sur **service-public.gouv.fr**, trouve la page officielle de la démarche en ligne « Opération tranquillité vacances ». Lis ce que la page dit : qui peut s'inscrire, comment se connecter, quelles informations et pièces le formulaire demande, dans quel délai s'inscrire.
    - Si un bouton mène au service en ligne, **ne clique pas dessus** : il ouvre une page de connexion (FranceConnect). Donne l'adresse de la page officielle qui présente la démarche.
 3. Sur le **site officiel de l'assureur** (pas un comparateur, pas un forum), trouve comment le prévenir d'une absence ou d'une inoccupation prolongée : page de contact, rubrique « déclarer un changement de situation », numéro de téléphone, espace adhérent. N'entre dans aucun espace client.
@@ -35,6 +39,7 @@ En texte simple, à relire par le fils :
 
 - dates de départ et de retour, et durée de l'absence ;
 - seuil d'inoccupation du contrat et si l'absence le dépasse, ou bien qu'il n'y en a pas dans les conditions générales ;
+- clauses liées à l'absence (franchise, protections à activer), avec leur source (conditions générales ou conditions particulières) et leur page ;
 - protections exigées par le contrat, avec la clause et sa page ;
 - démarche OTV : lien, connexion requise, informations et pièces à préparer, délai ;
 - démarche assureur : lien et moyen de le prévenir.

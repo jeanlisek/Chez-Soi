@@ -68,7 +68,7 @@ function creerGetContrat(fixture: FixtureU3, cle: string) {
     if (logement_id !== fixture.logement_id) {
       throw new Error(`Logement inconnu : ${logement_id}. Utilise le logement_id de la consigne.`);
     }
-    const permis = new Set(["assureur", "formule", "reference_cg", "inoccupation"]);
+    const permis = new Set(["assureur", "formule", "reference_cg", "inoccupation", "absence"]);
     const voulus = new Set(["assureur", "formule", ...champs.filter((champ) => permis.has(champ))]);
     const contrat = fixture.assureurs[cle].contrat;
     const reponse = Object.fromEntries(Object.entries(contrat).filter(([champ]) => voulus.has(champ)));
@@ -195,6 +195,7 @@ async function main(): Promise<void> {
         retour_le: fixture.absence.retour_le,
         duree_jours: absence.duree_jours,
         seuil_jours: absence.seuil_jours,
+        sources_absence: (contrat.absence ?? []).map((clause) => clause.source),
       }),
     site: `${new URL(fixture.otv.url_depart).hostname} + ${new URL(assureur.controle.url_depart).hostname}`,
     urlDepart: fixture.otv.url_depart,

@@ -168,17 +168,17 @@ Pas de workspace racine : chaque partie s'installe dans son dossier. Gestionnair
 
 Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dans le `.env` de la racine (ignoré par git). Le script ne les affiche jamais. Il passe par l'API publique n8n (`/api/v1/workflows`, en-tête `X-N8N-API-KEY`) ; il n'active, ne désactive et n'exécute aucun workflow. Le JSON exporté est stable : clés triées, sans `createdAt`, `updatedAt`, `versionId`, `staticData`, `pinData`, `shared`, `tags` ni `meta`. Le pull signale les secrets qui semblent écrits en dur (heuristique, à relire quand même). Les amorces vides (`nodes: []`) sont ignorées par le push.
 
-**supabase** (depuis la racine, avec la CLI Supabase ; `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort)
+**supabase** (depuis la racine, CLI Supabase v3 via `npx` ; sous PowerShell, `npx.cmd` si les scripts sont bloqués ; `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort). Depuis la v3, les commandes visent la base locale par défaut : `--remote` vise le projet relié. Le Wi-Fi de l'école bloque le port 5432 : commandes `--remote` et `psql` depuis un partage de connexion. Historique des migrations aligné le 18/11 (0001 à 0007 marquées appliquées).
 
 | Commande | Rôle |
 |---|---|
-| `supabase link --project-ref hfcunqjqmtlozhiwfihl` | Relie le dépôt au projet `chez-soi` |
-| `supabase migration repair --status applied 0001 0002 0003 0004 0005 0006 0007` | Une seule fois : 0001 à 0007 ont été appliquées depuis l'éditeur SQL du dashboard |
-| `supabase db push` | Applique les migrations manquantes (une migration appliquée ne se modifie jamais) |
+| `npx supabase login` puis `npx supabase link --project-ref hfcunqjqmtlozhiwfihl` | Relie le dépôt au projet `chez-soi` (`supabase/config.toml` est versionné) |
+| `npx supabase migration list --remote` | Compare les migrations du dépôt à l'historique du projet |
+| `npx supabase db push --remote --dry-run`, puis sans `--dry-run` | Applique les migrations manquantes (une migration appliquée ne se modifie jamais) |
 | `psql "$DATABASE_URL" -f supabase/seed.sql` | Référentiel : sources, règles, graphe public (rejouable) |
 | `psql "$DATABASE_URL" -f supabase/tests/rls_test.sql` | Test RLS, annulé à la fin (attendu : « RLS OK ») |
 | `psql "$DATABASE_URL" -f supabase/tests/graphe_test.sql` | Test du graphe et des raccordements, annulé à la fin (attendu : « GRAPHE OK ») |
-| `supabase gen types typescript --project-id hfcunqjqmtlozhiwfihl > apps/web/lib/supabase/types.ts` | Régénère les types après chaque migration |
+| `npx supabase gen types typescript --remote > apps/web/lib/supabase/types.ts` | Régénère les types après chaque migration (Windows PowerShell 5 : `\| Out-File -Encoding utf8 …`, car `>` y écrit en UTF-16) |
 
 **Pas encore de commande** : tests applicatifs (seuls les tests SQL existent), déploiement du Space Hugging Face, déploiement Vercel, banc agent (`agents/bench/run_bench.py` est une amorce).
 

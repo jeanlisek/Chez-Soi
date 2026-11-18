@@ -35,6 +35,16 @@ export const ETATS_SESSION = [
 
 /** Auto-évaluation de l'agent, jamais une preuve. https://hub.hcompany.ai/agents-api/errors.md (Outcomes) */
 export const OUTCOMES = ["success", "partial", "infeasible", "blocked"] as const;
+export type Outcome = (typeof OUTCOMES)[number];
+
+/**
+ * L'issue si elle fait partie des quatre valeurs de la doc, sinon `null`. La colonne
+ * `runs_agent.outcome` n'accepte que ces quatre valeurs : une valeur inconnue de H ne doit
+ * jamais faire échouer l'insertion. La valeur brute est à garder à part.
+ */
+export function outcomeConnu(valeur: string | null | undefined): Outcome | null {
+  return (OUTCOMES as readonly string[]).includes(valeur ?? "") ? (valeur as Outcome) : null;
+}
 
 /** https://hub.hcompany.ai/agents-api/errors.md (Error codes). De nouveaux codes peuvent apparaître. */
 export const CODES_ERREUR = [

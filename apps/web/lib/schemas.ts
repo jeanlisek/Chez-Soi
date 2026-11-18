@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { OUTCOMES } from "./hai";
+
 /**
  * Schémas Zod partagés (convention du projet : tout schéma d'échange vit ici).
  * Squelette : seuls le stub commun et le contrat d'interface des custom tools
@@ -118,7 +120,12 @@ export const runAgentSchema = z.object({
   agent_revision: z.number().nullable(),
   site: z.string().nullable(),
   etat_final: z.string(),
-  outcome: z.string().nullable(),
+  /**
+   * Une des quatre issues de la doc H, ou `null`. Une valeur inconnue renvoyée par H est
+   * écrite `null` ici (la colonne `runs_agent.outcome` la refuserait) et gardée telle
+   * quelle dans `observations_api.outcome_brut`.
+   */
+  outcome: z.enum(OUTCOMES).nullable(),
   error_code: z.string().nullable(),
   erreur: z.string().nullable(),
   motif_fin: z.enum([
@@ -182,6 +189,8 @@ export const runAgentSchema = z.object({
     renvois_de_resultat: z.number(),
     reponse_presente_apres_annulation: z.boolean().nullable(),
     approbations_natives_vues: z.number(),
+    /** Valeur d'`outcome` renvoyée par H quand elle n'est pas une des quatre connues, sinon `null`. */
+    outcome_brut: z.string().nullable().default(null),
   }),
 });
 export type RunAgent = z.infer<typeof runAgentSchema>;

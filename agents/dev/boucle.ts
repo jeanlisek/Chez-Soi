@@ -24,6 +24,7 @@ import {
   creerClientHai,
   estEtatTerminal,
   HaiErreur,
+  outcomeConnu,
   type AppelOutilHai,
   type ClientHai,
   type CreerSessionParams,
@@ -344,6 +345,7 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
     renvois_de_resultat: 0,
     reponse_presente_apres_annulation: null,
     approbations_natives_vues: 0,
+    outcome_brut: null,
   };
 
   // Idempotence : un même appel (même id, ou même outil et mêmes arguments si l'id est null)
@@ -584,6 +586,13 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
   // Sortie finale : contrôlée sur une copie normalisée, enregistrée telle que reçue.
   const evaluation = evaluerSortie(brut, options.schemaSortie, options.controlerSortie);
 
+  // `outcome` : une valeur que la doc ne connaît pas est écrite `null` et gardée à part.
+  const outcome = outcomeConnu(etat.outcome);
+  if (outcome === null && etat.outcome) {
+    observations.outcome_brut = etat.outcome;
+    journal(`Outcome inconnu renvoyé par H : « ${etat.outcome} ». Enregistré dans observations_api.outcome_brut.`);
+  }
+
   const parModele = etat.usage_per_model.map((usage) => ({
     modele: usage.name,
     entree: usage.input_tokens,
@@ -603,7 +612,7 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
       agent_revision: revision,
       site: options.site ?? null,
       etat_final: etat.status,
-      outcome: etat.outcome ?? null,
+      outcome,
       error_code: etat.error_code ?? null,
       erreur: etat.error ?? erreurScript,
       motif_fin: motifFin,

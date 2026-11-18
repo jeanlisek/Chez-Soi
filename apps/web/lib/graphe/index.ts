@@ -98,9 +98,12 @@ export async function contexteGraphe(admin: Admin, vecteur: number[], contratId:
 }
 
 /**
- * Code d'élément du nœud Element le plus proche. bge-m3 donne des similarités resserrées
- * (deux éléments sans rapport dépassent 0,7) : on exige donc un score élevé ET un écart net
- * avec le deuxième élément. Renvoie aussi les scores, pour le diagnostic.
+ * Code d'élément du nœud Element le plus proche. bge-m3 donne des similarités resserrées :
+ * le score seul ne distingue rien (mesuré le 18/11 avec les synonymes : « canapé » 0,70 vers un
+ * mauvais nœud, « paillasson » 0,60 vers le bon). C'est l'écart avec le deuxième élément qui
+ * sépare : 0,06 pour les deux bons rapprochements nets (seuil de porte → ressaut, lampe de
+ * chevet → éclairage), 0,02 au plus pour les cinq autres. D'où un écart minimal de 0,04.
+ * Réglage fait sur 7 exemples seulement : à revoir avec de vraies vidéos.
  */
 export function elementProche(
   contexte: ContexteGraphe | null,
@@ -115,5 +118,5 @@ export function elementProche(
   return { element: a.proprietes.element as string, similarite, second, retenu: similarite >= seuil && similarite - second >= ecart };
 }
 
-export const SEUIL_ELEMENT = Number(process.env.GRAPHE_SEUIL_ELEMENT ?? 0.8);
-export const ECART_ELEMENT = Number(process.env.GRAPHE_ECART_ELEMENT ?? 0.03);
+export const SEUIL_ELEMENT = Number(process.env.GRAPHE_SEUIL_ELEMENT ?? 0.6);
+export const ECART_ELEMENT = Number(process.env.GRAPHE_ECART_ELEMENT ?? 0.04);

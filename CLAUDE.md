@@ -116,7 +116,7 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 - **Pas de garde-fou natif sur une action du navigateur.** `demander_validation` n'est appelé que si l'agent suit le prompt. Ce que le code garantit : aucun identifiant, moyen de paiement ni adresse donnés à l'agent, refus par défaut, annulation après la validation, et le coupe-circuit de `agents/dev/boucle.ts`, qui annule la session dès qu'une page vue ou une action vise une page de commande, de paiement, de livraison, de connexion ou de compte (il réagit après coup, il n'empêche pas le clic). Côté application, le même coupe-circuit tourne dans `apps/web/lib/agent/serveur.ts` à chaque webhook (#12).
 - Endpoint européen : `agp.eu.hcompany.ai`. Agent : `h/web-surfer-flash` (comparer avec `-pro` dans le banc).
 - Résultat d'une session : `outcome` (success, partial, infeasible, blocked) ou `error_code`. Les deux vont dans `runs_agent`, puis dans l'onglet Mesures agent. L'outcome est une auto-évaluation : on vérifie la dimension nous-mêmes. Une valeur d'`outcome` hors de ces quatre s'écrit `null` (la colonne `runs_agent.outcome` la refuserait) et la valeur brute est gardée dans `observations_api.outcome_brut`. Conversion d'un run en ligne de `runs_agent` : `versLigneRunsAgent` (`apps/web/lib/runs_agent.ts`).
-- Budget : **3 sessions simultanées** (offre gratuite). En démo, les usages sont enchaînés, jamais lancés en parallèle. Sous-agents (manager + 2) seulement si rien d'autre ne tourne. En développement : une session par personne au maximum, annoncée dans le canal de l'équipe.
+- Budget H : plafond technique **3 sessions** pour l’organisation ; consigne CEO du 18/11 : **une seule session active à la fois pour toute l’organisation**, annoncée dans le canal. Ne pas lancer de sous-agents en parallèle pendant ces essais.
 - Figer la démo sur une révision d'agent (`nom:N`).
 
 ## Modèle de données (Supabase)
@@ -285,3 +285,10 @@ le .env local. Détails dans `agents/bench/README.md`. Jamais de dérogation U2 
 actif nul. La clé de Bastian ne voit pas l’organisation d’Aurélie ; copie autorisée
 `chez-soi-acheteur:1` et `verifier-dimension:1` dans son compte, références distinctes
 de celles de l’équipe malgré les noms identiques.
+
+Le 18/11 : 20 runs comparatifs réels, conservés dans
+`agents/bench/resultats/2026-11-18-bastian/` (10 Flash + 10 Pro, prompt archivé ;
+les essais d’amélioration sont séparés). Le harness U2 ajoute `lire_fiche_produit`
+(lecture publique de fiches autorisées, Python 3 standard) par override de session.
+Ce handler local n’est pas encore raccordé aux routes de l’application. Une revue
+Codex documentée ne remplit jamais `revue_humaine` à la place d’une personne.

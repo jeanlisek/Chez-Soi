@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/cs/icons";
 import { AgentTag, BackButton, Header, Illus, Note, Pill, RoundButton, Ring, Screen, Signal } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { envoyerFichier } from "@/lib/envoi";
+import { reveillerVision } from "@/lib/reveil";
 
 /**
  * Écran 3 · Contrat (facultatif). Avec contrat : parcours A ; sans : parcours B.
@@ -18,6 +19,9 @@ export default function PageContrat() {
   const router = useRouter();
   const { logement, etat, maj } = useParcours();
   const base = `/logement/${logement.id}`;
+
+  // Le Space vision démarre pendant que l'utilisateur prépare ou filme sa visite.
+  useEffect(() => reveillerVision(logement.id, logement.exemple), [logement.id, logement.exemple]);
   const entree = useRef<HTMLInputElement>(null);
   const [nom, setNom] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);

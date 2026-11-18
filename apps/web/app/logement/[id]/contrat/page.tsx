@@ -104,13 +104,13 @@ export default function PageContrat() {
               <span className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-lilas-soft text-[#5A4470]"><Icon name="doc" /></span>
               <span className="flex min-w-0 flex-1 flex-col">
                 <b className="text-[15px]">{contrat ? `${contrat.assureur} · ${contrat.formule}` : "Conditions particulières"}</b>
-                <span className="truncate text-[13px] text-ink-muted">{contrat ? `Conditions générales ${contrat.reference_cg}` : (nom ?? "Contrat déposé")}</span>
+                <span className="truncate text-[13px] text-ink-muted">{contrat ? `CG ${contrat.reference_cg}${logement.exemple ? " · conditions particulières fictives" : ""}` : (nom ?? "Contrat déposé")}</span>
               </span>
               {envoi ? <Signal kind="info">Lecture</Signal> : <Signal kind="succes">Reçu</Signal>}
             </div>
             {contrat?.inoccupation && (
               <ul className="flex flex-col gap-1.5 border-t border-[#EFF0F5] pt-2.5 text-sm leading-5">
-                <li>Clause d&apos;inoccupation : {contrat.inoccupation.duree_max_jours} jours, p. {contrat.inoccupation.page}</li>
+                <li>Inoccupation : {contrat.inoccupation.duree_max_jours} jours max., p. {contrat.inoccupation.page}</li>
                 <li>{contrat.inoccupation.protections.length} protections exigées pendant l&apos;absence</li>
               </ul>
             )}

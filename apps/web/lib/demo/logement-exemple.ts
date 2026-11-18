@@ -3,9 +3,10 @@ import type { Logement, PropositionAgent } from "@/lib/domaine";
 /**
  * Logement exemple : persona et contrat FICTIFS (règle non négociable du CLAUDE.md).
  * Marc, 52 ans, aidant de sa mère Jeanne, 79 ans, T2 en rez-de-chaussée, canne, absence de 35 jours.
- * Le contrat est fictif, mais il renvoie aux conditions générales publiques MAIF Raqvam (réf. M2442),
- * retrouvées par l'agent en usage 1 (PR #17). La clause d'inoccupation ci-dessous reste fictive
- * tant qu'elle n'est pas relue dans le PDF (issue #14).
+ * Le contrat renvoie aux conditions générales publiques MAIF Raqvam (réf. M2442), retrouvées par l'agent
+ * en usage 1 (PR #17), qui ne fixent aucune durée d'inoccupation. Le seuil de 30 jours et la serrure
+ * 3 points viennent des conditions particulières FICTIVES de Jeanne (page 1, PR #37) ; mêmes textes que
+ * supabase/seed_demo.sql. Décision du 18/11 : CG réelles + conditions particulières fictives.
  */
 export const LOGEMENT_EXEMPLE: Logement = {
   id: "exemple",
@@ -31,12 +32,12 @@ export const LOGEMENT_EXEMPLE: Logement = {
     inoccupation: {
       duree_max_jours: 30,
       protections: [
-        "Fermetures à clé de toutes les portes d'accès",
-        "Volets ou persiennes fermés",
+        "Toutes les portes d'accès, dont la porte d'entrée, fermées à clé",
+        "Volets fermés",
         "Serrure 3 points sur la porte d'entrée",
       ],
-      clause: "Inoccupation des locaux (clause fictive de démonstration)",
-      page: 12,
+      clause: "Conditions particulières, article 1 Inoccupation des locaux (clause fictive)",
+      page: 1,
     },
   },
   pieces: [
@@ -105,7 +106,7 @@ export const LOGEMENT_EXEMPLE: Logement = {
       risque: "intrusion",
       niveau: "eleve",
       description: "La porte d'entrée n'a qu'un point de fermeture. Le contrat exige une serrure 3 points.",
-      source: { force: "contrat", clause: "Mesures de prévention contre le vol (clause fictive)", page: 12 },
+      source: { force: "contrat", clause: "Conditions particulières, article 2 Moyens de protection (clause fictive)", page: 1 },
       cote: { libelle: "Porte d'entrée", largeur_cm: 76, longueur_cm: 204, statut: "a_confirmer" },
       origine: "pipeline",
       statut: "a_traiter",
@@ -142,8 +143,8 @@ export const LOGEMENT_EXEMPLE: Logement = {
       priorite: 1,
       titre: "Serrure 3 points",
       niveau: "eleve",
-      source: { force: "contrat", clause: "Mesures de prévention contre le vol (clause fictive)", page: 12 },
-      detail: "Exigé par votre contrat · p. 12",
+      source: { force: "contrat", clause: "Conditions particulières, article 2 Moyens de protection (clause fictive)", page: 1 },
+      detail: "Exigé par votre contrat · p. 1",
       mission: "Compare les serrures compatibles avec la porte et envoie le lien.",
       usage: 2,
       groupe: "priorite",

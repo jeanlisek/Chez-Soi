@@ -43,7 +43,7 @@ def pdf_fictif(chemin: Path) -> Path:
 
 @pytest.fixture()
 def pages(tmp_path):
-    lues, moteur = lire_fichier(pdf_fictif(tmp_path / "contrat.pdf"))
+    lues, moteur, _repli = lire_fichier(pdf_fictif(tmp_path / "contrat.pdf"))
     assert moteur in ("docling", "pypdf")
     return lues
 
@@ -80,7 +80,7 @@ def test_citation_inventee_rejetee(pages):
 def test_route(monkeypatch, pages):
     import app as service
 
-    monkeypatch.setattr("contrat.routes.lire_url", lambda url: (pages, "pypdf"))
+    monkeypatch.setattr("contrat.routes.lire_url", lambda url: (pages, "pypdf", None))
     monkeypatch.delenv("VISION_API_KEY", raising=False)
     client = TestClient(service.app)
     r = client.post("/contrat", json={"contrat_id": "c1", "pdf_url": "https://exemple.test/contrat.pdf"})
@@ -94,9 +94,60 @@ def test_route(monkeypatch, pages):
 def test_cle_exigee(monkeypatch, pages):
     import app as service
 
-    monkeypatch.setattr("contrat.routes.lire_url", lambda url: (pages, "pypdf"))
+    monkeypatch.setattr("contrat.routes.lire_url", lambda url: (pages, "pypdf", None))
     monkeypatch.setenv("VISION_API_KEY", "cle-de-test")
     client = TestClient(service.app)
     corps = {"contrat_id": "c1", "pdf_url": "https://exemple.test/contrat.pdf"}
     assert client.post("/contrat", json=corps).status_code == 401
     assert client.post("/contrat", json=corps, headers={"X-Vision-Key": "cle-de-test"}).status_code == 200
+
+
+# --- Choix du moteur de lecture et raison du repli -------------------------------------------------
+
+
+def _docling_interdit(chemin):
+    raise AssertionError("Docling ne doit pas être tenté hors ligne.")
+
+
+def test_hors_ligne_docling_n_est_pas_tente_et_la_reponse_dit_pourquoi(tmp_path, monkeypatch):
+    monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    monkeypatch.setattr("contrat.lecture.lire_docling", _docling_interdit)
+
+    lues, moteur, repli = lire_fichier(pdf_fictif(tmp_path / "contrat.pdf"))
+
+    assert (moteur, repli) == ("pypdf", "docling indisponible hors ligne")
+    assert [p.numero for p in lues] == [1, 2]
+
+
+def test_en_ligne_un_echec_de_docling_est_nomme_dans_le_repli(tmp_path, monkeypatch):
+    def en_echec(chemin):
+        raise RuntimeError("modèle introuvable")
+
+    monkeypatch.delenv("HF_HUB_OFFLINE", raising=False)
+    monkeypatch.setattr("contrat.lecture.lire_docling", en_echec)
+
+    _, moteur, repli = lire_fichier(pdf_fictif(tmp_path / "contrat.pdf"))
+
+    assert (moteur, repli) == ("pypdf", "docling en échec : RuntimeError")
+
+
+def test_quand_docling_lit_le_pdf_il_n_y_a_pas_de_repli(tmp_path, monkeypatch):
+    from contrat.schema import Page
+
+    monkeypatch.delenv("HF_HUB_OFFLINE", raising=False)
+    monkeypatch.setattr("contrat.lecture.lire_docling", lambda chemin: [Page(numero=1, texte="Texte lu par Docling.")])
+
+    _, moteur, repli = lire_fichier(pdf_fictif(tmp_path / "contrat.pdf"))
+
+    assert (moteur, repli) == ("docling", None)
+
+
+def test_la_reponse_de_la_route_porte_le_moteur_et_la_raison_du_repli(monkeypatch, pages):
+    import app as service
+
+    monkeypatch.setattr("contrat.routes.lire_url", lambda url: (pages, "pypdf", "docling indisponible hors ligne"))
+    monkeypatch.delenv("VISION_API_KEY", raising=False)
+
+    corps = TestClient(service.app).post("/contrat", json={"contrat_id": "c1", "pdf_url": "https://exemple.test/c.pdf"}).json()
+
+    assert (corps["moteur"], corps["repli"]) == ("pypdf", "docling indisponible hors ligne")

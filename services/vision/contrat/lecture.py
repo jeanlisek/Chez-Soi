@@ -1,12 +1,17 @@
 """Lecture du PDF du contrat, page par page.
 
 Docling d'abord (mise en page, tableaux, ordre de lecture) ; pypdf en secours si Docling n'est pas
-installé ou échoue. Le PDF est téléchargé dans un fichier temporaire, jamais conservé, et ne quitte
-pas le service : seuls les champs extraits, avec leur clause et leur page, en sortent.
+installé ou échoue. Hors ligne (`HF_HUB_OFFLINE=1`, le cas du Space), Docling ne peut pas télécharger
+ses modèles : il n'est pas tenté, et pypdf lit le PDF directement. Dans tous les cas, la raison du
+repli est renvoyée avec le résultat.
+
+Le PDF est téléchargé dans un fichier temporaire, jamais conservé, et ne quitte pas le service :
+seuls les champs extraits, avec leur clause et leur page, en sortent.
 """
 
 from __future__ import annotations
 
+import os
 import tempfile
 import urllib.request
 from pathlib import Path
@@ -60,18 +65,32 @@ def lire_pypdf(chemin: Path) -> list[Page]:
     return [Page(numero=i + 1, texte=p.extract_text() or "") for i, p in enumerate(lecteur.pages)]
 
 
-def lire_fichier(chemin: Path) -> tuple[list[Page], str]:
-    """Pages du PDF et moteur utilisé (« docling » ou « pypdf »)."""
-    try:
-        pages, moteur = lire_docling(chemin), "docling"
-    except Exception:  # Docling absent ou en échec : on lit quand même le texte
+def hors_ligne() -> bool:
+    """Vrai quand le Hub Hugging Face est coupé (HF_HUB_OFFLINE), comme dans l'image du Space."""
+    return os.environ.get("HF_HUB_OFFLINE", "").strip().upper() in ("1", "ON", "YES", "TRUE")
+
+
+def lire_fichier(chemin: Path) -> tuple[list[Page], str, str | None]:
+    """Pages du PDF, moteur utilisé (« docling » ou « pypdf ») et, si pypdf a servi, la raison du repli."""
+    pages: list[Page] | None = None
+    if hors_ligne():
+        repli: str | None = "docling indisponible hors ligne"
+    else:
+        try:
+            pages, repli = lire_docling(chemin), None
+        except ImportError:
+            repli = "docling non installé"
+        except Exception as erreur:  # Docling en échec : on lit quand même le texte, et on dit pourquoi
+            repli = f"docling en échec : {type(erreur).__name__}"
+    moteur = "docling"
+    if pages is None:
         pages, moteur = lire_pypdf(chemin), "pypdf"
     if not any(p.texte.strip() for p in pages):
         raise ContratIllisible("Aucun texte lisible dans le PDF (document scanné ?).")
-    return pages, moteur
+    return pages, moteur, repli
 
 
-def lire_url(url: str) -> tuple[list[Page], str]:
+def lire_url(url: str) -> tuple[list[Page], str, str | None]:
     with tempfile.TemporaryDirectory() as dossier:
         chemin = Path(dossier) / "contrat.pdf"
         telecharger(url, chemin)

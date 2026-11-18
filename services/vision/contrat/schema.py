@@ -66,4 +66,6 @@ class ResultatContrat(BaseModel):
     clauses_rejetees: list[Rejet] = []
     pages: int = 0
     moteur: Literal["docling", "pypdf"] = "pypdf"
+    # Pourquoi pypdf a lu le PDF à la place de Docling (ex. « docling indisponible hors ligne ») ; vide sinon.
+    repli: str | None = None
     llm: bool = False

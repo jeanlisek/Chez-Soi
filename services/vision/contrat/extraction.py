@@ -240,7 +240,7 @@ def trier(candidats: list[Obligation], pages: list[Page]) -> tuple[list[Obligati
     return retenues, rejets
 
 
-def extraire(contrat_id: str, pages: list[Page], moteur: str) -> ResultatContrat:
+def extraire(contrat_id: str, pages: list[Page], moteur: str, repli: str | None = None) -> ResultatContrat:
     champs = champs_identification(pages)
     candidats_llm = obligations_par_llm(pages)
     retenues, rejets = trier(obligations_par_regles(pages) + candidats_llm, pages)
@@ -255,5 +255,6 @@ def extraire(contrat_id: str, pages: list[Page], moteur: str) -> ResultatContrat
         clauses_rejetees=rejets,
         pages=len(pages),
         moteur="docling" if moteur == "docling" else "pypdf",
+        repli=repli,
         llm=bool(candidats_llm),
     )

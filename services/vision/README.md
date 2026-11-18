@@ -47,7 +47,7 @@ La commande écrit dans le dossier de sortie :
 | `GET /analyse/{analyse_id}` | `etat` (`en_cours`, `termine`, `echec`), `resultat` (`pipeline` ou `precalcule`), failles, liens des fichiers, et `pieces` (un modèle 3D et une image annotée par pièce) |
 | `GET /analyse/{analyse_id}/fichiers/{chemin}` | `modele.glb`, `image_annotee.jpg` ou `failles.json`, à la racine ou dans `pieces/<pièce>/` |
 | `POST /autotest`, puis `GET /autotest/{autotest_id}` | Diagnostic : charge les quatre modèles et les fait tourner sur des images de synthèse ; renvoie les durées par modèle. Fermé (403) tant que `VISION_API_KEY` n'est pas définie |
-| `POST /contrat` | Stub (HTTP 501) |
+| `POST /contrat {contrat_id, pdf_url}` | Lecture du contrat, synchrone : assureur, formule, référence des conditions générales et obligations, chacune avec sa clause, sa page et sa citation. La réponse dit quel `moteur` a lu le PDF (`docling` ou `pypdf`) et, si c'est pypdf, pourquoi dans `repli` |
 
 La reconstruction multi-vues est activée par `VISION_RECONSTRUCTION=1` (c'est le cas dans l'image Docker). `video_url` doit être en https (URL signée Supabase) et la vidéo peser 50 Mo au plus. Elle est supprimée du service dès la fin du calcul. Si `VISION_API_KEY` est définie, chaque appel doit envoyer l'en-tête `X-Vision-Key: <clé>`. L'en-tête `Authorization` n'est pas utilisé par le service : sur un Space privé, il porte le jeton Hugging Face.
 
@@ -127,6 +127,18 @@ Pour `a_confirmer`, `position_3d.cote` contient aussi `raison` (`hors_cadre` : l
 ```
 
 `position_3d.centre` est en mètres dans le repère glTF du fichier nommé par `repere`. `instance` numérote les objets du même type dans une pièce. Avec `--pieces`, le fichier a aussi une liste `pieces` : nom, segments, nombre d'images, chemin du `.glb` et de l'image annotée de chaque pièce.
+
+## Lecture du contrat : moteur et repli
+
+`POST /contrat` lit le PDF avec Docling quand il le peut, sinon avec pypdf. Le champ `repli` de la réponse dit pourquoi pypdf a servi ; il est vide quand Docling a lu le PDF.
+
+| `repli` | Cas |
+|---|---|
+| `docling indisponible hors ligne` | `HF_HUB_OFFLINE=1` : Docling ne peut pas télécharger ses modèles, il n'est pas tenté. C'est le cas du Space |
+| `docling non installé` | La bibliothèque n'est pas dans l'environnement |
+| `docling en échec : <erreur>` | Docling a été tenté et a échoué |
+
+Pour la démo, le Space lit donc les contrats avec pypdf, sans attendre l'échec de Docling (15 secondes par PDF auparavant). Docling n'est pas prêt : ses modèles ne sont ni figés sur une révision ni dans l'image, et sur un PDF fictif de deux pages il a rattaché tout le texte à la page 1, ce qui fausserait la page des clauses. Correction prévue après la démo.
 
 ## Ce que le pipeline mesure
 
@@ -235,7 +247,7 @@ Les deux valeurs passent par des credentials n8n, jamais en dur dans un nœud : 
 
 ### Déroulé
 
-1. **Réveiller le Space.** Appeler `GET /health` jusqu'à obtenir 200 avec `"status": "ok"`. Après une mise en veille, le premier appel relance le Space ; prévoir jusqu'à 5 minutes, avec un nouvel essai toutes les 20 à 30 secondes. Pendant le réveil, l'appel peut échouer ou ne pas répondre (codes exacts non relevés) : traiter toute réponse autre que 200 comme « pas encore prêt ».
+1. **Réveiller le Space.** Appeler `GET /health` jusqu'à obtenir 200 avec `"status": "ok"`. Après une mise en veille, le premier appel relance le Space. Le délai est très variable : 4 à 6 minutes lors de trois redémarrages le 18/11/2026, mais **33 minutes** lors d'un quatrième (dont 30 minutes en démarrage, cause inconnue). Prévoir donc jusqu'à 35 minutes, avec un nouvel essai toutes les 20 à 30 secondes, et réveiller le Space bien avant une démonstration. Pendant le réveil, l'appel peut échouer ou ne pas répondre (codes exacts non relevés) : traiter toute réponse autre que 200 comme « pas encore prêt ».
 2. **Lancer l'analyse.** `POST /analyse` avec l'URL https signée de la vidéo (bucket privé `videos`) :
 
    ```json

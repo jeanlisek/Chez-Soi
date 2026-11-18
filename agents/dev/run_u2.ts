@@ -8,7 +8,7 @@
  *
  * UNE session par lancement, jamais de relance automatique.
  */
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
 
@@ -27,6 +27,7 @@ import {
 } from "../../apps/web/lib/schemas";
 import { executerRun, type ContexteOutil, type OutilLocal } from "./boucle";
 import { controlerSortieUsage2 } from "./controle";
+import { ecartsCitationFiche } from "./fiche";
 
 const RACINE = path.resolve(__dirname, "../..");
 const FAILLE_ID = "faille-demo-tapis-01";
@@ -150,7 +151,16 @@ async function main(): Promise<void> {
   });
   if (!resultat) return;
 
-  const { run, sortie } = resultat;
+  const { run, sortie, fichier } = resultat;
+
+  // La citation de découpe est cherchée sur la fiche par le code (fiche.ts) : l'agent la
+  // recopie parfois mal. L'écart s'ajoute au run, qui est réécrit (champ dérivé seulement).
+  const ecartsFiche = await ecartsCitationFiche(sortie);
+  if (ecartsFiche.length) {
+    run.ecarts_metier.push(...ecartsFiche);
+    await writeFile(fichier, `${JSON.stringify(run, null, 2)}\n`, "utf8");
+  }
+
   console.log("\n──────── Résultat ────────");
   console.log(`État final : ${run.etat_final} · outcome : ${run.outcome ?? "aucun"} · error_code : ${run.error_code ?? "aucun"}`);
   console.log(`Fin : ${run.motif_fin} · durée : ${run.duree_s} s · étapes : ${run.nb_etapes} · validation : ${run.decision_validation ?? "non demandée"}`);

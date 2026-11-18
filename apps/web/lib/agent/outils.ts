@@ -39,8 +39,9 @@ export function contraintesProfil(
 
 /**
  * get_mesures : cotes de la faille et contraintes du profil. La faille doit appartenir au
- * logement du run (l'agent ne choisit pas un autre logement). Pour un élément posé au sol,
- * le contrat d'interface n'a pas de `longueur_cm` : elle passe dans `hauteur_cm`.
+ * logement du run (l'agent ne choisit pas un autre logement). Contrat d'interface depuis la
+ * PR #46 : `longueur_cm` (longueur au sol, `failles.longueur_cm`) et `hauteur_cm` (porte,
+ * fenêtre, épaisseur d'un tapis) sont optionnels et absents quand ils sont inconnus.
  */
 async function getMesures(admin: Admin, run: RunPourOutils, args: unknown): Promise<GetMesuresSortie> {
   const { faille_id } = getMesuresEntreeSchema.parse(args);
@@ -62,7 +63,8 @@ async function getMesures(admin: Admin, run: RunPourOutils, args: unknown): Prom
     piece: faille.piece ?? "",
     cote_confirmee_cm: faille.cote_confirmee_cm,
     largeur_cm: faille.largeur_cm ?? faille.cote_confirmee_cm,
-    hauteur_cm: faille.hauteur_cm ?? faille.longueur_cm ?? faille.cote_confirmee_cm,
+    hauteur_cm: faille.hauteur_cm ?? undefined,
+    longueur_cm: faille.longueur_cm ?? undefined,
     contraintes_profil: contraintesProfil(occupants ?? []),
   });
 }

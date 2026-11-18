@@ -253,3 +253,8 @@ Plan B de la démo : run enregistré (replay H), 3D précalculée, partage de co
 4. **Schéma** : tranché le 18/11 (issue #1). v3 et doc CDO réconciliés, `pieces` et `declarations` retenues, vocabulaire `elements` commun ; détail dans `supabase/README.md`.
 5. **Action montrée en live vendredi** : proposition du CPO, usage 2 « sous-tapis 60 × 160 cm » avec pilotage « moins de 50 € ». Décision de Jean-Li, mercredi midi.
 6. Auth : Apple, Google ou lien par e-mail (proposition du CPO), plus un logement exemple avant l'inscription.
+
+
+Relecture n8n #4 : `node --test scripts/n8n-clauses.test.mjs` contrôle le rejet
+des clauses sans citation vérifiée et la conservation de `piece` pour le trigger
+Supabase (#16). Aucune requête externe dans ces tests.

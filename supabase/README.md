@@ -12,6 +12,7 @@ Projet Supabase `chez-soi`, organisation « Chez Soi », région Paris (eu-west-
 | `migrations/0004_contrats.sql` | `contrats`, `obligations_contrat`, leur RLS, fonction `get_contrat_champs` (serveur uniquement) |
 | `migrations/0005_graphe.sql` | `graphe_noeuds` (`embedding vector(1024)`, BAAI/bge-m3), `graphe_aretes`, index HNSW cosinus, RLS, RPC `match_noeuds` et `sous_graphe` |
 | `migrations/0006_raccordements.sql` | Vocabulaire `elements` (strict pour `regles`, vue `elements_inconnus` ailleurs), héritage des seuils et conditions d'une version de règle à la suivante, vue `regles_en_vigueur`, `valider_regle`, pièces reliées par nom, cotes des failles, `runs_agent` aligné sur `runAgentSchema`, sorties de l'usage 1 dans `contrats`, correction de la source rang 3 |
+| `migrations/0007_origine_mesure.sql` | `failles.origine` (`pipeline` ou `manuel`) : la mesure vient du service vision ou d'une saisie à la main (plan B de la démo) ; distincte de `source` |
 
 Une migration déjà appliquée ne se modifie jamais : on en ajoute une nouvelle.
 
@@ -34,10 +35,10 @@ psql "$DATABASE_URL" -f supabase/tests/rls_test.sql   # attendu : NOTICE « RLS 
 supabase gen types typescript --project-id hfcunqjqmtlozhiwfihl > apps/web/lib/supabase/types.ts
 ```
 
-Les migrations 0001 à 0004 ont été appliquées le 17/11/2026, et 0005 et 0006 le 18/11/2026, depuis l'éditeur SQL du dashboard, à partir de ces fichiers exacts (empreintes SHA-256 contrôlées). Pour que la CLI le sache, une seule fois après `supabase link` :
+Les migrations 0001 à 0004 ont été appliquées le 17/11/2026, et 0005 à 0007 le 18/11/2026, depuis l'éditeur SQL du dashboard, à partir de ces fichiers exacts (empreintes SHA-256 contrôlées). Pour que la CLI le sache, une seule fois après `supabase link` :
 
 ```bash
-supabase migration repair --status applied 0001 0002 0003 0004 0005 0006
+supabase migration repair --status applied 0001 0002 0003 0004 0005 0006 0007
 ```
 
 `DATABASE_URL` et le mot de passe de la base sont dans le coffre-fort de l'équipe, jamais dans le dépôt.

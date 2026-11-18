@@ -98,3 +98,9 @@ Le banc séquentiel et les preuves indépendantes sont décrits dans `bench/READ
 Référence équipe : `chez-soi-acheteur:2`. Copie autorisée dans le compte de Bastian :
 `chez-soi-acheteur:1`, même skill `verifier-dimension:1` mais organisation distincte.
 Les mesures de cette copie doivent l’indiquer explicitement.
+
+Le banc du 18/11 (10 Flash + 10 Pro, prompt archivé) est conservé dans
+`bench/resultats/2026-11-18-bastian/`. Les validations d’amélioration sont séparées.
+Le custom tool de développement `lire_fiche_produit` lit les fiches publiques
+autorisées après les mesures ; son handler Python est à porter dans le client de
+production si ce parcours est retenu. Il ne change pas `citation_decoupe?: string`.

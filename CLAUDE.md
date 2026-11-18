@@ -273,3 +273,15 @@ Plan B de la démo : run enregistré (replay H), 3D précalculée, partage de co
 Relecture n8n #4 : `node --test scripts/n8n-clauses.test.mjs` contrôle le rejet
 des clauses sans citation vérifiée et la conservation de `piece` pour le trigger
 Supabase (#16). Aucune requête externe dans ces tests.
+
+## U2 — prompt et banc (#6)
+
+Prompt définitif générique `agents/prompts/u2_recommandation.md` ; fixture tapis
+séparée dans `run_u2.ts`. Sortie plate avec `citation_decoupe?: string`, compatible
+avec la skill d’Aurélie (PR #20). Banc : `python3 agents/bench/run_bench.py` (plan
+sans API) ; `--a-blanc --limite 1` construit une requête ; essais réels avec
+`--executer --canal-annonce --agent nom:N --skill-ref nom:N`, H_API_KEY chargé depuis
+le .env local. Détails dans `agents/bench/README.md`. Jamais de dérogation U2 au quota
+actif nul. La clé de Bastian ne voit pas l’organisation d’Aurélie ; copie autorisée
+`chez-soi-acheteur:1` et `verifier-dimension:1` dans son compte, références distinctes
+de celles de l’équipe malgré les noms identiques.

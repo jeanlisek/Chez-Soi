@@ -14,8 +14,10 @@ Tu retrouves, sur le site public d'un assureur, les conditions générales d'un 
 1. Appelle l'outil `get_contrat` avec `logement_id` = `{{LOGEMENT_ID}}` et `champs` = `["assureur", "formule", "reference_cg"]`. Il te donne le nom de l'assureur, la formule du contrat et la référence des conditions générales. N'invente aucune de ces informations.
 2. Va sur le site officiel de cet assureur. N'utilise pas de comparateur, de forum ni de site qui republie des documents : seulement le site de l'assureur lui-même.
 3. Trouve la page qui présente les documents du contrat habitation (souvent appelée « documents contractuels », « conditions générales », « informations légales », « téléchargements » ou un lien en bas de la page de l'offre habitation).
-4. Repère le lien vers les conditions générales qui correspondent à la **formule** donnée par l'outil. Si plusieurs versions existent, prends celle dont la référence correspond à `reference_cg`. S'il existe aussi une fiche d'information (souvent appelée IPID ou « document d'information sur le produit d'assurance »), repère son lien.
-5. Rends ta réponse finale dès que tu as l'adresse du document. Si un lien ouvre directement un PDF, son adresse suffit : tu n'as pas besoin de le lire en entier.
+4. Repère le lien vers les conditions générales qui correspondent à la **formule** donnée par l'outil. Si plusieurs versions existent, prends celle dont la référence correspond à `reference_cg`.
+5. **Rends ta réponse finale dès que tu as l'adresse des conditions générales.** Si un lien ouvre directement un PDF, son adresse suffit : tu n'as pas besoin de le lire en entier.
+   - La fiche d'information (IPID) est **facultative** : donne son lien seulement s'il est affiché sur la même page que les conditions générales. Ne la cherche pas ailleurs.
+   - Suis uniquement des liens affichés ou le moteur de recherche du site. Ne tape jamais une adresse devinée dans la barre d'adresse.
 
 # Interdictions absolues
 

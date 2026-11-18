@@ -120,7 +120,7 @@ async function main(): Promise<void> {
 
   const urlDepart = drapeau("sans-url-depart") ? undefined : controle.url_depart;
   // Agent maison créé sur H (agents/definitions/), figé sur sa révision.
-  const agent = option("agent") ?? "chez-soi-sourcing:1";
+  const agent = option("agent") ?? "chez-soi-sourcing:2";
   const site = new URL(controle.url_depart).hostname;
   console.log(`Usage 1 · conditions générales · assureur : ${cle} · départ : ${urlDepart ?? "page vierge"} · agent : ${agent}`);
 

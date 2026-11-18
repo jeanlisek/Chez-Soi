@@ -27,6 +27,18 @@
         "reference_attendue": "202007_298",
         "_source": "https://www.altima-assurances.fr/sites/default/files/produits/habitation/cg_mrh.pdf (« 202007_298 » en fin de document ; à confirmer que c'est bien la référence citée dans des conditions particulières)"
       }
+    },
+    "acheel": {
+      "contrat": {
+        "assureur": "Acheel",
+        "formule": "Assurance habitation"
+      },
+      "controle": {
+        "domaines": ["acheel.com"],
+        "url_depart": "https://v2.acheel.com/insurance/property",
+        "reference_attendue": "AUCUNE-CG-PUBLIQUE",
+        "_source": "Cas « non publié » (Jean-Li, 18/11). Vérifié le 18/11 sans connexion : la page habitation ne propose ni CG ni IPID ; le lien « Conditions générales » du pied de page mène aux conditions d'utilisation du site, qui disent ne pas régir le contrat d'assurance ; les documents contractuels sont dans l'espace personnel. Attendu : trouve = false avec une raison. Si l'agent rend une URL, le PDF ne contiendra pas AUCUNE-CG-PUBLIQUE et le contrôle le signalera."
+      }
     }
   }
 }

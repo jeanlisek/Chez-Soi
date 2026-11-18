@@ -87,3 +87,14 @@ L'inscription à l'OTV passe par FranceConnect dès l'entrée, et l'espace clien
 Tels quels : `apps/web/lib/hai.ts`, `dev/boucle.ts` (quota, création, suivi, cache des outils, coupe-circuit, délais, annulation, enregistrement dans `bench/runs/`) et `evaluerSortie` de `dev/controle.ts`.
 
 À ajouter par `dev/run_u1.ts` : `get_contrat.json` au format de la doc H, une fixture de contrat fictif, un prompt provisoire, le schéma de sortie `{ trouve, url_cg, … }` dans `schemas.ts`, puis le téléchargement du PDF et le contrôle de la référence par le code. Pas d'outil de validation : l'usage 1 est en lecture seule.
+
+
+## U2 définitif et banc (#6)
+
+`agents/prompts/u2_recommandation.md` est générique pour les objets du logement ;
+`agents/dev/run_u2.ts` injecte la fixture tapis uniquement pour les essais.
+Le JSON reste plat, notamment `citation_decoupe?: string`, compatible PR #20.
+Le banc séquentiel et les preuves indépendantes sont décrits dans `bench/README.md`.
+Référence équipe : `chez-soi-acheteur:2`. Copie autorisée dans le compte de Bastian :
+`chez-soi-acheteur:1`, même skill `verifier-dimension:1` mais organisation distincte.
+Les mesures de cette copie doivent l’indiquer explicitement.

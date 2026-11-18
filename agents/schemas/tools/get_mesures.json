@@ -1,6 +1,6 @@
 {
   "name": "get_mesures",
-  "description": "Renvoie les cotes confirmées d'une faille du logement (en centimètres) et les contraintes du profil de l'occupant. À appeler avant toute recherche de produit, avec le faille_id donné dans la consigne. Réponse : { element, piece, cote_confirmee_cm, largeur_cm, hauteur_cm, contraintes_profil }.",
+  "description": "Renvoie les cotes confirmées d'une faille du logement (en centimètres) et les contraintes concrètes sur l'objet. À appeler avant toute recherche de produit, avec le faille_id donné dans la consigne. Réponse : { element, piece, cote_confirmee_cm, largeur_cm, hauteur_cm?, longueur_cm?, contraintes_profil }. Pour un tapis : largeur_cm × longueur_cm au sol ; hauteur_cm est l'épaisseur si elle est connue.",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -9,7 +9,9 @@
         "description": "Identifiant de la faille, donné dans la consigne."
       }
     },
-    "required": ["faille_id"],
+    "required": [
+      "faille_id"
+    ],
     "additionalProperties": false
   }
 }

@@ -1,16 +1,15 @@
 {
-  "_note": "Données FICTIVES pour les runs locaux de l'usage 2 (persona Jeanne). Le contrat de get_mesures n'a pas de champ longueur : pour un tapis posé au sol, hauteur_cm porte la longueur (à trancher avec Briac).",
+  "_note": "Données FICTIVES pour les runs locaux de l'usage 2 (persona Jeanne). Tapis : largeur_cm × longueur_cm au sol ; hauteur_cm (épaisseur) inconnue, donc absente. Aucune donnée de santé (âge, canne, mobilité) : seulement les contraintes concrètes sur l'objet.",
   "failles": {
     "faille-demo-tapis-01": {
       "element": "tapis",
       "piece": "séjour",
       "cote_confirmee_cm": 160,
       "largeur_cm": 60,
-      "hauteur_cm": 160,
+      "longueur_cm": 160,
       "contraintes_profil": [
-        "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
         "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
-        "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+        "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche le pied ou une aide à la marche.",
         "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
       ]
     }

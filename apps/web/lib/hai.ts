@@ -273,6 +273,8 @@ export function creerClientHai(options: OptionsClientHai = {}) {
   async function requete(methode: string, chemin: string, opts: OptionsRequete = {}): Promise<Response> {
     const { corps, entetes, delaiMs = delaiParDefautMs, reessayer429 = true, reessayer5xx = false } = opts;
     let derniereErreur: unknown;
+    // Lue avant la boucle : une clé absente n'est pas une panne réseau à rejouer.
+    const cleApi = cle();
 
     for (let tentative = 0; tentative <= tentativesMax; tentative++) {
       let reponse: Response;
@@ -280,7 +282,7 @@ export function creerClientHai(options: OptionsClientHai = {}) {
         reponse = await appelFetch(`${apiUrl}${chemin}`, {
           method: methode,
           headers: {
-            Authorization: `Bearer ${cle()}`,
+            Authorization: `Bearer ${cleApi}`,
             ...(corps === undefined ? {} : { "Content-Type": "application/json" }),
             ...entetes,
           },

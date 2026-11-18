@@ -60,7 +60,8 @@ export async function embarquer(textes: string[]): Promise<number[][] | null> {
 
 function texteNoeud(n: { type: string; libelle: string; proprietes: unknown }): string {
   const p = (n.proprietes ?? {}) as Record<string, unknown>;
-  const complement = [p.citation, p.source_ref].filter((x): x is string => typeof x === "string" && !!x).join(" — ");
+  // Element : ses synonymes (seed) ; Clause : sa citation ; Regle : sa source.
+  const complement = [p.synonymes, p.citation, p.source_ref].filter((x): x is string => typeof x === "string" && !!x).join(" — ");
   return `${n.type} : ${n.libelle}${complement ? ` (${complement})` : ""}`;
 }
 

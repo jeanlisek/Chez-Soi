@@ -7,7 +7,7 @@ Ce commentaire n'est pas envoyé à l'agent.
 
 # Mission
 
-Une personne âgée part en vacances du **{{DEPART}}** au **{{RETOUR}}** ({{DUREE}} jours). Son fils va faire lui-même deux démarches : informer l'assureur de l'absence et inscrire le logement à l'**Opération tranquillité vacances** (OTV). Tu prépares ces démarches pour qu'il n'ait plus qu'à se connecter, relire et envoyer.
+Une personne âgée part en vacances du **{{DEPART}}** au **{{RETOUR}}** ({{DUREE}} jours). Son fils va faire lui-même les démarches : inscrire le logement à l'**Opération tranquillité vacances** (OTV) et, **seulement si le contrat l'exige**, informer l'assureur de l'absence. Tu prépares ces démarches pour qu'il n'ait plus qu'à se connecter, relire et envoyer.
 
 Tu n'as **aucun identifiant** et tu n'envoies **rien**. Ta mission s'arrête avant toute connexion et avant tout envoi.
 
@@ -20,7 +20,9 @@ Tu n'as **aucun identifiant** et tu n'envoies **rien**. Ta mission s'arrête ava
    N'invente rien de tout ça.
 2. Sur **service-public.gouv.fr**, trouve la page officielle de la démarche en ligne « Opération tranquillité vacances ». Lis ce que la page dit : qui peut s'inscrire, comment se connecter, quelles informations et pièces le formulaire demande, dans quel délai s'inscrire.
    - Si un bouton mène au service en ligne, **ne clique pas dessus** : il ouvre une page de connexion (FranceConnect). Donne l'adresse de la page officielle qui présente la démarche.
-3. Sur le **site officiel de l'assureur** (pas un comparateur, pas un forum), trouve comment le prévenir d'une absence ou d'une inoccupation prolongée : page de contact, rubrique « déclarer un changement de situation », numéro de téléphone, espace adhérent. N'entre dans aucun espace client.
+3. Sur le **site officiel de l'assureur** (pas un comparateur, pas un forum), trouve comment le contacter au sujet d'une absence : page de contact, rubrique « déclarer un changement de situation », numéro de téléphone, espace adhérent. N'entre dans aucun espace client.
+   - Informer l'assureur est **obligatoire** seulement si `get_contrat` renvoie un bloc `inoccupation` dont la durée est dépassée par l'absence : dis-le alors avec la clause et sa page.
+   - Sinon (pas de bloc `inoccupation`, ou durée non dépassée), **aucune déclaration n'est exigée par le contrat** : écris-le, et présente le contact de l'assureur comme **facultatif** (par exemple pour vérifier les protections à activer), jamais comme une obligation de « signaler l'absence ».
 4. Rédige le récapitulatif (voir plus bas).
 5. Appelle l'outil `demander_validation` avec `action` = `"envoi"`, un `resume` d'une ou deux phrases et l'`url` de la page officielle de l'OTV. Cet appel doit être la seule action de l'étape. Attends la réponse sans rien faire d'autre.
 6. Dès que la réponse arrive, quelle qu'elle soit, **ne fais plus aucune action dans le navigateur** et rends ta réponse finale. Une réponse `approuve` veut dire que l'utilisateur enverra lui-même : elle ne t'autorise pas à envoyer.
@@ -42,7 +44,7 @@ En texte simple, à relire par le fils :
 - clauses liées à l'absence (franchise, protections à activer), avec leur source (conditions générales ou conditions particulières) et leur page ;
 - protections exigées par le contrat, avec la clause et sa page ;
 - démarche OTV : lien, connexion requise, informations et pièces à préparer, délai ;
-- démarche assureur : lien et moyen de le prévenir.
+- démarche assureur : obligatoire ou facultative selon le contrat (voir l'étape 3), avec le lien et le moyen de le contacter.
 
 # Réponse finale
 

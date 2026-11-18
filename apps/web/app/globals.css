@@ -5,37 +5,100 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Charte Chez Soi, reprise de la maquette (Figma « Chez soi · Parcours utilisateurs et écrans »,
- * app cliquable de Hoang-Kim). Mobile 390 × 844, centré sur ordinateur.
+ * Design system Chez Soi, repris du dépôt de Hoang-Kim (quelquunseeulement/chez-soi-app,
+ * fidèle au Figma « Chez soi · Parcours utilisateurs et écrans ») : charte + direction app pervenche.
+ * Tailwind v4 : chaque couleur du tailwind.config.ts d'origine devient une variable --color-*.
  */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Boldonse";
+  src: url("/fonts/Boldonse-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+/* Karumbi : wordmark « Chez Soi » uniquement. */
+@font-face {
+  font-family: "Karumbi";
+  src: url("/fonts/Karumbi-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-heading: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Inter", system-ui, sans-serif;
+  --font-display: "Boldonse", "Arial Black", sans-serif;
+  --font-brand: "Karumbi", cursive;
 
-  --color-creme: #f7f5ef;
-  --color-fond: #e8eaf6;
-  --color-encre: #121c38;
-  --color-encre-douce: #4a5270;
-  --color-lavande: #9db0f2;
-  --color-lavande-claire: #dfe5fb;
-  --color-lilas: #e6b9ee;
-  --color-lilas-clair: #f5e3f8;
-  --color-ambre: #e9a21c;
-  --color-ambre-clair: #fdf1d8;
-  --color-vert: #2e7d57;
-  --color-vert-clair: #e3f1e9;
-  --color-rouge: #c0283a;
-  --color-rouge-clair: #fbe5e7;
-  --color-gris-ligne: #e4e4ea;
-
-  /* Charte graphique de Chez Soi (Drive CPO) : logo et accents de marque. */
+  /* Marque */
   --color-cobalt: #1a3a86;
-  --color-persimmon: #d96f45;
+  --color-cobalt-hover: #142e6b;
+  --color-persimmon: #d96f45; /* marque seulement, jamais dans une interface de risque */
   --color-parchment: #e9dfc8;
+  --color-creme: #faf7f0;
   --color-ciel: #8da3c7;
+  /* Direction app */
+  --color-pervenche: #9db2f2;
+  --color-pervenche-soft: #dce4fc;
+  --color-pervenche-stripe: #b6c6f6;
+  --color-lilas: #e6b8f0;
+  --color-lilas-soft: #f6e6fa;
+  --color-lilas-ink: #3a2a4a;
+  --color-nuit: #121b36;
+  --color-nuit-2: #1c2747;
+  --color-nuit-3: #1f2a4d;
+  --color-nuit-4: #33417a;
+  --color-ink: #121b36;
+  --color-ink-muted: #4b5372;
+  --color-ink-soft: #2a3563;
+  --color-line: #e3e5ee;
+  /* Signaux (Safety UX) : rouge = danger physique, ambre = action attendue, vert = fait, bleu = en cours */
+  --color-info-solid: #2f5bb7;
+  --color-info-bg: #e7edf8;
+  --color-info-border: #5c82cf;
+  --color-info-text: #1a3a86;
+  --color-succes-solid: #1f7a55;
+  --color-succes-bg: #e2f3ea;
+  --color-succes-border: #3f9a72;
+  --color-succes-text: #155c3f;
+  --color-attention-solid: #e9a21b;
+  --color-attention-on: #3b2600;
+  --color-attention-icon: #b07400;
+  --color-attention-bg: #fdf1d6;
+  --color-attention-text: #7a4f00;
+  --color-danger-solid: #b42332;
+  --color-danger-bg: #fbe6e7;
+  --color-danger-border: #c93a48;
+  --color-danger-text: #951b27;
+  --color-veille-bg: #eef1f7;
+  --color-veille-border: #7189b5;
+  --color-veille-text: #3d4f75;
+  --radius-card: 32px;
+  --radius-xl2: 24px;
+
+  /* Anciens noms, gardés pour les composants pas encore portés (Viewer3D, ARButton, SourceBadge). */
+  --color-fond: #e9ecf5;
+  --color-encre: #121b36;
+  --color-encre-douce: #4b5372;
+  --color-lavande: #9db2f2;
+  --color-lavande-claire: #dce4fc;
+  --color-lilas-clair: #f6e6fa;
+  --color-ambre: #e9a21b;
+  --color-ambre-clair: #fdf1d6;
+  --color-vert: #1f7a55;
+  --color-vert-clair: #e2f3ea;
+  --color-rouge: #b42332;
+  --color-rouge-clair: #fbe6e7;
+  --color-gris-ligne: #e3e5ee;
 
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -63,7 +126,7 @@
 }
 
 :root {
-  --background: #f7f5ef;
+  --background: #faf7f0;
   --foreground: #121c38;
   --card: #ffffff;
   --card-foreground: #121c38;
@@ -78,9 +141,9 @@
   --accent: #9db0f2;
   --accent-foreground: #121c38;
   --destructive: #c0283a;
-  --border: #e4e4ea;
-  --input: #e4e4ea;
-  --ring: #9db0f2;
+  --border: #e3e5ee;
+  --input: #e3e5ee;
+  --ring: #9db2f2;
   --radius: 0.875rem;
 }
 
@@ -89,29 +152,51 @@
     @apply border-border outline-ring/50;
   }
   html {
-    background: var(--color-fond);
+    background: #e9ecf5;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-fond text-encre;
-    -webkit-tap-highlight-color: transparent;
+    @apply bg-[#e9ecf5] font-sans text-ink antialiased;
+  }
+  ::selection {
+    background: #9db2f2;
+    color: #121b36;
   }
 }
 
-/* Barre de progression hachurée (écran Analyse). */
-.hachures {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgba(255, 255, 255, 0.35) 0 6px,
-    transparent 6px 12px
-  );
-  background-size: 34px 34px;
-  animation: hachures 1.2s linear infinite;
+/* Karumbi a un trait fin : on l'épaissit légèrement pour se rapprocher du wordmark de la charte. */
+.wordmark {
+  font-family: "Karumbi", cursive;
+  -webkit-text-stroke: 1.1px currentColor;
+  letter-spacing: 0.01em;
 }
-@keyframes hachures {
-  from {
-    background-position: 0 0;
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.stripes {
+  background: repeating-linear-gradient(135deg, #9db2f2 0 8px, #b6c6f6 8px 16px);
+}
+.sr-only-focusable:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .anim-pulse {
+    animation: cs-pulse 1.6s ease-in-out infinite;
   }
-  to {
-    background-position: 34px 0;
+  @keyframes cs-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
   }
 }

@@ -1,152 +1,110 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, ChevronRight, MousePointer2, RotateCcw, Share2 } from "lucide-react";
 
-import { BarreOnglets } from "@/components/chez-soi/BarreOnglets";
-import { PersonneEquilibre } from "@/components/chez-soi/illustrations";
-import { BandeauExemple, BoutonRond, Corps, Ecran } from "@/components/chez-soi/ui";
+import { Cursor, Icon } from "@/components/cs/icons";
+import { ExempleTag, Illus, Logo, RoundButton, Screen, cx } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import type { Faille } from "@/lib/domaine";
-import { cn } from "@/lib/utils";
 
-/** Écran 12 · Suivi : avancement par pièce et prochaines démarches. */
+const COULEUR_SEGMENT: Record<Faille["statut"], string> = {
+  regle: "bg-succes-solid",
+  en_traitement: "bg-attention-solid",
+  a_traiter: "bg-danger-bg shadow-[inset_0_0_0_1.5px_#C93A48]",
+  a_surveiller: "bg-veille-bg shadow-[inset_0_0_0_1.5px_#7189B5]",
+};
+const ORDRE: Faille["statut"][] = ["regle", "en_traitement", "a_traiter", "a_surveiller"];
+
+/** Écran 12 · Suivi : du rouge au vert, avancement par pièce et prochaines démarches. */
 export default function PageSuivi() {
   const { logement, etat, reinitialiser } = useParcours();
   const base = `/logement/${logement.id}`;
+  const prenom = logement.occupant.libelle;
 
-  // Une faille confiée à l'agent dont la proposition est approuvée passe « en traitement ».
+  // Une faille confiée à l'agent passe « en traitement » ; « réglée » une fois la proposition approuvée.
   const statut = (f: Faille): Faille["statut"] => {
+    if (f.statut === "regle") return "regle";
     const action = logement.actions.find((a) => a.faille_id === f.id);
     if (action && etat.missions[action.id] === "agent" && etat.run !== "aucun" && etat.decision !== "refuse")
-      return f.statut === "regle" ? "regle" : "en_traitement";
-    return f.statut === "en_traitement" ? "a_traiter" : f.statut;
+      return etat.decision === "approuve" ? "regle" : "en_traitement";
+    if (f.statut === "a_surveiller" || f.niveau === "surveiller") return "a_surveiller";
+    return "a_traiter";
   };
   const statuts = logement.failles.map(statut);
   const n = (s: Faille["statut"]) => statuts.filter((x) => x === s).length;
+  const segments = [...statuts].sort((a, b) => ORDRE.indexOf(a) - ORDRE.indexOf(b));
 
-  const parPiece = logement.pieces.map((p) => {
+  const pieces = logement.pieces.map((p) => {
     const fs = logement.failles.filter((f) => f.piece_id === p.id).map(statut);
-    const etatPiece =
-      fs.length === 0
-        ? "rien"
-        : fs.includes("a_traiter")
-          ? "a_traiter"
-          : fs.includes("en_traitement")
-            ? "en_traitement"
-            : fs.every((s) => s === "regle")
-              ? "regle"
-              : "a_surveiller";
-    return { p, fs, etatPiece };
+    const nb = (s: Faille["statut"]) => fs.filter((x) => x === s).length;
+    if (fs.length === 0) return [p.id, p.nom, "rien à faire", "bg-succes-bg text-succes-text"] as const;
+    if (nb("a_traiter")) return [p.id, p.nom, `${nb("a_traiter")} à traiter`, "bg-danger-bg text-danger-text"] as const;
+    if (nb("en_traitement")) return [p.id, p.nom, `${nb("en_traitement")} en traitement`, "bg-attention-bg text-attention-text"] as const;
+    if (fs.every((s) => s === "regle")) return [p.id, p.nom, "réglé", "bg-succes-bg text-succes-text"] as const;
+    return [p.id, p.nom, "à surveiller", "bg-veille-bg text-veille-text"] as const;
   });
 
   return (
-    <Ecran>
-      <header className="flex items-center gap-3 px-5 pt-5 pb-3">
-        <div className="flex-1 pl-1">
-          <p className="text-lg font-bold">Suivi</p>
-          <p className="text-sm text-encre-douce">Logement de {logement.occupant.libelle}</p>
+    <Screen nav="suivi" className="gap-3">
+      <div className="flex items-center gap-3">
+        <Logo size={52} />
+        <span className="flex flex-1 flex-col">
+          <b className="text-[17px]">Suivi</b>
+          <span className="text-[13px] text-ink-muted">Logement de {prenom}</span>
+        </span>
+        <RoundButton icon="share" label="Partager le plan avec un proche" />
+      </div>
+      {logement.exemple && <ExempleTag />}
+
+      <section className="relative h-[196px] flex-none overflow-hidden rounded-card bg-pervenche px-5 py-[18px]">
+        <div className="flex max-w-[200px] flex-col gap-1">
+          <h1 className="text-[23px] leading-7 font-extrabold">{n("regle")} sur {statuts.length} réglé{n("regle") > 1 ? "s" : ""}</h1>
+          <p className="text-sm text-ink-soft">{n("en_traitement")} en traitement par l&apos;agent</p>
         </div>
-        <BoutonRond label="Partager le suivi">
-          <Share2 className="size-5" />
-        </BoutonRond>
-      </header>
-      {logement.exemple && <BandeauExemple />}
-      <Corps>
-        <div className="relative overflow-hidden rounded-[28px] bg-lavande p-5">
-          <h1 className="text-2xl font-extrabold">
-            {n("regle")} sur {statuts.length} réglé{n("regle") > 1 ? "s" : ""}
-          </h1>
-          <p className="text-encre-douce">{n("en_traitement")} en traitement par l&apos;agent</p>
-          <PersonneEquilibre className="absolute top-2 right-4 h-28" />
-          <div className="mt-10 flex gap-1.5">
-            {[...statuts]
-              .sort((a, b) => ["regle", "en_traitement", "a_traiter", "a_surveiller"].indexOf(a) - ["regle", "en_traitement", "a_traiter", "a_surveiller"].indexOf(b))
-              .map((s, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    "h-3 flex-1 rounded-full border",
-                    s === "regle" && "border-vert bg-vert",
-                    s === "en_traitement" && "border-ambre bg-ambre",
-                    s === "a_traiter" && "border-rouge bg-rouge-clair",
-                    s === "a_surveiller" && "border-encre-douce/40 bg-white",
-                  )}
-                />
-              ))}
+        <Illus name="yoga" width={74} className="absolute top-3.5 right-[22px]" />
+        <div className="absolute inset-x-5 bottom-[18px] flex flex-col gap-2">
+          <div className="flex gap-1" role="img" aria-label={`${n("regle")} réglé, ${n("en_traitement")} en traitement, ${n("a_traiter")} à traiter, ${n("a_surveiller")} à surveiller`}>
+            {segments.length === 0 ? <span className="h-3 flex-1 rounded-full bg-white/60" /> : segments.map((s, i) => <span key={i} className={cx("h-3 flex-1 rounded-full", COULEUR_SEGMENT[s])} />)}
           </div>
-          <p className="mt-2 text-xs font-bold">Réglé · En traitement · À traiter · À surveiller</p>
+          <p className="flex gap-2.5 text-[11px] font-semibold"><span>Réglé</span>·<span>En traitement</span>·<span>À traiter</span>·<span>À surveiller</span></p>
         </div>
+      </section>
 
-        <div className="grid grid-cols-3 gap-2">
-          {parPiece.map(({ p, fs, etatPiece }) => (
-            <div
-              key={p.id}
-              className={cn(
-                "rounded-2xl p-3",
-                etatPiece === "rien" && "bg-vert-clair",
-                etatPiece === "regle" && "bg-vert-clair",
-                etatPiece === "en_traitement" && "bg-ambre-clair",
-                etatPiece === "a_traiter" && "bg-rouge-clair",
-                etatPiece === "a_surveiller" && "bg-gris-ligne/60",
-              )}
-            >
-              <p className="font-bold">{p.nom}</p>
-              <p
-                className={cn(
-                  "text-sm",
-                  etatPiece === "rien" || etatPiece === "regle" ? "text-vert" : etatPiece === "en_traitement" ? "text-[#8a5a00]" : etatPiece === "a_traiter" ? "text-rouge" : "text-encre-douce",
-                )}
-              >
-                {etatPiece === "rien"
-                  ? "rien à faire"
-                  : etatPiece === "regle"
-                    ? "réglé"
-                    : etatPiece === "en_traitement"
-                      ? `${fs.filter((s) => s === "en_traitement").length} en traitement`
-                      : etatPiece === "a_traiter"
-                        ? `${fs.filter((s) => s === "a_traiter").length} à traiter`
-                        : "à surveiller"}
-              </p>
-            </div>
+      {pieces.length > 0 && (
+        <ul className="grid grid-cols-3 gap-1.5">
+          {pieces.map(([id, nom, s, c]) => (
+            <li key={id} className={cx("flex flex-col gap-0.5 rounded-[20px] px-3 py-2.5 text-xs", c)}>
+              <b className="text-sm text-nuit">{nom}</b>
+              {s}
+            </li>
           ))}
-        </div>
+        </ul>
+      )}
 
-        <h2 className="text-lg font-bold">À venir</h2>
-        <Link href={`${base}/absence`} className="flex items-center gap-3 rounded-full bg-encre p-2 pr-2 text-white">
-          <span className="grid size-11 place-items-center rounded-full bg-white text-encre">
-            <CalendarDays className="size-5" />
-          </span>
-          <span className="flex-1">
-            <span className="block font-bold">Absence de {logement.occupant.libelle}</span>
-            <span className="text-sm text-white/70">
-              {etat.parcours === "A" ? "Assureur et OTV à relire" : "OTV à relire"}
-            </span>
-          </span>
-          <span className="grid size-10 place-items-center rounded-full bg-ambre text-encre">
-            <ChevronRight className="size-5" />
-          </span>
-        </Link>
-        <div className="flex items-center gap-3 rounded-full bg-white p-2">
-          <span className="grid size-11 place-items-center rounded-full bg-lavande-claire">
-            <MousePointer2 className="size-5 fill-current text-[#1a3a86]" />
-          </span>
-          <span className="flex-1">
-            <span className="block font-bold">Veille des prix</span>
-            <span className="text-sm text-encre-douce">À trancher par l&apos;équipe</span>
-          </span>
-        </div>
-        {logement.exemple && (
-          <button
-            type="button"
-            onClick={reinitialiser}
-            className="mx-auto flex items-center gap-2 py-3 font-semibold text-encre-douce"
-          >
-            <RotateCcw className="size-4" /> Recommencer la démo
-          </button>
-        )}
-      </Corps>
-      <BarreOnglets />
-    </Ecran>
+      <h2 className="text-[17px] font-bold">À venir</h2>
+      <Link href={`${base}/absence`} className="flex items-center gap-3 rounded-[30px] bg-nuit p-2 text-white">
+        <span className="flex h-[46px] w-[46px] flex-none items-center justify-center rounded-full bg-white text-nuit"><Icon name="cal" /></span>
+        <span className="flex flex-1 flex-col">
+          <b className="text-[15px]">Absence de {prenom}</b>
+          <span className="text-xs text-[#C9D6EE]">{etat.parcours === "A" ? "Assureur et OTV à relire" : "OTV à relire"}</span>
+        </span>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-attention-solid text-attention-on"><Icon name="arrow" size={18} /></span>
+      </Link>
+      <div className="flex items-center gap-3 rounded-[30px] bg-white p-2">
+        <span className="flex h-[46px] w-[46px] flex-none items-center justify-center rounded-full bg-pervenche-soft text-cobalt"><Cursor /></span>
+        <span className="flex flex-1 flex-col">
+          <b className="text-[15px]">Veille des prix</b>
+          <span className="text-xs text-ink-muted">À trancher par l&apos;équipe</span>
+        </span>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-nuit text-white"><Icon name="arrow" size={18} /></span>
+      </div>
+
+      {logement.exemple && (
+        <button type="button" onClick={reinitialiser} className="mt-1 flex h-10 items-center justify-center gap-2 text-sm font-bold text-ink-muted">
+          <Icon name="refresh" size={16} />
+          Recommencer la démo
+        </button>
+      )}
+    </Screen>
   );
 }

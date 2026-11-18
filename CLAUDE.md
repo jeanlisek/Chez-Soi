@@ -164,6 +164,7 @@ Pas de workspace racine : chaque partie s'installe dans son dossier. Gestionnair
 
 | Commande | Rôle |
 |---|---|
+| `npm run agent:u1 -- --assureur <maif\|altima>` | Lance UN run réel de l'usage 1 (conditions générales du contrat fictif de Jeanne, lecture seule). Après le run, le code télécharge le PDF dans `agents/bench/pdf/` (ignoré par git) et contrôle la référence ; le résultat va dans `controle_document` du run. `--a-blanc` n'envoie rien ; `--sans-url-depart` part d'une page vierge ; `--controler-url <url>` teste seulement le contrôle du PDF, sans session H |
 | `npm run agent:u2 -- --site <domaine>` | Lance UN run réel de l'usage 2 (sous-tapis 60 × 160 cm, persona fictive) sur le site donné, arrêt au panier. Charge `../../.env` (`H_API_KEY`). À lancer dans un vrai terminal : `demander_validation` y pose la question (Entrée seule = refus). |
 | `npm run agent:u2 -- --site <domaine> --a-blanc` | Affiche le corps de `POST /sessions` sans rien envoyer |
 | `npm run agent:recontroler` | Repasse le contrôle de sortie sur les runs de `agents/bench/runs/`, sans appeler H. Lecture seule ; `-- --ecrire` met à jour les champs dérivés (`schema_valide`, `erreurs_schema`, `ecarts_metier`), jamais les données brutes de l'agent |

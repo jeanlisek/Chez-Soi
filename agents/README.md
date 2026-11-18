@@ -4,10 +4,11 @@ Prompts, schémas d'outils, skill, scripts locaux et banc de mesure de l'agent H
 
 ## Ce qui existe
 
-- `schemas/tools/` : déclarations des custom tools au format de la doc H, soit exactement `{ name, description, input_schema }` ([custom tools](https://hub.hcompany.ai/agents-api/custom-tools.md)). `get_mesures` et `demander_validation` sont à ce format. `get_contrat.json` garde un `output_schema` hérité du squelette : il sera aligné avec l'issue #7.
+- `schemas/tools/` : déclarations des custom tools au format de la doc H, soit exactement `{ name, description, input_schema }` ([custom tools](https://hub.hcompany.ai/agents-api/custom-tools.md)). `get_mesures`, `get_contrat` et `demander_validation` sont à ce format.
 - La sortie des outils n'est pas déclarée à H : elle est décrite en Zod dans `apps/web/lib/schemas.ts`, avec les entrées. Toute modification du contrat d'interface se fait des deux côtés.
 - `dev/` : scripts locaux, sans webhook ni Supabase.
   - `boucle.ts` : module commun à tous les usages. Il vérifie le quota, crée une session, suit `/status` et `/changes`, sert les outils, applique les délais et le coupe-circuit, annule sur Ctrl+C, enregistre le run.
+  - `run_u1.ts` : usage 1, conditions générales de l'assureur du contrat fictif de Jeanne (issue #7), lecture seule. `pdf_cg.ts` télécharge le PDF et contrôle la référence par le code ; `fixtures/contrat_u1.json` porte le contrat fictif (servi par `get_contrat`) et, à part, ce que le code contrôle (domaines officiels, référence attendue) ; `prompt_u1_provisoire.md` est le prompt provisoire.
   - `run_u2.ts` : usage 2, sous-tapis antidérapant pour un tapis de 60 × 160 cm, persona fictive Jeanne.
   - `controle.ts` : contrôle de la réponse finale. `schema_valide` dit si elle respecte le schéma Zod (`null` et chaîne vide valent « absent ») ; `ecarts_metier` liste ce qu'il reste à vérifier (champ attendu absent, dimension qui dépasse la cote). La réponse brute de l'agent est enregistrée telle que reçue.
   - `recontroler.ts` : repasse ce contrôle sur les runs déjà enregistrés, sans appeler H (`npm run agent:recontroler`).

@@ -1,0 +1,47 @@
+{
+  "_note": "Données FICTIVES pour les runs locaux de l'usage 3 (persona Jeanne, absence de 35 jours). La clause d'inoccupation ci-dessous est INVENTÉE pour les tests : Briac aligne le contrat fictif du seed sur l'assureur choisi (issue #7), et ce bloc doit alors reprendre la vraie clause et sa page. Seul le bloc « contrat » est servi par get_contrat, et seulement les champs demandés. Le bloc « controle » reste côté code.",
+  "logement_id": "logement-demo-jeanne-01",
+  "absence": { "depart_le": "2026-12-15", "retour_le": "2027-01-19" },
+  "assureurs": {
+    "maif": {
+      "contrat": {
+        "assureur": "MAIF",
+        "formule": "Raqvam",
+        "reference_cg": "M2442",
+        "inoccupation": {
+          "duree_max_jours": 30,
+          "protections": [
+            "Fermer à clé toutes les portes d'accès",
+            "Fermer les volets et persiennes",
+            "Mettre en service l'alarme si le logement en est équipé"
+          ],
+          "clause": "FICTIF : au-delà de 30 jours consécutifs d'inoccupation, l'assuré en informe l'assureur et met en œuvre les protections prévues.",
+          "page": 12
+        }
+      },
+      "controle": { "domaines": ["maif.fr"], "url_depart": "https://www.maif.fr" }
+    },
+    "altima": {
+      "contrat": {
+        "assureur": "Altima Assurances",
+        "formule": "Multirisques Habitation",
+        "reference_cg": "202007_298",
+        "inoccupation": {
+          "duree_max_jours": 30,
+          "protections": [
+            "Fermer à clé toutes les portes d'accès",
+            "Fermer les volets et persiennes",
+            "Mettre en service l'alarme si le logement en est équipé"
+          ],
+          "clause": "FICTIF : au-delà de 30 jours consécutifs d'inoccupation, l'assuré en informe l'assureur et met en œuvre les protections prévues.",
+          "page": 12
+        }
+      },
+      "controle": { "domaines": ["altima-assurances.fr"], "url_depart": "https://www.altima-assurances.fr" }
+    }
+  },
+  "otv": {
+    "domaines": ["service-public.gouv.fr", "service-public.fr", "interieur.gouv.fr"],
+    "url_depart": "https://www.service-public.gouv.fr"
+  }
+}

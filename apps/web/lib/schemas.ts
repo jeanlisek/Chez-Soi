@@ -144,6 +144,61 @@ export const controleDocumentSchema = z.object({
   erreur: z.string().nullable(),
 });
 export type ControleDocument = z.infer<typeof controleDocumentSchema>;
+/* ---------- Usage 3 (démarches) : absence et réponse finale de l'agent ---------- */
+
+const dateIso = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date attendue au format AAAA-MM-JJ");
+
+/**
+ * Entrée de `POST /api/absence` (issue #14). `inoccupation` est le bloc renvoyé par
+ * `get_contrat_champs(logement, ['inoccupation'])` ; absent en parcours B (sans contrat).
+ * Tant que le client Supabase n'est pas écrit, l'appelant le fournit.
+ */
+export const absenceEntreeSchema = z.object({
+  logement_id: z.string().optional(),
+  depart_le: dateIso,
+  retour_le: dateIso,
+  inoccupation: getContratSortieSchema.shape.inoccupation,
+});
+export type AbsenceEntree = z.infer<typeof absenceEntreeSchema>;
+
+export const absenceSortieSchema = z.object({
+  duree_jours: z.number(),
+  seuil_jours: z.number().nullable(),
+  /** `null` sans contrat ou sans clause d'inoccupation retrouvée. */
+  depasse_seuil: z.boolean().nullable(),
+  protections: z.array(z.string()),
+  clause: z.string().nullable(),
+  page: z.number().nullable(),
+  otv: z.object({
+    ouverture_le: dateIso,
+    limite_le: dateIso,
+    delai_ok: z.boolean(),
+    trop_tot: z.boolean(),
+  }),
+  informer_assureur: z.boolean(),
+  preparer_usage_3: z.boolean(),
+});
+export type AbsenceSortie = z.infer<typeof absenceSortieSchema>;
+
+/**
+ * Réponse finale de l'usage 3. Schéma PLAT (leçon de l'usage 2) : listes en texte, une
+ * ligne par élément. L'agent n'envoie rien : il rend les liens et un récapitulatif que
+ * l'utilisateur relit, puis envoie lui-même après sa propre connexion.
+ */
+export const sortieUsage3Schema = z.object({
+  otv_trouve: z.boolean().describe("Vrai si la démarche officielle d'inscription à l'OTV a été trouvée."),
+  otv_url_demarche: z.string().optional().describe("Adresse de la page officielle qui permet de faire la démarche en ligne."),
+  otv_connexion_requise: z.string().optional().describe("Comment l'utilisateur doit se connecter (par exemple FranceConnect), tel qu'affiché."),
+  otv_informations_demandees: z.string().optional().describe("Informations et pièces que le formulaire demande, une par ligne, telles qu'affichées."),
+  otv_delai: z.string().optional().describe("Délai d'inscription affiché sur la page officielle, tel quel."),
+  assureur_trouve: z.boolean().describe("Vrai si le moyen de prévenir l'assureur d'une absence a été trouvé sur son site."),
+  assureur_url: z.string().optional().describe("Adresse de la page de l'assureur qui explique comment le prévenir (contact, espace client)."),
+  assureur_moyen: z.string().optional().describe("Moyen de prévenir l'assureur (espace client, téléphone, courrier…), tel qu'affiché."),
+  recapitulatif: z.string().optional().describe("Récapitulatif à relire par l'utilisateur : dates, durée, seuil du contrat, protections à mettre en place, démarches et liens."),
+  validation_demandee: z.boolean().describe("Vrai si demander_validation a été appelé avec action envoi."),
+  remarque: z.string().optional().describe("Écart, doute ou raison d'un échec."),
+});
+export type SortieUsage3 = z.infer<typeof sortieUsage3Schema>;
 
 /** JSON Schema à passer à H, dérivé du schéma Zod (une seule source de vérité). */
 export function versJsonSchema(schema: z.ZodType): Record<string, unknown> {

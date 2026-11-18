@@ -10,6 +10,7 @@ Prompts, schémas d'outils, skill, scripts locaux et banc de mesure de l'agent H
   - `boucle.ts` : module commun à tous les usages. Il vérifie le quota, crée une session, suit `/status` et `/changes`, sert les outils, applique les délais et le coupe-circuit, annule sur Ctrl+C, enregistre le run.
   - `run_u1.ts` : usage 1, conditions générales de l'assureur du contrat fictif de Jeanne (issue #7), lecture seule. `pdf_cg.ts` télécharge le PDF et contrôle la référence par le code ; `fixtures/contrat_u1.json` porte le contrat fictif (servi par `get_contrat`) et, à part, ce que le code contrôle (domaines officiels, référence attendue) ; `prompt_u1_provisoire.md` est le prompt provisoire.
   - `run_u2.ts` : usage 2, sous-tapis antidérapant pour un tapis de 60 × 160 cm, persona fictive Jeanne.
+  - `run_u3.ts` : usage 3 (issue #14), démarches avant l'absence de Jeanne (35 jours) : liens et récapitulatif pour l'OTV et l'assureur, arrêt sur `demander_validation` (`action: "envoi"`), **rien n'est envoyé**. `controle_u3.ts` contrôle la réponse ; `fixtures/contrat_u3.json` porte la clause d'inoccupation fictive ; `prompt_u3_provisoire.md` est le prompt provisoire.
   - `controle.ts` : contrôle de la réponse finale. `schema_valide` dit si elle respecte le schéma Zod (`null` et chaîne vide valent « absent ») ; `ecarts_metier` liste ce qu'il reste à vérifier (champ attendu absent, dimension qui dépasse la cote). La réponse brute de l'agent est enregistrée telle que reçue.
   - `recontroler.ts` : repasse ce contrôle sur les runs déjà enregistrés, sans appeler H (`npm run agent:recontroler`).
   - `prompt_u2_provisoire.md` : prompt provisoire. Les prompts définitifs sont dans `prompts/` (issue #6).
@@ -68,6 +69,15 @@ Aux deux premiers runs, l'agent a retenu un produit plus grand que le tapis (67,
 
   Avec la skill, l'agent prouve la découpe ; sans elle, il l'affirme seulement dans `remarque`. Un run de chaque côté : à confirmer sur d'autres runs.
 - Ancienne note : mesurer avec et sans la skill (`h/web-surfer-flash` contre `chez-soi-acheteur:1`), et noter les runs dans l'onglet Mesures agent.
+
+## Usage 3 : préparer sans envoyer (issue #14)
+
+L'inscription à l'OTV passe par FranceConnect dès l'entrée, et l'espace client de l'assureur exige une connexion. **L'agent n'a aucun identifiant** : il rend la page officielle de la démarche OTV, ce qu'elle demande, la page de l'assureur pour le prévenir, et un récapitulatif (dates, durée, seuil, protections, clause et page). Marc se connecte, relit et envoie lui-même.
+
+- `apps/web/lib/absence.ts` (`evaluerAbsence`) et `POST /api/absence` : durée de l'absence, dépassement du seuil d'inoccupation (`null` sans contrat), fenêtre OTV (de 45 jours avant le départ à la veille, d'après service-public.gouv.fr, à dater dans le Registre des sources). Tant que le client Supabase n'existe pas, la route reçoit `inoccupation` dans le corps.
+- Coupe-circuit de l'usage 3 : en plus des motifs par défaut, `franceconnect`, `authorize`, `oauth`, `adherent`, `societaire` ; `inscription` est retiré (les pages publiques de l'OTV le portent).
+- `controle_u3.ts` : liens sur service-public ou interieur.gouv.fr et sur le site de l'assureur, `validation_demandee`, dates, durée et seuil présents dans le récapitulatif, aucune adresse e-mail, numéro de téléphone signalé.
+- Environnement : navigateur cloud (point ouvert 2 du `CLAUDE.md`, à trancher par Briac). Le run local ne dépend pas de ce choix, puisque l'agent ne se connecte pas.
 
 ## Ce que l'usage 1 réutilisera (issue #7)
 

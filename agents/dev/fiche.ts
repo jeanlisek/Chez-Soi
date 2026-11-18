@@ -74,10 +74,25 @@ export function chercherCitation(citation: string, texteBrut: string): Omit<Veri
 
 export async function verifierCitationSurFiche(url: string, citation: string): Promise<VerificationCitation> {
   try {
-    const reponse = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (ChezSoi controle)", "Accept-Language": "fr-FR,fr;q=0.9" },
-      signal: AbortSignal.timeout(20_000),
-    });
+    const autoriser = (valeur: string) => {
+      const u = new URL(valeur);
+      if (u.protocol !== "https:" || u.username || u.password ||
+          !["www.ikea.com", "ikea.com", "www.decoweb.com", "decoweb.com"].includes(u.hostname) ||
+          (u.port && u.port !== "443")) throw new Error("Fiche hors des marchands HTTPS autorisés du banc");
+      return u.href;
+    };
+    let destination = autoriser(url);
+    let reponse!: Response;
+    for (let i = 0; i < 5; i++) {
+      reponse = await fetch(destination, { redirect: "manual",
+        headers: { "User-Agent": "Mozilla/5.0 (ChezSoi controle)", "Accept-Language": "fr-FR,fr;q=0.9" },
+        signal: AbortSignal.timeout(20_000),
+      });
+      if (![301,302,303,307,308].includes(reponse.status)) break;
+      const lieu = reponse.headers.get("location");
+      if (!lieu) throw new Error("Redirection sans destination");
+      destination = autoriser(new URL(lieu, destination).href);
+    }
     if (!reponse.ok) {
       return { url, statut: "non_verifiable", mots_differents: null, differences: [], extrait_page: null, erreur: `HTTP ${reponse.status}` };
     }

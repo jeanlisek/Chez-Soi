@@ -261,6 +261,9 @@ export type OptionsRun<S> = {
   controlerSortie?: (sortie: S) => string[];
   site?: string;
   urlDepart?: string;
+  modele?: string;
+  surEtatActif?: (contexte: { client: ClientHai; sessionId: string; etat: EtatSession }) => Promise<void>;
+  masquerLienPrive?: boolean;
   dossierRuns: string;
   /** Attente maximale entre deux lectures (3 s par défaut). */
   intervalleMs?: number;
@@ -312,7 +315,7 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
     outils: options.outils.map((outil) => outil.declaration),
     formatReponse: options.formatReponse,
     urlDepart: options.urlDepart,
-    ...(options.overrides ? { overrides: options.overrides } : {}),
+    overrides: { ...options.overrides, ...(options.modele ? { "agent.model": options.modele } : {}) },
     maxTimeS: options.maxTimeS ?? 600,
     fileAttente: false,
     timezone: "Europe/Paris",
@@ -358,7 +361,7 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
   const id = session.id;
   journal(`Session ${id} créée, état : ${session.status.status}.`);
   const vueAgent = session.agent_view_url ?? null;
-  if (vueAgent) journal(`Agent View (lien d'accès, à ne pas partager ni commiter) : ${vueAgent}`);
+  if (vueAgent && !options.masquerLienPrive) journal(`Agent View (lien d'accès, à ne pas partager ni commiter) : ${vueAgent}`);
 
   const minuterieGlobale = setTimeout(() => controleur.abort(), delaiGlobalMs);
   const echeanceGlobale = debutLocal + delaiGlobalMs;
@@ -553,6 +556,7 @@ export async function executerRun<S>(options: OptionsRun<S>): Promise<ResultatRu
         motifFin = "terminee";
         break;
       }
+      await options.surEtatActif?.({ client, sessionId: id, etat });
       if (etat.pending_approvals.length > observations.approbations_natives_vues) {
         observations.approbations_natives_vues = etat.pending_approvals.length;
         journal("L'agent retient un appel pour approbation native : ce script n'approuve jamais.");

@@ -1,32 +1,20 @@
 {
   "name": "get_contrat",
-  "description": "Renvoie uniquement les champs demandés du contrat. Jamais le PDF ni l'adresse.",
+  "description": "Renvoie uniquement les champs demandés du contrat d'assurance habitation du logement (par exemple assureur, formule, reference_cg, inoccupation). Ne renvoie jamais le PDF, l'adresse, le nom de l'assuré ni le numéro de contrat. À appeler avec le logement_id donné dans la consigne, avant toute recherche.",
   "input_schema": {
     "type": "object",
     "properties": {
-      "logement_id": { "type": "string" },
-      "champs": { "type": "array", "items": { "type": "string" } }
+      "logement_id": {
+        "type": "string",
+        "description": "Identifiant du logement, donné dans la consigne."
+      },
+      "champs": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Champs voulus, parmi : assureur, formule, reference_cg, inoccupation."
+      }
     },
     "required": ["logement_id", "champs"],
     "additionalProperties": false
-  },
-  "output_schema": {
-    "type": "object",
-    "properties": {
-      "assureur": { "type": "string" },
-      "formule": { "type": "string" },
-      "reference_cg": { "type": "string" },
-      "inoccupation": {
-        "type": "object",
-        "properties": {
-          "duree_max_jours": { "type": "number" },
-          "protections": { "type": "array", "items": { "type": "string" } },
-          "clause": { "type": "string" },
-          "page": { "type": "number" }
-        },
-        "required": ["duree_max_jours", "protections", "clause", "page"]
-      }
-    },
-    "required": ["assureur", "formule"]
   }
 }

@@ -1,0 +1,32 @@
+{
+  "_note": "Données FICTIVES pour les runs locaux de l'usage 1 (persona Jeanne). Seul le bloc « contrat » est servi à l'agent par get_contrat, et seulement les champs demandés. Le bloc « controle » reste côté code : il sert à vérifier l'URL et le PDF, l'agent ne le voit jamais. Références lues le 18/11 avec un outil de lecture web : À VÉRIFIER À LA MAIN dans le PDF avant le seed (issue #7).",
+  "logement_id": "logement-demo-jeanne-01",
+  "assureurs": {
+    "maif": {
+      "contrat": {
+        "assureur": "MAIF",
+        "formule": "Raqvam",
+        "reference_cg": "M2442"
+      },
+      "controle": {
+        "domaines": ["maif.fr"],
+        "url_depart": "https://www.maif.fr",
+        "reference_attendue": "M2442",
+        "_source": "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf (« M2442 - 01/2023 » en fin de document)"
+      }
+    },
+    "altima": {
+      "contrat": {
+        "assureur": "Altima Assurances",
+        "formule": "Multirisques Habitation",
+        "reference_cg": "202007_298"
+      },
+      "controle": {
+        "domaines": ["altima-assurances.fr"],
+        "url_depart": "https://www.altima-assurances.fr",
+        "reference_attendue": "202007_298",
+        "_source": "https://www.altima-assurances.fr/sites/default/files/produits/habitation/cg_mrh.pdf (« 202007_298 » en fin de document ; à confirmer que c'est bien la référence citée dans des conditions particulières)"
+      }
+    }
+  }
+}

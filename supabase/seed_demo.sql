@@ -77,7 +77,7 @@ begin
        'Conditions particulières (fictives), article 1 Inoccupation des locaux', 1, true, now(), true, 'cp'),
       (v_contrat, 'prevention', 'serrure', 3, 'points',
        'Serrure 3 points sur la porte d''entrée',
-       'La porte d''entrée est équipée d''une serrure à trois points de fermeture.',
+       'La porte d''entrée doit obligatoirement être équipée d''une serrure à trois points de fermeture.',
        'Conditions particulières (fictives), article 2 Moyens de protection', 1, true, now(), true, 'cp');
   end if;
 

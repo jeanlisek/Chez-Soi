@@ -96,7 +96,7 @@ export function Viewer3D({
 }: Viewer3DProps) {
   return (
     <div className={className}>
-      <Canvas camera={{ position: [0.9, 1.7, 2.4], fov: 50 }} dpr={[1, 2]}>
+      <Canvas camera={{ position: [0.35, 1.45, 2.3], fov: 52 }} dpr={[1, 2]}>
         <color attach="background" args={["#9db0f2"]} />
         <ambientLight intensity={0.9} />
         <directionalLight position={[2, 4, 3]} intensity={1.1} />
@@ -104,7 +104,7 @@ export function Viewer3D({
           {modeleUrl ? <Modele url={modeleUrl} /> : <PieceSchematique piece={piece} objet={objet} apres={apres} />}
         </Suspense>
         <OrbitControls
-          target={[0, 0.3, 0]}
+          target={[0, 0.25, -0.5]}
           enablePan={false}
           minDistance={1.2}
           maxDistance={5}

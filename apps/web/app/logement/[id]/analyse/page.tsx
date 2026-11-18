@@ -6,6 +6,7 @@ import { Bell, MousePointer2 } from "lucide-react";
 import { MascotteEtoile } from "@/components/chez-soi/illustrations";
 import { Bouton, BoutonRond, Corps, Ecran, EnTete, Pied } from "@/components/chez-soi/ui";
 import { useParcours } from "@/lib/demo/etat";
+import { clientNavigateur } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,15 +18,50 @@ export default function PageAnalyse() {
   const { logement, etat } = useParcours();
   const base = `/logement/${logement.id}`;
   const [t, setT] = useState(0);
+  const [reels, setReels] = useState<{ piece: string | null; statut: string; erreur: string | null }[] | null>(null);
 
   useEffect(() => {
+    if (!logement.exemple) return;
     const id = window.setInterval(() => setT((v) => Math.min(v + 1, 100)), 120);
     return () => window.clearInterval(id);
-  }, []);
+  }, [logement.exemple]);
+
+  // Vrai logement : état des analyses lu dans Supabase (RLS), toutes les 5 secondes.
+  useEffect(() => {
+    if (logement.exemple) return;
+    const supabase = clientNavigateur();
+    if (!supabase) return;
+    let actif = true;
+    const lire = async () => {
+      const { data } = await supabase
+        .from("analyses")
+        .select("piece, statut, erreur, created_at")
+        .eq("logement_id", logement.id)
+        .eq("type", "video")
+        .order("created_at", { ascending: false });
+      if (actif && data) setReels(data);
+    };
+    void lire();
+    const id = window.setInterval(lire, 5000);
+    return () => {
+      actif = false;
+      window.clearInterval(id);
+    };
+  }, [logement.exemple, logement.id]);
 
   const n = logement.pieces.length;
-  const parPiece = 100 / n;
-  const terminees = Math.floor(t / parPiece);
+  const parPiece = 100 / Math.max(n, 1);
+  const etatReel = (nom: string) => {
+    const a = reels?.find((r) => r.piece === nom);
+    if (!a) return { etat: "en_attente" as const, libelle: "en attente" };
+    if (a.statut === "terminee" || a.statut === "termine") return { etat: "terminee" as const, libelle: "failles et cotes prêtes" };
+    if (a.statut === "echec") return { etat: "echec" as const, libelle: a.erreur?.slice(0, 60) ?? "échec, refilmez" };
+    if (a.statut === "en_cours") return { etat: "en_cours" as const, libelle: "analyse en cours" };
+    return { etat: "en_attente" as const, libelle: "en attente du service" };
+  };
+  const terminees = logement.exemple
+    ? Math.floor(t / parPiece)
+    : logement.pieces.filter((p) => etatReel(p.nom).etat === "terminee").length;
   const contrat = etat.parcours === "A" && logement.contrat;
 
   return (
@@ -77,8 +113,9 @@ export default function PageAnalyse() {
         <ul className="flex flex-col gap-2.5">
           {logement.pieces.map((p, i) => {
             const debut = i * parPiece;
-            const pct = Math.max(0, Math.min(100, ((t - debut) / parPiece) * 100));
-            const etatPiece = pct >= 100 ? "terminee" : pct > 0 ? "en_cours" : "en_attente";
+            const reel = logement.exemple ? null : etatReel(p.nom);
+            const pct = reel ? (reel.etat === "terminee" ? 100 : reel.etat === "en_cours" ? 50 : 0) : Math.max(0, Math.min(100, ((t - debut) / parPiece) * 100));
+            const etatPiece = reel ? reel.etat : pct >= 100 ? "terminee" : pct > 0 ? "en_cours" : "en_attente";
             return (
               <li key={p.id} className="grid grid-cols-[110px_1fr] items-center gap-2">
                 <span className="font-bold">{p.nom}</span>
@@ -94,10 +131,11 @@ export default function PageAnalyse() {
                     className={cn(
                       "relative flex h-full items-center px-3 text-xs font-bold",
                       etatPiece === "terminee" && "text-white",
+                      etatPiece === "echec" && "text-rouge",
                       etatPiece === "en_attente" && "font-medium text-encre-douce",
                     )}
                   >
-                    {etatPiece === "terminee" ? "failles et cotes prêtes" : etatPiece === "en_cours" ? `cotes ${Math.round(pct)} %` : "en attente"}
+                    {reel ? reel.libelle : etatPiece === "terminee" ? "failles et cotes prêtes" : etatPiece === "en_cours" ? `cotes ${Math.round(pct)} %` : "en attente"}
                   </span>
                 </span>
               </li>
@@ -106,7 +144,7 @@ export default function PageAnalyse() {
         </ul>
       </Corps>
       <Pied>
-        <Bouton href={`${base}/plan`} disabled={terminees < 1}>
+        <Bouton href={`${base}/plan`} disabled={logement.exemple && terminees < 1}>
           {terminees >= n ? "Voir le plan" : "Voir les premières pièces"}
         </Bouton>
       </Pied>

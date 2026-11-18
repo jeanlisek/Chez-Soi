@@ -76,7 +76,7 @@ chez-soi/
 
 | Route | Rôle |
 |---|---|
-| `POST /api/upload` | URL signée Supabase Storage (vidéo ou contrat) |
+| `POST /api/upload` · `POST /api/upload/termine` | URL signée Supabase Storage (vidéo ou contrat, 50 Mo au plus), puis enregistrement : pièce + ligne `analyses` + appel du webhook n8n `pipeline_analyse` (vidéo), ou ligne `contrats` (contrat) |
 | `POST /api/contrat` | Déclenche `analyse_contrat`, renvoie l'état d'extraction |
 | `POST /api/plan` | GraphRAG + règles + LLM explicatif → actions |
 | `POST /api/absence` | Compare les dates au seuil d'inoccupation, prépare l'usage 3 |
@@ -130,7 +130,7 @@ Le moteur de verdict lit `regles_en_vigueur`. Une nouvelle version de règle hé
 
 ## Variables d'environnement (noms proposés)
 
-`H_API_KEY`, `H_WEBHOOK_SECRET`, `HF_TOKEN`, `VISION_SERVICE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (serveur uniquement), `N8N_URL`, `N8N_API_KEY`, `PISTE_CLIENT_ID`, `PISTE_CLIENT_SECRET`.
+`H_API_KEY`, `H_WEBHOOK_SECRET`, `HF_TOKEN`, `VISION_SERVICE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (serveur uniquement), `N8N_URL`, `N8N_API_KEY`, `N8N_WEBHOOK_SECRET` (en-tête `X-Chez-Soi-Secret` des webhooks n8n), `PISTE_CLIENT_ID`, `PISTE_CLIENT_SECRET`.
 
 ## Commandes
 
@@ -184,7 +184,7 @@ Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dan
 
 État du squelette : les routes API de `apps/web` et du service vision renvoient un stub typé en HTTP 501 (`StubReponse` dans `apps/web/lib/schemas.ts`, helper `apps/web/lib/stub.ts`).
 
-Interface (18/11) : les 12 écrans de la maquette (Figma « Chez soi · Parcours utilisateurs et écrans ») sont codés dans `apps/web`. Le logement `exemple` (Marc et Jeanne, fictifs) tourne sans compte ni API : données dans `lib/demo/logement-exemple.ts`, état du parcours dans `lib/demo/etat.tsx` (sessionStorage). Charte dans `app/globals.css` (crème, lavande, lilas, encre), police Inter auto-hébergée (`@fontsource-variable/inter`, le build n'appelle pas Google Fonts). Les vrais logements passent par `lib/donnees.ts` (Supabase, à brancher).
+Interface (18/11) : les 12 écrans de la maquette (Figma « Chez soi · Parcours utilisateurs et écrans ») sont codés dans `apps/web`. Le logement `exemple` (Marc et Jeanne, fictifs) tourne sans compte ni API : données dans `lib/demo/logement-exemple.ts`, état du parcours dans `lib/demo/etat.tsx` (sessionStorage). Charte dans `app/globals.css` (crème, lavande, lilas, encre), police Inter auto-hébergée (`@fontsource-variable/inter`, le build n'appelle pas Google Fonts). Connexion (18/11) : Supabase Auth, Google et lien par e-mail (`/connexion`, retour `/auth/callback`, puis `/mon-logement` qui ouvre ou crée le logement de l'utilisateur). Les vrais logements sont lus par `lib/donnees.ts` sous RLS ; le profil s'enregistre par une action serveur (`app/logement/[id]/actions-serveur.ts`).
 
 ## Conventions
 

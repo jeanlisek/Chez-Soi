@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 
 import { Bouton, BoutonRond, Corps, Ecran, Pied } from "@/components/chez-soi/ui";
 import { useParcours } from "@/lib/demo/etat";
+import { envoyerFichier } from "@/lib/envoi";
 
 const PIECES_PROPOSEES = ["Entrée", "Couloir", "Salon", "Cuisine", "Salle de bain", "Chambre"];
 const TAILLE_MAX_MO = 50;
@@ -15,11 +17,35 @@ const TAILLE_MAX_MO = 50;
  * (limite du bucket et du Space). Logement exemple : les vidéos sont déjà filmées.
  */
 export default function PageCapture() {
+  const router = useRouter();
   const { logement } = useParcours();
   const base = `/logement/${logement.id}`;
-  const filmees = logement.pieces.filter((p) => p.video);
+  const filmees = logement.exemple ? logement.pieces.filter((p) => p.video) : logement.pieces;
   const [ajout, setAjout] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [envoiEnCours, setEnvoiEnCours] = useState<string | null>(null);
+
+  async function traiter(nom: string, f: File | undefined) {
+    if (!f) return;
+    const mo = f.size / 1_048_576;
+    if (mo > TAILLE_MAX_MO) {
+      setMessage(`Vidéo trop lourde (${Math.round(mo)} Mo, ${TAILLE_MAX_MO} Mo au plus) : une vidéo par pièce, environ 30 secondes en 720p.`);
+      return;
+    }
+    if (logement.exemple) {
+      setMessage("Logement exemple : la vidéo n'est pas envoyée. Créez votre compte pour analyser votre logement.");
+      return;
+    }
+    setEnvoiEnCours(nom);
+    setMessage(`${nom} : envoi de la vidéo…`);
+    const r = await envoyerFichier({ logementId: logement.id, type: "video", fichier: f, piece: nom });
+    setEnvoiEnCours(null);
+    setMessage(r.ok ? `${nom} : ${r.resultat.message}` : r.message);
+    if (r.ok) {
+      setAjout(false);
+      router.refresh();
+    }
+  }
 
   return (
     <Ecran ton="encre">
@@ -45,7 +71,15 @@ export default function PageCapture() {
               <span className="flex-1">
                 <span className="block font-bold">{p.nom}</span>
                 <span className="text-sm text-white/70">
-                  0:{String(p.video!.duree_s).padStart(2, "0")} · {p.video!.resolution} · {p.video!.taille_mo} Mo
+                  {p.video
+                    ? `0:${String(p.video.duree_s).padStart(2, "0")} · ${p.video.resolution} · ${p.video.taille_mo} Mo`
+                    : envoiEnCours === p.nom
+                      ? "envoi…"
+                      : p.analyse === "terminee"
+                        ? "analysée"
+                        : p.analyse === "echec"
+                          ? "analyse en échec, refilmez"
+                          : "vidéo reçue"}
                 </span>
               </span>
               <label className="cursor-pointer rounded-full bg-white/10 px-4 py-2 text-sm font-bold">
@@ -55,18 +89,7 @@ export default function PageCapture() {
                   accept="video/*"
                   capture="environment"
                   className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (!f) return;
-                    const mo = f.size / 1_048_576;
-                    setMessage(
-                      mo > TAILLE_MAX_MO
-                        ? `Vidéo trop lourde (${Math.round(mo)} Mo, ${TAILLE_MAX_MO} Mo au plus) : environ 30 secondes en 720p.`
-                        : logement.exemple
-                          ? "Logement exemple : la vidéo n'est pas envoyée. Créez votre compte pour analyser votre logement."
-                          : `${p.nom} : vidéo prête à l'envoi.`,
-                    );
-                  }}
+                  onChange={(e) => void traiter(p.nom, e.target.files?.[0])}
                 />
               </label>
             </li>
@@ -83,18 +106,7 @@ export default function PageCapture() {
                   accept="video/*"
                   capture="environment"
                   className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (!f) return;
-                    const mo = f.size / 1_048_576;
-                    setMessage(
-                      mo > TAILLE_MAX_MO
-                        ? `Vidéo trop lourde (${Math.round(mo)} Mo, ${TAILLE_MAX_MO} Mo au plus) : une vidéo par pièce, environ 30 secondes en 720p.`
-                        : logement.exemple
-                          ? "Logement exemple : la vidéo n'est pas envoyée. Créez votre compte pour analyser votre logement."
-                          : `${n} : vidéo prête à l'envoi.`,
-                    );
-                  }}
+                  onChange={(e) => void traiter(n, e.target.files?.[0])}
                 />
               </label>
             ))}
@@ -116,8 +128,8 @@ export default function PageCapture() {
         </p>
       </Corps>
       <Pied>
-        <Bouton href={`${base}/analyse`} variante="blanc">
-          Terminer la visite · {filmees.length} pièces
+        <Bouton href={`${base}/analyse`} variante="blanc" disabled={filmees.length === 0 || envoiEnCours !== null}>
+          {filmees.length === 0 ? "Filmez au moins une pièce" : `Terminer la visite · ${filmees.length} pièce${filmees.length > 1 ? "s" : ""}`}
         </Bouton>
         <Link href={`${base}/analyse`} className="sr-only">
           Analyse

@@ -20,6 +20,7 @@ export default function PageActions() {
   const { logement, etat, maj } = useParcours();
   const base = `/logement/${logement.id}`;
   const [onglet, setOnglet] = useState<Onglet>("priorite");
+  const [message, setMessage] = useState<string | null>(null);
 
   const actions = [...logement.actions].sort((a, b) => a.priorite - b.priorite);
   const visibles = actions.filter((a) =>
@@ -53,7 +54,11 @@ export default function PageActions() {
             Plus tard · {compte("plus_tard")}
           </Puce>
         </div>
-        {onglet === "contrat" && etat.parcours === "B" ? (
+        {actions.length === 0 ? (
+          <p className="rounded-3xl bg-white p-4 text-encre-douce">
+            Le plan d&apos;action apparaît dès que l&apos;analyse de vos pièces est terminée.
+          </p>
+        ) : onglet === "contrat" && etat.parcours === "B" ? (
           <p className="rounded-3xl bg-white p-4 text-encre-douce">
             Parcours sans contrat : le plan s&apos;appuie sur la loi puis sur les recommandations.
           </p>
@@ -70,9 +75,21 @@ export default function PageActions() {
         )}
       </Corps>
       <Pied>
+        {message && <p className="rounded-2xl bg-ambre-clair p-3 text-sm">{message}</p>}
         <Bouton
           disabled={missions.length === 0}
-          onClick={() => {
+          onClick={async () => {
+            if (!logement.exemple) {
+              const r = await fetch("/api/agent/run", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ logement_id: logement.id, usage: 2, action_ids: missions.map((a) => a.id) }),
+              }).catch(() => null);
+              if (!r || !r.ok) {
+                setMessage("L'agent arrive très bientôt pour votre logement. Vous pouvez déjà l'essayer sur le logement exemple.");
+                return;
+              }
+            }
             maj({ run: "en_cours", decision: null });
             router.push(`${base}/agent`);
           }}

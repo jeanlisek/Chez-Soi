@@ -29,8 +29,8 @@ export default function Accueil() {
       </main>
 
       <footer className="flex flex-col gap-3 px-5 pb-8">
-        <Bouton href="/connexion?methode=google">Continuer avec Google</Bouton>
-        <Bouton href="/connexion?methode=email" variante="contour">
+        <Bouton href="/connexion">Continuer avec Google</Bouton>
+        <Bouton href="/connexion" variante="contour">
           Recevoir un lien par e-mail
         </Bouton>
         <Link href="/logement/exemple/profil" className="py-2 text-center font-bold underline underline-offset-4">

@@ -51,7 +51,12 @@ export default function PagePlan() {
   const { logement } = useParcours();
   const base = `/logement/${logement.id}`;
   const [filtre, setFiltre] = useState<Risque | "toutes">("toutes");
-  const [piece, setPiece] = useState("couloir");
+  const [piece, setPiece] = useState(
+    logement.exemple ? "couloir" : (logement.failles[0]?.piece_id ?? logement.pieces[0]?.id ?? ""),
+  );
+  const disposition = logement.exemple
+    ? DISPOSITION
+    : logement.pieces.map((p, i, t) => ({ id: p.id, col: t.length % 3 === 1 && i === t.length - 1 ? "col-span-3" : "col-span-1" }));
 
   const failles = useMemo(
     () => logement.failles.filter((f) => filtre === "toutes" || f.risque === filtre),
@@ -89,8 +94,10 @@ export default function PagePlan() {
         <div className="relative overflow-hidden rounded-[28px] bg-lavande p-5">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-extrabold">{total} points à traiter</h1>
-              <p className="text-sm text-encre-douce">{resume}</p>
+              <h1 className="text-2xl font-extrabold">
+                {total} point{total > 1 ? "s" : ""} à traiter
+              </h1>
+              <p className="text-sm text-encre-douce">{resume || "Analyse en attente"}</p>
             </div>
             <span className="grid size-12 place-items-center rounded-full border-2 border-white text-sm font-bold">
               {regles}/{total}
@@ -119,10 +126,20 @@ export default function PagePlan() {
           </Puce>
         </div>
 
+        {logement.pieces.length === 0 && (
+          <div className="rounded-[28px] bg-white p-5 text-center">
+            <p className="font-bold">Aucune pièce filmée pour l&apos;instant</p>
+            <p className="mt-1 text-sm text-encre-douce">Filmez une pièce pour obtenir son plan et ses points à traiter.</p>
+            <Link href={`${base}/capture`} className="mt-3 inline-block rounded-full bg-encre px-5 py-3 text-sm font-bold text-white">
+              Filmer une pièce
+            </Link>
+          </div>
+        )}
         <div className="grid grid-cols-3 gap-2 rounded-[28px] bg-white/50 p-3" aria-label="Plan du logement">
-          {DISPOSITION.map(({ id, col }, i) => {
+          {disposition.map(({ id, col }, i) => {
             if (!id) return <span key={i} className="rounded-2xl bg-gris-ligne/50" />;
-            const p = logement.pieces.find((x) => x.id === id)!;
+            const p = logement.pieces.find((x) => x.id === id);
+            if (!p) return null;
             const fp = failles.filter((f) => f.piece_id === id);
             const actif = piece === id;
             return (

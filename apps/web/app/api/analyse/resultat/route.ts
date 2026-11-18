@@ -124,18 +124,18 @@ export async function POST(request: Request) {
     failles_retenues: retenues.length,
     failles_rejetees: rejetees,
   };
+  // Une analyse vidéo terminée doit porter son origine (contrainte `analyses_video_terminee_origine`) :
+  // « pipeline » par défaut, « precalcule » quand le Space a servi le plan B.
+  const statutEcrit = e.etat === "echec" ? "echec" : "termine";
   const maj = {
+    statut: statutEcrit,
     fin: new Date().toISOString(),
     resultat,
+    origine: e.etat === "termine" ? (e.resultat ?? "pipeline") : (e.resultat ?? null),
+    service_analyse_id: e.service_analyse_id ?? null,
     erreur: e.etat === "echec" ? (e.erreur ?? "Échec de l'analyse.") : null,
   };
-  // Vocabulaire de `analyses.statut` : « terminee » (0008) ou « termine » (0009, aligné sur le Space).
-  let statutEcrit = e.etat === "echec" ? "echec" : "termine";
-  let { error: errMaj } = await admin.from("analyses").update({ ...maj, statut: statutEcrit }).eq("id", e.analyse_id);
-  if (errMaj && e.etat === "termine") {
-    statutEcrit = "terminee";
-    ({ error: errMaj } = await admin.from("analyses").update({ ...maj, statut: statutEcrit }).eq("id", e.analyse_id));
-  }
+  const { error: errMaj } = await admin.from("analyses").update(maj).eq("id", e.analyse_id);
   if (errMaj) return NextResponse.json({ message: "Analyse non mise à jour.", erreur: errMaj.message }, { status: 500 });
 
   const piece = pieceParNom(analyse.piece);

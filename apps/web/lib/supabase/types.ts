@@ -152,8 +152,10 @@ export type Database = {
           fin: string | null
           id: string
           logement_id: string
+          origine: string | null
           piece: string | null
           resultat: Json | null
+          service_analyse_id: string | null
           statut: string
           type: string
           version_pipeline: string | null
@@ -167,8 +169,10 @@ export type Database = {
           fin?: string | null
           id?: string
           logement_id: string
+          origine?: string | null
           piece?: string | null
           resultat?: Json | null
+          service_analyse_id?: string | null
           statut?: string
           type: string
           version_pipeline?: string | null
@@ -182,8 +186,10 @@ export type Database = {
           fin?: string | null
           id?: string
           logement_id?: string
+          origine?: string | null
           piece?: string | null
           resultat?: Json | null
+          service_analyse_id?: string | null
           statut?: string
           type?: string
           version_pipeline?: string | null

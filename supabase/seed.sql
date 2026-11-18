@@ -226,6 +226,35 @@ where not exists (
   where n.type = 'Element' and n.contrat_id is null and n.proprietes ->> 'element' = e.code
 );
 
+-- Synonymes des nœuds Element (GraphRAG, 18/11) : un libellé d'un ou deux mots est trop court pour
+-- une recherche par le sens. Ces mots servent seulement à reconnaître un élément que la vision
+-- nomme autrement ; ils ne créent aucune règle. Rejouable : l'embedding n'est remis à null
+-- (donc recalculé par l'app) que si les synonymes changent.
+with syn (element, synonymes) as (values
+  ('tapis', 'tapis, carpette, descente de lit, paillasson, tapis de couloir, tapis de bain, moquette non fixée'),
+  ('ressaut', 'seuil de porte, seuil surélevé, barre de seuil, petite marche isolée, différence de niveau au sol, rebord au sol'),
+  ('porte_entree', 'porte d''entrée, porte palière, porte principale du logement'),
+  ('porte_interieure', 'porte de chambre, porte de salle de bain, porte de cuisine, porte de couloir, passage de porte'),
+  ('main_courante', 'main courante, rampe d''escalier, poignée le long de l''escalier'),
+  ('marche', 'marche, contremarche, nez de marche, giron'),
+  ('escalier', 'escalier, cage d''escalier, volée de marches, escalier intérieur'),
+  ('eclairage', 'éclairage, lampe, luminaire, plafonnier, veilleuse, interrupteur, zone sombre'),
+  ('garde_corps', 'garde-corps, balustrade, rambarde de balcon, parapet'),
+  ('barriere_securite', 'barrière de sécurité pour enfant, barrière d''escalier pour bébé'),
+  ('barre_appui', 'barre d''appui, barre de maintien, poignée de douche, barre de relèvement, barre de toilettes'),
+  ('fenetre', 'fenêtre, baie vitrée, porte-fenêtre, vitre, volet, vasistas'),
+  ('serrure', 'serrure, verrou, cylindre, barillet, serrure trois points'),
+  ('detecteur_fumee', 'détecteur de fumée, DAAF, détecteur d''incendie, alarme incendie'),
+  ('detecteur_co', 'détecteur de monoxyde de carbone, détecteur de CO, détecteur de gaz')
+)
+update public.graphe_noeuds n
+set proprietes = n.proprietes || jsonb_build_object('synonymes', s.synonymes),
+    embedding = null
+from syn s
+where n.type = 'Element' and n.contrat_id is null
+  and n.proprietes ->> 'element' = s.element
+  and n.proprietes ->> 'synonymes' is distinct from s.synonymes;
+
 -- Un nœud Regle par code, pointé sur sa dernière version (la veille le repointe ensuite).
 insert into public.graphe_noeuds (type, libelle, proprietes, regle_id)
 select 'Regle', r.intitule,

@@ -179,3 +179,15 @@ conserve le nom `piece` pour le trigger Supabase introduit dans #16, sans écrir
 la cote confirmée par l’utilisateur. Régressions locales, sans service externe :
 `node --test scripts/n8n-clauses.test.mjs`. Les workflows restent désactivés ;
 aucune synchronisation ni exécution sur l’instance pendant cette relecture.
+
+## Copie du modèle 3D dans Supabase (18/11)
+
+Le Space garde ses fichiers en mémoire et dans `/tmp` : ils disparaissent à sa mise en veille (30 minutes sans requête). Dès qu'une analyse est terminée avec un `modele_3d_url`, `pipeline_analyse` le copie dans le bucket privé `modeles3d` :
+
+1. « Modèle 3D à copier ? » : analyse `termine` et `modele_3d_url` non vide, sinon on passe directement au nœud 10.
+2. « 15 · Demander l'URL de dépôt » : `POST {APP_URL}/api/analyse/modele-url` (credential « Chez Soi · webhook ») renvoie `signed_url` et `path` (`{user_id}/{logement_id}/{analyse_id}.glb`).
+3. « 16 · Télécharger le modèle 3D » : `GET {VISION_SERVICE_URL}{modele_3d_url}` (credential « Chez Soi · vision Space »), réponse en fichier.
+4. « 17 · Déposer dans modeles3d » : `PUT` du fichier sur `signed_url` (`model/gltf-binary`).
+5. Le nœud 10 ajoute `modele_3d_path` au retour à l'app si le dépôt a réussi.
+
+Les nœuds 15 à 17 continuent en cas d'erreur (`onError: continueRegularOutput`) : un échec de copie ne bloque jamais le retour des failles. Aucune clé Supabase dans n8n : l'URL signée ne vaut que pour ce fichier.

@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Cursor, Icon, Triangle } from "@/components/cs/icons";
 import { Chip, Pill, RoundButton, Screen } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { envoyerFichier } from "@/lib/envoi";
+import { reveillerVision } from "@/lib/reveil";
 
 /** Consignes par pièce (maquette de Hoang-Kim). */
 const PIECES_CAPTURE = [
@@ -28,6 +29,9 @@ export default function PageCapture() {
   const router = useRouter();
   const { logement, etat } = useParcours();
   const base = `/logement/${logement.id}`;
+
+  // Le Space vision démarre pendant que l'utilisateur prépare ou filme sa visite.
+  useEffect(() => reveillerVision(logement.id, logement.exemple), [logement.id, logement.exemple]);
   const filmees = logement.exemple ? logement.pieces.filter((p) => p.video) : logement.pieces;
   const [etape, setEtape] = useState<"liste" | "choix" | "filmer">("liste");
   const [piece, setPiece] = useState<string>();

@@ -78,6 +78,7 @@ chez-soi/
 |---|---|
 | `POST /api/upload` · `POST /api/upload/termine` | URL signée Supabase Storage (vidéo ou contrat, 50 Mo au plus), puis enregistrement : pièce + ligne `analyses` + appel du webhook n8n `pipeline_analyse` (vidéo), ou ligne `contrats` (contrat) |
 | `POST /api/analyse/resultat` | Retour de n8n `pipeline_analyse` quand le Space a fini (en-tête `X-Chez-Soi-Secret`) : l'app écrit `failles`, `analyses` et `pieces` (service_role, idempotent). n8n n'a donc pas de clé Supabase |
+| `POST /api/vision/reveil` | Réveille le Space vision (en veille après 30 min) par le webhook n8n `reveil_vision`, dès l'écran Contrat ou Capture : il démarre pendant qu'on filme. Aucune clé Hugging Face côté Vercel |
 | `POST /api/contrat` | Déclenche `analyse_contrat`, renvoie l'état d'extraction |
 | `POST /api/plan` | GraphRAG + règles + LLM explicatif → actions |
 | `POST /api/absence` | Compare les dates au seuil d'inoccupation, prépare l'usage 3 |

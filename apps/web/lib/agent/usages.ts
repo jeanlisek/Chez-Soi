@@ -1,3 +1,4 @@
+import type { CheminsAutorises } from "../../../../agents/dev/boucle";
 import { controlerSortieUsage2, evaluerSortie, type Evaluation } from "../../../../agents/dev/controle";
 import { sortieUsage2Schema, versJsonSchema } from "@/lib/schemas";
 
@@ -24,6 +25,8 @@ export type DefinitionUsage = {
   evaluer: (reponse: unknown, cote?: { largeur_cm: number; longueur_cm: number }) => Evaluation<unknown>;
   /** Mots d'URL qui déclenchent le coupe-circuit, en plus des motifs par défaut. */
   motifsEnPlus?: string[];
+  /** Liste blanche des pages pour la démo : toute autre page déclenche le coupe-circuit. */
+  cheminsAutorises?: CheminsAutorises;
 };
 
 const usage2: DefinitionUsage = {
@@ -32,6 +35,10 @@ const usage2: DefinitionUsage = {
   site: "www.ikea.com/fr/fr",
   urlDepart: "https://www.ikea.com/fr/fr",
   formatReponse: versJsonSchema(sortieUsage2Schema),
+  // IKEA France : accueil, recherche, catégories, fiche produit et panier. Rien d'autre.
+  cheminsAutorises: [
+    { hote: "ikea.com", exacts: ["/fr/fr"], prefixes: ["/fr/fr/search", "/fr/fr/cat/", "/fr/fr/p/", "/fr/fr/shoppingcart"] },
+  ],
   consigne: ({ faille_id, site }) =>
     [
       `Trouve sur le site ${site ?? "www.ikea.com/fr/fr"} un équipement compatible avec la faille ${faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,

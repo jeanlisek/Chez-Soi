@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   detecterPageInterdite,
+  horsCheminsAutorises,
   lireEvenement,
   MOTIFS_INTERDITS_PAR_DEFAUT,
   nettoyerUrl,
@@ -145,7 +146,10 @@ export async function traiterSession(admin: Admin, hai: ClientHai, sessionId: st
     lecture.actions.forEach((nom) => (actions[nom] = (actions[nom] ?? 0) + 1));
     for (const { url, source } of lecture.urls) {
       if (source === "page") pages.add(sansRequete(url));
-      const motif: string | null = coupe ? null : detecterPageInterdite(url, motifs);
+      const motif: string | null = coupe
+        ? null
+        : (detecterPageInterdite(url, motifs) ??
+          (definition?.cheminsAutorises ? horsCheminsAutorises(url, definition.cheminsAutorises) : null));
       if (motif) coupe = { motif, source, url: nettoyerUrl(url) };
     }
   }
@@ -237,6 +241,12 @@ export async function repondreValidation(params: {
   if (!validation) throw new ErreurRoute(404, "Validation introuvable.");
   if (validation.decision) throw new ErreurRoute(409, "Cette validation a déjà une réponse.");
 
+  // Le navigateur a pu agir dans la même étape que l'appel d'outil : on relit la session
+  // (coupe-circuit compris) avant de répondre, et on ne répond pas à une session coupée.
+  await traiterSession(admin, hai, validation.session_id);
+  const { data: apres } = await admin.from("runs_agent").select("coupe_circuit").eq("session_id", validation.session_id).maybeSingle();
+  if (apres?.coupe_circuit) throw new ErreurRoute(409, "La session a été coupée (page interdite) : rien n'est validé.");
+
   const appels = await hai.lireAppelsEnAttente(validation.session_id);
   const appel = appels.find(
     (a) => a.tool_name === "demander_validation" && (a.id ?? `${a.tool_name}:${JSON.stringify(a.args ?? {})}`) === validation.call_id,
@@ -297,16 +307,27 @@ export async function envoyerConsigne(params: {
 
 /* ---------- Lecture ---------- */
 
-/** État d'un run pour l'écran Agent : ligne `runs_agent` et validation en attente (RLS). */
-export async function lireRun(utilisateur: Utilisateur, sessionId: string) {
-  const { data: run } = await utilisateur
-    .from("runs_agent")
-    .select(
-      "session_id, usage, agent, statut_final, outcome, error_code, motif_fin, debut, fin, nb_etapes, sortie_finale, schema_valide, ecarts_metier, decision_validation, coupe_circuit",
-    )
-    .eq("session_id", sessionId)
-    .maybeSingle();
+/**
+ * État d'un run pour l'écran Agent : ligne `runs_agent` et validation en attente (RLS).
+ * Chaque lecture relit aussi la session chez H (`traiterSession`) : pendant l'attente du clic
+ * sur `demander_validation`, aucun webhook n'arrive, et c'est ce suivi qui garde le
+ * coupe-circuit actif tant que l'écran est ouvert.
+ */
+export async function lireRun(utilisateur: Utilisateur, sessionId: string, admin?: Admin, hai?: ClientHai) {
+  const lire = () =>
+    utilisateur
+      .from("runs_agent")
+      .select(
+        "session_id, usage, agent, statut_final, outcome, error_code, motif_fin, debut, fin, nb_etapes, sortie_finale, schema_valide, ecarts_metier, decision_validation, coupe_circuit",
+      )
+      .eq("session_id", sessionId)
+      .maybeSingle();
+  let { data: run } = await lire();
   if (!run) throw new ErreurRoute(404, "Session introuvable.");
+  if (admin && hai && !(run.statut_final && estEtatTerminal(run.statut_final))) {
+    await traiterSession(admin, hai, sessionId).catch(() => undefined);
+    run = (await lire()).data ?? run;
+  }
   const { data: validations } = await utilisateur
     .from("validations")
     .select("id, resume, decision, created_at")

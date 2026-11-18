@@ -17,26 +17,24 @@ type Admin = SupabaseClient<Database>;
 /** Le run auquel appartient l'appel : seule source du logement et de l'action. */
 export type RunPourOutils = { session_id: string; logement_id: string; action_id: string | null };
 
-const NIVEAUX_DEPLACEMENT = [
-  "se déplace sans difficulté",
-  "se déplace avec une gêne légère",
-  "se déplace avec une canne",
-  "se déplace avec un déambulateur",
-  "se déplace en fauteuil roulant",
-];
-
-/** Capacités fonctionnelles des occupants (RGPD art. 9 : pas de diagnostic), en phrases courtes. */
+/**
+ * Contraintes CONCRÈTES sur le produit, déduites côté serveur du profil des occupants.
+ * Les capacités sont des données de santé (RGPD art. 9) : rien de ce qui décrit une personne
+ * (âge, canne, niveau de déplacement, vue, vigilance, prénom) ne part chez H. Seule la
+ * conséquence sur le produit est envoyée (relecture de Briac, PR #9).
+ */
 export function contraintesProfil(
-  occupants: { libelle: string; deplacement: number; vue_reduite: boolean; audition_reduite: boolean; vigilance: string }[],
+  occupants: { deplacement: number; vue_reduite: boolean; vigilance: string }[],
 ): string[] {
-  return occupants.map((o) => {
-    const elements = [`${o.libelle} : ${NIVEAUX_DEPLACEMENT[o.deplacement] ?? `déplacement ${o.deplacement} sur 4`}`];
-    if (o.vue_reduite) elements.push("vue réduite");
-    if (o.audition_reduite) elements.push("audition réduite");
-    if (o.vigilance === "jeune_enfant") elements.push("jeune enfant");
-    if (o.vigilance === "troubles_cognitifs") elements.push("vigilance réduite");
-    return `${elements.join(", ")}.`;
-  });
+  const contraintes = ["Ne dépasse pas des dimensions données, sauf si la fiche dit qu'il se découpe."];
+  const mobiliteReduite = occupants.some((o) => o.deplacement >= 1);
+  const vigilance = occupants.some((o) => o.vue_reduite || o.vigilance !== "adulte");
+  if (mobiliteReduite || vigilance) {
+    contraintes.push("Fin, sans surépaisseur ni bord qui rebique : rien qui accroche le pied ou une aide à la marche.");
+    contraintes.push("Antidérapant, adapté à un sol dur.");
+  }
+  if (vigilance) contraintes.push("Bien visible ou sans relief à contourner ; aucune petite pièce détachable.");
+  return contraintes;
 }
 
 /**
@@ -57,7 +55,7 @@ async function getMesures(admin: Admin, run: RunPourOutils, args: unknown): Prom
   if (faille.cote_confirmee_cm === null) throw new Error("La cote de cette faille n'est pas encore confirmée.");
   const { data: occupants } = await admin
     .from("occupants")
-    .select("libelle, deplacement, vue_reduite, audition_reduite, vigilance")
+    .select("deplacement, vue_reduite, vigilance")
     .eq("logement_id", run.logement_id);
   return getMesuresSortieSchema.parse({
     element: faille.element,

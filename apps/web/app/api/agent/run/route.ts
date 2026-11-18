@@ -41,7 +41,7 @@ export async function GET(request: Request) {
   const contexte = await contexteAgent();
   if ("erreur" in contexte) return contexte.erreur;
   try {
-    return NextResponse.json(await lireRun(contexte.utilisateur, id));
+    return NextResponse.json(await lireRun(contexte.utilisateur, id, contexte.admin, contexte.hai));
   } catch (erreur) {
     return reponseErreur(erreur);
   }

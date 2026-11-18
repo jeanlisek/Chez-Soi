@@ -41,7 +41,11 @@ import { evaluerSortie } from "./controle";
 export type MotifsInterdits = {
   /** Interdits partout. */
   stricts: string[];
-  /** Interdits sauf sur une page panier (certains sites rangent le panier sous /checkout/cart ou /commande/panier). */
+  /**
+   * Interdits dans le chemin (et le sous-domaine, le fragment), sans exception « panier » :
+   * `/checkout/?from=cart`, `/panier/validation` ou `/gp/buy/` déclenchent (relecture de Briac,
+   * PR #9). Pas dans les paramètres : un tri `?order=prix` ne déclenche rien.
+   */
   tunnel: string[];
 };
 
@@ -65,10 +69,9 @@ export const MOTIFS_INTERDITS_PAR_DEFAUT: MotifsInterdits = {
     "signup",
     "inscription",
   ],
-  tunnel: ["checkout", "commande", "commander", "order", "orders"],
+  tunnel: ["checkout", "commande", "commander", "order", "orders", "buy", "caisse", "purchase", "validation", "valider"],
 };
 
-const JETONS_PANIER = ["panier", "cart", "basket"];
 /** Paramètres de recherche : leur valeur est du texte libre, pas une destination. */
 const CLES_DE_RECHERCHE = ["q", "query", "search", "s", "k", "w", "text", "keywords", "recherche"];
 
@@ -88,9 +91,11 @@ function jetons(texte: string): string[] {
 }
 
 /**
- * Renvoie le motif interdit trouvé dans une URL, ou `null`. On regarde les sous-domaines,
- * le chemin, le fragment et les valeurs des paramètres (hors recherche), découpés en mots :
- * « order » ne déclenche pas sur « border » ni sur le paramètre de tri `?order=prix`.
+ * Renvoie le motif interdit trouvé dans une URL, ou `null`. Mots stricts : sous-domaines,
+ * chemin, fragment et valeurs des paramètres (hors recherche). Mots du tunnel de commande :
+ * sous-domaines, chemin et fragment seulement. Découpage en mots : « order » ne déclenche
+ * pas sur « border ». Pour la démo, compléter par une liste de chemins autorisés par site
+ * (`horsCheminsAutorises`).
  */
 export function detecterPageInterdite(
   urlBrute: string,
@@ -104,19 +109,47 @@ export function detecterPageInterdite(
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") return null;
 
-  const mots = new Set<string>();
-  const ajouter = (texte: string) => jetons(texte).forEach((mot) => mots.add(mot));
-  url.hostname.split(".").slice(0, -2).forEach(ajouter);
-  ajouter(url.pathname);
-  ajouter(url.hash);
+  const motsChemin = new Set<string>();
+  const ajouterChemin = (texte: string) => jetons(texte).forEach((mot) => motsChemin.add(mot));
+  url.hostname.split(".").slice(0, -2).forEach(ajouterChemin);
+  ajouterChemin(url.pathname);
+  ajouterChemin(url.hash);
+  const mots = new Set(motsChemin);
   for (const [cle, valeur] of url.searchParams) {
-    if (!CLES_DE_RECHERCHE.includes(cle.toLowerCase())) ajouter(valeur);
+    if (!CLES_DE_RECHERCHE.includes(cle.toLowerCase())) jetons(valeur).forEach((mot) => mots.add(mot));
   }
 
   const strict = motifs.stricts.find((motif) => mots.has(motif));
   if (strict) return strict;
-  if (JETONS_PANIER.some((mot) => mots.has(mot))) return null;
-  return motifs.tunnel.find((motif) => mots.has(motif)) ?? null;
+  return motifs.tunnel.find((motif) => motsChemin.has(motif)) ?? null;
+}
+
+/** Pages autorisées d'un site : hôte exact (ou sous-domaine) et préfixes de chemin. */
+export type CheminsAutorises = { hote: string; exacts?: string[]; prefixes: string[] }[];
+
+/**
+ * Liste blanche par site : renvoie un motif si l'URL n'est pas sur un des hôtes autorisés,
+ * ou si son chemin ne commence par aucun des préfixes de cet hôte. `null` si la page est permise.
+ */
+export function horsCheminsAutorises(urlBrute: string, autorises: CheminsAutorises): string | null {
+  let url: URL;
+  try {
+    url = new URL(urlBrute);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+  const hote = url.hostname.toLowerCase();
+  const site = autorises.find((a) => hote === a.hote || hote.endsWith(`.${a.hote}`));
+  if (!site) return `hors site (${hote})`;
+  const chemin = url.pathname.toLowerCase();
+  const sansBarre = chemin.replace(/\/+$/, "");
+  const permise =
+    (site.exacts ?? []).some((exact) => sansBarre === exact.replace(/\/+$/, "")) ||
+    site.prefixes.some((prefixe) => chemin.startsWith(prefixe));
+  return permise
+    ? null
+    : `chemin non autorisé (${url.pathname})`;
 }
 
 function chainesDe(valeur: unknown, sortie: string[] = []): string[] {

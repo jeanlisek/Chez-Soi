@@ -3,7 +3,8 @@
  * persona fictive Jeanne. Arrêt au panier : aucune connexion, aucun paiement, aucune commande.
  *
  * Depuis apps/web/ :  npm run agent:u2 -- --site <domaine>
- * Options : --a-blanc (n'envoie rien), --agent <nom[:N]>, --skill <nom[:N]>, --malgre-sessions-actives
+ * Options : --a-blanc (n'envoie rien), --agent <nom[:N]> (chez-soi-acheteur:N pour la skill
+ *           verifier-dimension), --malgre-sessions-actives
  *
  * UNE session par lancement, jamais de relance automatique.
  */
@@ -129,17 +130,10 @@ async function main(): Promise<void> {
     { declaration: await chargerOutil("demander_validation"), executer: demanderValidation, validation: true },
   ];
 
-  // Skill maison publiée sur H (issue #15), de préférence figée : --skill verifier-dimension:1.
-  // NON VÉRIFIÉ : la doc H ne cite pas `agent.skills` parmi les chemins de `overrides` (elle
-  // dit seulement qu'un chemin inconnu renvoie 422 à la création, sans créer de session), et
-  // une surcharge REMPLACE la valeur : les skills d'origine de l'agent pourraient sauter.
-  // À tester une fois avec --a-blanc puis un run, et à noter dans l'onglet Retours Agent API.
-  const skill = option("skill");
-  const overrides = skill ? { "agent.skills": [skill] } : undefined;
-
-  console.log(
-    `Usage 2 · sous-tapis 60 × 160 cm · site : ${site} · agent : ${option("agent") ?? HAI_AGENT} · skill : ${skill ?? "aucune"}`,
-  );
+  // La skill verifier-dimension (issue #15) passe par l'agent maison chez-soi-acheteur
+  // (agents/definitions/), pas par une surcharge : `overrides["agent.skills"]` remplacerait
+  // les quatre skills H de l'agent. Lancer avec --agent chez-soi-acheteur:N.
+  console.log(`Usage 2 · sous-tapis 60 × 160 cm · site : ${site} · agent : ${option("agent") ?? HAI_AGENT}`);
   const resultat = await executerRun<SortieUsage2>({
     usage: "u2",
     agent: option("agent") ?? HAI_AGENT,
@@ -150,7 +144,6 @@ async function main(): Promise<void> {
     controlerSortie: controlerSortieUsage2,
     site,
     urlDepart: `${urlSite.origin}${urlSite.pathname}`,
-    overrides,
     dossierRuns: path.join(RACINE, "agents/bench/runs"),
     aBlanc: drapeau("a-blanc"),
     malgreSessionsActives: drapeau("malgre-sessions-actives"),

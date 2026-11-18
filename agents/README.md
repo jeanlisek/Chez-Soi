@@ -53,8 +53,10 @@ Aux deux premiers runs, l'agent a retenu un produit plus grand que le tapis (67,
 - `skills/verifier_dimension.md` : skill maison (`name: verifier-dimension`). Dimensions lues sur la fiche ; dimension absente, produit refusé ; produit plus grand que la cote accepté **seulement** avec une phrase de la fiche, recopiée mot pour mot, qui dit qu'il se découpe (`citation_decoupe`).
 - `citation_decoupe` est dans `sortieUsage2Schema` et dans le prompt provisoire de l'usage 2.
 - Le code applique la même règle (`ecartDecoupe` dans `dev/controle.ts`) : produit plus grand sans citation, ou avec une citation qui ne parle pas de découpe, signalé « à REFUSER » dans `ecarts_metier`. Le code ne relit pas la fiche : que la citation figure bien sur la page se vérifie dans le replay.
-- Publication : `npm run agent:skill -- ../../agents/skills/verifier_dimension.md` (à blanc), puis `--publier`. Elle crée la révision 1 ; on fige ensuite les runs avec `--skill verifier-dimension:N`.
-- **Non vérifié** : la doc H ne cite pas `agent.skills` parmi les chemins de `overrides`. Un chemin inconnu renvoie 422 sans créer de session ; et une surcharge remplace la liste, donc les skills d'origine de l'agent pourraient sauter. À tester une fois et à noter dans l'onglet Retours Agent API.
+- **Publiée sur H** le 18/11 : `verifier-dimension`, révision 1 (`npm run agent:skill -- ../../agents/skills/verifier_dimension.md`, à blanc, puis `--publier`).
+- **Agent maison `chez-soi-acheteur`**, révision 1, créé sur H le 18/11 à partir de `definitions/chez-soi-acheteur.json` (`npm run agent:creer -- ../../agents/definitions/chez-soi-acheteur.json`, à blanc, puis `--publier` ou `--publier --mettre-a-jour`). Même base que `h/web-surfer-flash` révision 2 (`h/browser`, `holo4-35b-a3b`, skills `h/company`, `h/user-collaboration`, `h/answering`, `h/planning`), plus `verifier-dimension:1` et les outils `get_mesures` et `demander_validation`. La création ne lance aucune session.
+- Run avec la skill : `npm run agent:u2 -- --site <domaine> --agent chez-soi-acheteur:1`. Pas de surcharge `agent.skills` : `h/web-surfer-flash` porte quatre skills H, et une surcharge les aurait remplacées.
+- À faire : mesurer avec et sans la skill (`h/web-surfer-flash` contre `chez-soi-acheteur:1`), et noter les runs dans l'onglet Mesures agent.
 
 ## Ce que l'usage 1 réutilisera (issue #7)
 

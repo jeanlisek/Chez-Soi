@@ -1,0 +1,9 @@
+{
+  "_note": "Agent maison de l'usage 2 (issue #15), créé sur H par `npm run agent:creer -- ../../agents/definitions/chez-soi-acheteur.json --publier`. Même base que h/web-surfer-flash révision 2 (environnement, modèle, skills H relus par GET /agents/h/web-surfer-flash le 18/11), plus la skill verifier-dimension figée. `outils` est remplacé par les déclarations de agents/schemas/tools/ à l'envoi. Le prompt et le format de réponse restent passés à chaque session.",
+  "name": "chez-soi-acheteur",
+  "description": "Agent web de Chez Soi : trouve sur un site marchand un équipement de sécurité compatible avec les cotes du logement, vérifie ses dimensions sur la fiche, le met au panier et s'arrête pour demander la validation. Ne commande et ne paie jamais.",
+  "environments": ["h/browser"],
+  "model": "holo4-35b-a3b",
+  "skills": ["h/company", "h/user-collaboration", "h/answering", "h/planning", "verifier-dimension:1"],
+  "outils": ["get_mesures", "demander_validation"]
+}

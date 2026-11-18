@@ -81,7 +81,7 @@ chez-soi/
 | `POST /api/upload` · `POST /api/upload/termine` | URL signée Supabase Storage (vidéo ou contrat, 50 Mo au plus), puis enregistrement : pièce + ligne `analyses` + appel du webhook n8n `pipeline_analyse` (vidéo), ou ligne `contrats` (contrat) |
 | `POST /api/analyse/resultat` | Retour de n8n `pipeline_analyse` quand le Space a fini (en-tête `X-Chez-Soi-Secret`) : l'app écrit `failles`, `analyses` et `pieces` (service_role, idempotent). n8n n'a donc pas de clé Supabase |
 | `POST /api/vision/reveil` | Réveille le Space vision (en veille après 30 min) par le webhook n8n `reveil_vision`, dès l'écran Contrat ou Capture : il démarre pendant qu'on filme. Aucune clé Hugging Face côté Vercel |
-| `POST /api/contrat` | Déclenche `analyse_contrat`, renvoie l'état d'extraction |
+| `POST /api/contrat` | Déclenche `analyse_contrat` (n8n → Space `/contrat`), écrit les clauses retenues (`obligations_contrat`, nœuds Clause, arêtes IMPOSE ; `lib/contrat.ts`) puis recalcule le plan. Service en veille : 202, l'écran relance |
 | `POST /api/plan` | Recalcule le plan : failles + `regles_en_vigueur` + contrat → `actions` et `diagnostic_regles` (`lib/plan.ts`, verdict déterministe). Appelé aussi après chaque analyse et chaque profil. GraphRAG et explication LLM : pas encore |
 | `POST /api/absence` | Compare les dates au seuil d'inoccupation, prépare l'usage 3 |
 | `POST /api/analyse/modele-url` | n8n (`X-Chez-Soi-Secret`) : URL de dépôt signée pour copier le `.glb` d'une analyse dans `modeles3d` (`{user_id}/{logement_id}/{analyse_id}.glb`) avant la veille du Space |

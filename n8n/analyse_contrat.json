@@ -418,13 +418,13 @@
               "id": "5243912e-083e-8781-807f-afc48d056cb7",
               "name": "VISION_SERVICE_URL",
               "type": "string",
-              "value": "https://a-configurer.invalid"
+              "value": "https://jeanlisek-chez-soi-vision.hf.space"
             },
             {
               "id": "e5d11dbc-4f00-89d7-a71a-a1622be4743d",
               "name": "SUPABASE_URL",
               "type": "string",
-              "value": "https://a-configurer.invalid"
+              "value": "https://hfcunqjqmtlozhiwfihl.supabase.co"
             },
             {
               "id": "7eabd232-a1e5-8fe9-8814-5294f4f46e8b",
@@ -528,12 +528,20 @@
       "typeVersion": 1.4
     },
     {
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "GonCoee08q3s4Crd",
+          "name": "Chez Soi · vision Space"
+        }
+      },
       "id": "767bd3f8-3785-8809-a432-0d9a721cbe8b",
       "name": "03 · Appeler le service vision",
-      "notes": "POST /contrat { contrat_id, pdf_url }. Un code HTTP d’erreur ou un service injoignable ne lèvent pas d’exception : le nœud suivant décide.",
+      "notes": "POST /contrat { contrat_id, pdf_url } (credential vision : jeton HF + clé du service). Space en veille : 502/503, l'app relance. Un code HTTP d’erreur ou un service injoignable ne lèvent pas d’exception : le nœud suivant décide.",
       "notesInFlow": false,
       "onError": "continueRegularOutput",
       "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
         "headerParameters": {
           "parameters": [
             {
@@ -551,7 +559,7 @@
               "neverError": true
             }
           },
-          "timeout": 30000
+          "timeout": 45000
         },
         "sendBody": true,
         "sendHeaders": true,
@@ -831,14 +839,14 @@
     {
       "id": "e912f77e-62e6-854f-acb9-5498d56745f1",
       "name": "13 · Répondre 200 · synthèse",
-      "notes": "ecrit_dans_supabase vaut false tant que les nœuds Supabase sont désactivés.",
+      "notes": "Renvoie à l'app les clauses retenues (obligations) et les nœuds Clause : c'est l'app qui les écrit dans Supabase (POST /api/contrat), n8n n'a pas de clé Supabase.",
       "notesInFlow": false,
       "parameters": {
         "options": {
           "responseCode": 200
         },
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ statut: 'ok', workflow: 'analyse_contrat', contrat_id: $('09 · Assembler les écritures').first().json.contrat_id, assureur: $('09 · Assembler les écritures').first().json.assureur, formule: $('09 · Assembler les écritures').first().json.formule, reference_cg: $('09 · Assembler les écritures').first().json.reference_cg, obligations_retenues: $('09 · Assembler les écritures').first().json.obligations.length, clauses_rejetees: $('09 · Assembler les écritures').first().json.rejetees, noeuds: $('09 · Assembler les écritures').first().json.noeuds.length, aretes: $('09 · Assembler les écritures').first().json.aretes.length, clauses_sans_regle: $('09 · Assembler les écritures').first().json.sans_regle, embeddings: $('09 · Assembler les écritures').first().json.embeddings, ecrit_dans_supabase: $('Config').first().json.SUPABASE_BRANCHE }) }}"
+        "responseBody": "={{ JSON.stringify({ statut: 'ok', workflow: 'analyse_contrat', contrat_id: $('09 · Assembler les écritures').first().json.contrat_id, assureur: $('09 · Assembler les écritures').first().json.assureur, formule: $('09 · Assembler les écritures').first().json.formule, reference_cg: $('09 · Assembler les écritures').first().json.reference_cg, obligations_retenues: $('09 · Assembler les écritures').first().json.obligations.length, clauses_rejetees: $('09 · Assembler les écritures').first().json.rejetees, noeuds: $('09 · Assembler les écritures').first().json.noeuds.length, aretes: $('09 · Assembler les écritures').first().json.aretes.length, clauses_sans_regle: $('09 · Assembler les écritures').first().json.sans_regle, embeddings: $('09 · Assembler les écritures').first().json.embeddings, ecrit_dans_supabase: false, obligations: $('09 · Assembler les écritures').first().json.obligations, noeuds: $('09 · Assembler les écritures').first().json.noeuds }) }}"
       },
       "position": [
         3540,

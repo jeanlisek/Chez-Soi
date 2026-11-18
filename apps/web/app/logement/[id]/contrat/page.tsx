@@ -49,12 +49,20 @@ export default function PageContrat() {
     maj({ contratDepose: true, parcours: "A" });
     setMessage("Contrat reçu. Lecture des clauses…");
     if (r.resultat.contrat_id) {
-      const lecture = await fetch("/api/contrat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contrat_id: r.resultat.contrat_id }),
-      }).catch(() => null);
-      const lu = (await lecture?.json().catch(() => null)) as { statut_extraction?: string; obligations_retenues?: number | null } | null;
+      // Le service de lecture peut se réveiller (jusqu'à quelques minutes) : on relance tant qu'il démarre.
+      type Lecture = { statut_extraction?: string; obligations_retenues?: number | null };
+      let lu: Lecture | null = null as Lecture | null;
+      for (let essai = 0; essai < 10; essai++) {
+        const lecture = await fetch("/api/contrat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contrat_id: r.resultat.contrat_id }),
+        }).catch(() => null);
+        lu = (await lecture?.json().catch(() => null)) as Lecture | null;
+        if (lu?.statut_extraction === "termine" || lu?.statut_extraction === "echec") break;
+        setMessage("Contrat reçu. Le service de lecture démarre, encore un instant…");
+        await new Promise((ok) => setTimeout(ok, 20_000));
+      }
       if (lu?.statut_extraction === "termine") setMessage(`Contrat lu : ${lu.obligations_retenues ?? "des"} clauses retenues, chacune avec sa page.`);
       else if (lu?.statut_extraction === "echec") setMessage("La lecture du contrat a échoué. Le diagnostic s'appuiera sur la loi.");
       else setMessage("Contrat reçu. La lecture des clauses se poursuit pendant la visite.");

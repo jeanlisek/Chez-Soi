@@ -78,6 +78,11 @@ class PieceEtat(BaseModel):
     modele_3d_url: str | None = None
     image_annotee_url: str | None = None
 
+# Lecture du contrat (Docling) : déclarée avant les autres routes, elle remplace le stub /contrat.
+from contrat.routes import router as routeur_contrat  # noqa: E402
+
+app.include_router(routeur_contrat)
+
 
 class AnalyseRequete(BaseModel):
     logement_id: str

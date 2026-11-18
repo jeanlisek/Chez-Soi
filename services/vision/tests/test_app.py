@@ -110,8 +110,9 @@ def test_la_cle_du_service_est_exigee_quand_elle_est_definie(client, monkeypatch
     assert client.post("/analyse", json=corps, headers={"X-Vision-Key": "cle-de-test"}).status_code == 202
 
 
-def test_contrat_reste_un_stub(client):
-    assert client.post("/contrat", json={"contrat_id": "C1", "pdf_url": "https://exemple.test/c.pdf"}).status_code == 501
+def test_contrat_n_est_plus_un_stub(client):
+    """/contrat lit le PDF (tests détaillés dans test_contrat.py) : une URL en http est refusée."""
+    assert client.post("/contrat", json={"contrat_id": "C1", "pdf_url": "http://exemple.test/c.pdf"}).status_code == 422
 
 
 def test_les_pieces_demandees_ont_chacune_leur_modele_3d(client, monkeypatch):

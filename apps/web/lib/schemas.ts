@@ -27,7 +27,11 @@ export const getMesuresSortieSchema = z.object({
   piece: z.string(),
   cote_confirmee_cm: z.number(),
   largeur_cm: z.number(),
-  hauteur_cm: z.number(),
+  /** Hauteur d'une porte ou d'une fenêtre, épaisseur d'un tapis ; absente si inconnue. */
+  hauteur_cm: z.number().optional(),
+  /** Longueur au sol (tapis, couloir) : `failles.longueur_cm`, depuis la migration 0006. */
+  longueur_cm: z.number().optional(),
+  /** Contraintes concrètes sur l'objet, jamais l'âge, la santé ni la mobilité (RGPD art. 9). */
   contraintes_profil: z.array(z.string()),
 });
 
@@ -110,7 +114,7 @@ export type SchemaZod<T> = z.ZodType<T>;
 
 /**
  * Un run de l'agent H, tel qu'écrit dans `agents/bench/runs/` par `agents/dev/boucle.ts`.
- * La table `runs_agent` n'existe pas encore (point ouvert 4) : ce schéma en est l'ébauche.
+ * La table `runs_agent` existe depuis la migration 0008 ; `versLigneRunsAgent` convertit ce format en ligne.
  * Jamais d'`agent_view_url` ici : c'est un lien d'accès à la session.
  */
 export const runAgentSchema = z.object({

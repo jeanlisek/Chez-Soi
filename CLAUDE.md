@@ -94,7 +94,8 @@ Service vision : `POST /analyse {logement_id, video_url, piece?, pieces?}` répo
 ## Custom tools (contrat d'interface)
 
 ```
-get_mesures        { faille_id } → { element, piece, cote_confirmee_cm, largeur_cm, hauteur_cm, contraintes_profil: string[] }
+get_mesures        { faille_id } → { element, piece, cote_confirmee_cm, largeur_cm, hauteur_cm?, longueur_cm?, contraintes_profil: string[] }
+                   Tapis : largeur_cm × longueur_cm au sol, hauteur_cm = épaisseur. contraintes_profil : contraintes concrètes sur l'objet, jamais l'âge ni la santé (RGPD art. 9).
 get_contrat        { logement_id, champs: string[] } → { assureur, formule, reference_cg?, inoccupation?: { duree_max_jours, protections[], clause, page },
                          absence?: { type, element?, valeur?, unite?, texte, clause, page, source: "cg" | "cp" }[] }
                    Ne renvoie que les champs demandés, JAMAIS le PDF ni l'adresse.

@@ -1,5 +1,5 @@
 {
-  "_note": "Données FICTIVES pour les runs locaux de l'usage 3 (persona Jeanne, absence de 35 jours). La clause d'inoccupation ci-dessous est INVENTÉE pour les tests : Briac aligne le contrat fictif du seed sur l'assureur choisi (issue #7), et ce bloc doit alors reprendre la vraie clause et sa page. Seul le bloc « contrat » est servi par get_contrat, et seulement les champs demandés. Le bloc « controle » reste côté code.",
+  "_note": "Persona et absence FICTIVES (Jeanne, 35 jours) ; clauses RÉELLES, relues le 18/11 dans les PDF des conditions générales (MAIF Raqvam M2442, 36 p. ; Altima MRH 202007_298, 24 p.). Règle du CLAUDE.md : un champ sans clause ni page retrouvées est rejeté. Les conditions générales MAIF Raqvam ne fixent AUCUNE durée d'inoccupation : get_contrat ne renvoie donc pas de bloc inoccupation pour la MAIF. Seul le bloc « contrat » est servi par get_contrat, et seulement les champs demandés ; le bloc « controle » reste côté code.",
   "logement_id": "logement-demo-jeanne-01",
   "absence": { "depart_le": "2026-12-15", "retour_le": "2027-01-19" },
   "assureurs": {
@@ -7,19 +7,18 @@
       "contrat": {
         "assureur": "MAIF",
         "formule": "Raqvam",
-        "reference_cg": "M2442",
-        "inoccupation": {
-          "duree_max_jours": 30,
-          "protections": [
-            "Fermer à clé toutes les portes d'accès",
-            "Fermer les volets et persiennes",
-            "Mettre en service l'alarme si le logement en est équipé"
-          ],
-          "clause": "FICTIF : au-delà de 30 jours consécutifs d'inoccupation, l'assuré en informe l'assureur et met en œuvre les protections prévues.",
-          "page": 12
-        }
+        "reference_cg": "M2442"
       },
-      "controle": { "domaines": ["maif.fr"], "url_depart": "https://www.maif.fr" }
+      "controle": {
+        "domaines": ["maif.fr"],
+        "url_depart": "https://www.maif.fr",
+        "clause_absence_sans_seuil": {
+          "texte": "7.2 - Dispositions concernant les sociétaires relevant des tranches de tarification H à J. Dans les hypothèses visées ci dessous, la franchise applicable est de 135 € : – s'il est constaté que les moyens de protection décrits aux conditions particulières ont été mis en place et activés pendant l'absence, […]",
+          "page": 19,
+          "article": "Vol, article 7 (franchise), 7.2",
+          "_lecture": "Pas de durée d'inoccupation ni de déclaration à faire. Seulement pour les tranches de tarification H à J : franchise vol ramenée à 135 € si les moyens de protection des CONDITIONS PARTICULIÈRES ont été activés pendant l'absence. Les protections ne sont pas dans les conditions générales. Non servi à l'agent tant que le contrat d'interface de get_contrat n'a pas de champ pour une obligation sans seuil (à voir avec Briac)."
+        }
+      }
     },
     "altima": {
       "contrat": {
@@ -27,14 +26,13 @@
         "formule": "Multirisques Habitation",
         "reference_cg": "202007_298",
         "inoccupation": {
-          "duree_max_jours": 30,
+          "duree_max_jours": 10,
           "protections": [
-            "Fermer à clé toutes les portes d'accès",
-            "Fermer les volets et persiennes",
-            "Mettre en service l'alarme si le logement en est équipé"
+            "Interrompre la distribution d'eau",
+            "Du 1er novembre au 1er avril, si les locaux ne sont pas chauffés : vidanger les conduites, réservoirs et installations de chauffage non pourvus d'antigel"
           ],
-          "clause": "FICTIF : au-delà de 30 jours consécutifs d'inoccupation, l'assuré en informe l'assureur et met en œuvre les protections prévues.",
-          "page": 12
+          "clause": "Prévention : Lorsque vous vous absentez de votre habitation plus de 10 jours consécutifs, vous devez interrompre la distribution d'eau. Pendant la période du 1er novembre au 1er avril, si les locaux ne sont pas chauffés, vous devez vidanger les conduites, réservoirs et installations de chauffage non pourvus d'antigel. Si vous ne respectez pas ces mesures de prévention et qu'un sinistre survient ou est aggravé de ce fait, vous conserverez à votre charge 30 % de l'indemnité.",
+          "page": 6
         }
       },
       "controle": { "domaines": ["altima-assurances.fr"], "url_depart": "https://www.altima-assurances.fr" }

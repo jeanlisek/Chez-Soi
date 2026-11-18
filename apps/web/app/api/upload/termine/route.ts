@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         const r = await fetch(`${n8n.replace(/\/$/, "")}/webhook/chez-soi/analyse-video`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Chez-Soi-Secret": secret },
-          body: JSON.stringify({ logement_id, video_url: lien.signedUrl }),
+          body: JSON.stringify({ logement_id, video_url: lien.signedUrl, analyse_id: analyse.id, piece: nom }),
           signal: AbortSignal.timeout(8000),
         });
         declenche = r.status === 200 || r.status === 202;

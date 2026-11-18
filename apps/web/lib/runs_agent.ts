@@ -46,13 +46,9 @@ export function versLigneRunsAgent(
     pages_vues,
     actions_agent,
     observations_api,
-    // Usage 1 : pas encore de colonne dans `runs_agent` (migration 0008 prévue avec Briac,
-    // `controle_document jsonb`). Retiré ici et NON écrit en base en attendant ; il reste
-    // dans le fichier du run (`agents/bench/runs/`).
-    controle_document: _controle_document_sans_colonne,
+    controle_document,
     ...reste
   } = run;
-  void _controle_document_sans_colonne;
   const aucunChampOublie: Record<string, never> = reste;
   void aucunChampOublie;
 
@@ -85,5 +81,7 @@ export function versLigneRunsAgent(
     pages_vues,
     actions_agent,
     observations_api,
+    // Usage 1 seulement (migration 0008) ; absent pour les usages 2 et 3.
+    controle_document: (controle_document ?? null) as Json | null,
   };
 }

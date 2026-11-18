@@ -723,8 +723,10 @@ export type Database = {
           created_at: string
           element: string | null
           id: string
+          liee_absence: boolean
           page: number
           seuil: number | null
+          source: string
           texte_court: string | null
           type: Database["public"]["Enums"]["type_obligation"]
           unite: string | null
@@ -738,8 +740,10 @@ export type Database = {
           created_at?: string
           element?: string | null
           id?: string
+          liee_absence?: boolean
           page: number
           seuil?: number | null
+          source?: string
           texte_court?: string | null
           type: Database["public"]["Enums"]["type_obligation"]
           unite?: string | null
@@ -753,8 +757,10 @@ export type Database = {
           created_at?: string
           element?: string | null
           id?: string
+          liee_absence?: boolean
           page?: number
           seuil?: number | null
+          source?: string
           texte_court?: string | null
           type?: Database["public"]["Enums"]["type_obligation"]
           unite?: string | null

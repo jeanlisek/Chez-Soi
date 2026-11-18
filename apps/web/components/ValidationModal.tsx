@@ -50,7 +50,7 @@ export function ValidationModal({
           href={proposition.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-between rounded-full bg-white px-4 py-3 font-bold text-[#1c2f7a]"
+          className="flex items-center justify-between rounded-full bg-white px-4 py-3 font-bold text-[#1a3a86]"
         >
           Ouvrir la fiche produit <ChevronRight className="size-4" />
         </a>

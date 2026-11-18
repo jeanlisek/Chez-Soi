@@ -13,12 +13,17 @@ const trait = {
   strokeLinejoin: "round" as const,
 };
 
+/** Logo de la charte : maison cobalt avec cheminée, yeux fermés et sourire (signature). */
 export function LogoMaison({ className }: Props) {
   return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden>
-      <path d="M6 22 24 7l18 15v19a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z" fill="#1c2f7a" />
-      <path d="M15 27c2 3 5 3 7 0M26 27c2 3 5 3 7 0" {...trait} stroke="#9db0f2" strokeWidth={2.4} />
-      <path d="M17 34c4 3 10 3 14 0" {...trait} stroke="#ffffff" strokeWidth={2.4} />
+    <svg viewBox="0 0 64 64" className={className} role="img" aria-label="Chez Soi">
+      <path
+        d="M8 30 31 9.5a1.6 1.6 0 0 1 2 0L40 16v-5.5a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5v11.7L56 30v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"
+        fill="#1a3a86"
+      />
+      <path d="M19 33c1.6 2.6 4.6 2.6 6.2 0M38.8 33c1.6 2.6 4.6 2.6 6.2 0" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M31.5 29.5 30 35" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M20 42c6.5 6 17.5 6 24 0" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" />
     </svg>
   );
 }

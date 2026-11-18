@@ -124,7 +124,7 @@ export function ModeAbsence({
 
       <div className="flex items-baseline justify-between">
         <h2 className="text-lg font-bold">Démarches de l&apos;agent</h2>
-        <span className="text-sm font-bold text-[#1c2f7a]">Usage 3</span>
+        <span className="text-sm font-bold text-[#1a3a86]">Usage 3</span>
       </div>
       <ul className="flex flex-col gap-2">
         {demarches.map(({ Icone, titre, detail, ton }) => (

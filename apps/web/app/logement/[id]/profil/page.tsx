@@ -61,7 +61,7 @@ export default function PageProfil() {
         <section>
           <div className="mb-2 flex items-baseline justify-between">
             <h3 className="font-bold">Se déplacer</h3>
-            <span className="text-sm font-semibold text-[#1c2f7a]">
+            <span className="text-sm font-semibold text-[#1a3a86]">
               {o.deplacement} · {LIBELLE_DEPLACEMENT[o.deplacement]}
             </span>
           </div>

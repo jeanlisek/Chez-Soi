@@ -29,7 +29,20 @@ export default function PageContrat() {
             setMessage("Envoi du contrat…");
             const r = await envoyerFichier({ logementId: logement.id, type: "contrat", fichier });
             setMessage(r.ok ? r.resultat.message : r.message);
-            if (r.ok) maj({ contratDepose: true, parcours: "A" });
+            if (!r.ok) return;
+            maj({ contratDepose: true, parcours: "A" });
+            if (r.resultat.contrat_id) {
+              const lecture = await fetch("/api/contrat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contrat_id: r.resultat.contrat_id }),
+              }).catch(() => null);
+              const etat = (await lecture?.json().catch(() => null)) as { statut_extraction?: string; obligations_retenues?: number | null } | null;
+              if (etat?.statut_extraction === "termine")
+                setMessage(`Contrat lu : ${etat.obligations_retenues ?? "des"} clauses retenues, chacune avec sa page.`);
+              else if (etat?.statut_extraction === "echec") setMessage("La lecture du contrat a échoué. Le diagnostic s'appuiera sur la loi.");
+              else setMessage("Contrat reçu. La lecture des clauses se poursuit pendant la visite.");
+            }
           }}
         />
         {message && <p className="rounded-2xl bg-white p-3 text-sm">{message}</p>}

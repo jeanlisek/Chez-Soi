@@ -30,9 +30,31 @@ def test_l_extraction_retrouve_l_assureur_la_formule_et_la_reference_des_conditi
     assert {nom: champ.page for nom, champ in resultat.champs.items()} == {"assureur": 1, "formule": 1, "reference_cg": 1}
 
 
-def test_le_document_ne_porte_aucune_obligation():
-    # Il sert seulement à lancer la recherche des conditions générales (usage 1 de l'agent).
-    assert extraire("cp-fictives-jeanne", lire_pypdf(PDF), "pypdf").obligations == []
+def test_la_clause_fictive_d_inoccupation_donne_30_jours_avec_sa_clause_et_sa_page():
+    resultat = extraire("cp-fictives-jeanne", lire_pypdf(PDF), "pypdf")
+
+    (inoccupation,) = [o for o in resultat.obligations if o.type == "inoccupation"]
+    assert (inoccupation.seuil, inoccupation.unite, inoccupation.page) == (30, "jours", 1)
+    assert inoccupation.clause == "Article 1 Inoccupation des locaux (clause fictive)"
+    assert "informe l'assureur avant le départ" in inoccupation.citation
+    assert inoccupation.citation_retrouvee
+
+
+def test_les_protections_exigees_sont_les_portes_fermees_a_cle_et_les_volets_fermes():
+    # get_contrat_champs (migration 0006) lit les protections dans les obligations de type « prevention ».
+    resultat = extraire("cp-fictives-jeanne", lire_pypdf(PDF), "pypdf")
+
+    protections = [o for o in resultat.obligations if o.type == "prevention"]
+    assert {o.element: o.texte_court for o in protections} == {
+        "porte_entree": "Toutes les portes d'accès, dont la porte d'entrée, doivent alors être fermées à clé.",
+        "fenetre": "Les volets doivent alors être fermés.",
+    }
+    assert all(o.page == 1 and o.citation_retrouvee for o in protections)
+    assert all(o.clause == "Article 1 Inoccupation des locaux (clause fictive)" for o in protections)
+
+
+def test_aucune_clause_du_document_n_est_rejetee():
+    assert extraire("cp-fictives-jeanne", lire_pypdf(PDF), "pypdf").clauses_rejetees == []
 
 
 def test_le_pdf_du_depot_est_celui_que_produit_le_script(tmp_path):

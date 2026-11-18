@@ -28,26 +28,42 @@ begin
     insert into public.declarations (logement_id, element, valeur)
     values (v_logement, 'serrure', 'un point, non certifiée A2P');
 
-    -- 35 jours d'absence cet hiver.
+    -- 35 jours d'absence cet hiver (mêmes dates que agents/dev/fixtures/contrat_u3.json).
     insert into public.absences (logement_id, depart_le, retour_le)
-    values (v_logement, date '2026-12-20', date '2027-01-24');
+    values (v_logement, date '2026-12-15', date '2027-01-19');
 
+    -- Assureur de la démo : MAIF (décision du 18/11). Le contrat de Jeanne est fictif, mais il renvoie
+    -- aux conditions générales publiques MAIF Raqvam, réf. M2442 - 01/2023 (36 p.), relues le 18/11.
+    -- Ces CG ne fixent AUCUNE durée d'inoccupation : pas de ligne inoccupation (pas de clause, pas de champ).
+    -- assureur_id reste vide : la ligne MAIF du référentiel assureurs arrive après la PR #17.
     insert into public.contrats (logement_id, titulaire_accord_le, assureur, formule, reference_cg, version_cg,
                                  version_cg_verifiee, statut_extraction, extrait_le, conservation_jusqu_au)
-    values (v_logement, now(), 'Assureur fictif (démo)', 'Multirisque habitation', 'CG-DEMO-2026', '2026-01',
+    values (v_logement, now(), 'MAIF', 'Raqvam', 'M2442', '01/2023',
             false, 'termine', now(), date '2026-11-21')
     returning id into v_contrat;
 
-    insert into public.obligations_contrat (contrat_id, type, element, seuil, unite, texte_court, citation, clause, page, citation_retrouvee, confirmee_le)
+    -- Lignes 1 et 2 : citations RÉELLES des CG (garantie particulière en cas de vol), pages du PDF.
+    -- Elles ne jouent que pour les tranches de tarification H à J : la démo suppose que les conditions
+    -- particulières (fictives) de Jeanne la classent dans ces tranches. Pour les tranches A à G, la
+    -- franchise est de 135 € dans tous les cas et la clause ne change rien.
+    -- La ligne 1 n'est pas une clause d'absence en soi, mais elle donne l'enjeu : c'est la franchise qui
+    -- s'applique si les protections ne sont pas activées pendant l'absence. D'où liee_absence = true.
+    -- Ligne 3 : protection des conditions particulières, FICTIVE (page 1 de ces CP inventées).
+    insert into public.obligations_contrat (contrat_id, type, element, seuil, unite, texte_court, citation, clause, page,
+                                            citation_retrouvee, confirmee_le, liee_absence, source)
     values
-      (v_contrat, 'inoccupation', 'inoccupation', 30, 'jours',
-       'Au-delà de 30 jours d''inoccupation, garanties vol réduites.',
-       'En cas d''inoccupation des locaux pendant plus de 30 jours consécutifs, la garantie vol est réduite (texte fictif).',
-       'Inoccupation', 3, true, now()),
+      (v_contrat, 'franchise', 'vol', 1500, 'EUR',
+       'Franchise vol de 1 500 € (tranches de tarification H à J).',
+       'Pour les assurés dont le patrimoine mobilier relève des tranches H à J, la franchise est de 1 500 €.',
+       'Garantie particulière en cas de vol, A, article 4 : franchise applicable en cas de vol', 18, true, now(), true, 'cg'),
+      (v_contrat, 'franchise', 'vol', 135, 'EUR',
+       'Franchise vol ramenée à 135 € si les protections des conditions particulières sont mises en place et activées pendant l''absence (tranches H à J).',
+       'Dans les hypothèses visées ci dessous, la franchise applicable est de 135 € : – s’il est constaté que les moyens de protection décrits aux conditions particulières ont été mis en place et activés pendant l’absence',
+       'Garantie particulière en cas de vol, B (vols autres que dans un véhicule), article 7.2', 19, true, now(), true, 'cg'),
       (v_contrat, 'prevention', 'serrure', 3, 'points',
-       'Porte d''entrée équipée d''une serrure 3 points.',
-       'La porte d''entrée doit être équipée d''une serrure à trois points de fermeture (texte fictif).',
-       'Mesures de prévention du vol', 12, true, now());
+       'Porte d''entrée équipée d''une serrure 3 points, fermée à clé pendant l''absence.',
+       'Moyens de protection : la porte d''entrée est équipée d''une serrure à trois points de fermeture, fermée à clé pendant toute absence (texte fictif).',
+       'Conditions particulières (fictives) : moyens de protection', 1, true, now(), true, 'cp');
   end if;
 
   /* ---------- Léa, 24 ans, locataire ---------- */

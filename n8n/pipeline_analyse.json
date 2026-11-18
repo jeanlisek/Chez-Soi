@@ -58,13 +58,7 @@
     },
     "06 · Écrire les failles (Supabase)": {
       "main": [
-        [
-          {
-            "index": 0,
-            "node": "07 · Répondre 200 · failles prêtes",
-            "type": "main"
-          }
-        ]
+        []
       ]
     },
     "08 · Attendre le calcul": {
@@ -100,19 +94,52 @@
         ]
       ]
     },
+    "12 · Réessayer ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Space en démarrage ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "13 · Attendre le réveil": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "03 · Appeler le service vision",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "14 · Préparer l'échec": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Analyse liée à l'app ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
     "Analyse acceptée ?": {
       "main": [
         [
           {
             "index": 0,
-            "node": "Répondre 202 · analyse en cours",
+            "node": "08 · Attendre le calcul",
             "type": "main"
           }
         ],
         [
           {
             "index": 0,
-            "node": "Service en stub ?",
+            "node": "12 · Réessayer ?",
             "type": "main"
           }
         ]
@@ -164,7 +191,7 @@
         [
           {
             "index": 0,
-            "node": "03 · Appeler le service vision",
+            "node": "Répondre 202 · vidéo reçue",
             "type": "main"
           }
         ],
@@ -177,12 +204,12 @@
         ]
       ]
     },
-    "Répondre 202 · analyse en cours": {
+    "Répondre 202 · vidéo reçue": {
       "main": [
         [
           {
             "index": 0,
-            "node": "08 · Attendre le calcul",
+            "node": "03 · Appeler le service vision",
             "type": "main"
           }
         ]
@@ -206,19 +233,19 @@
         ]
       ]
     },
-    "Service en stub ?": {
+    "Space en démarrage ?": {
       "main": [
         [
           {
             "index": 0,
-            "node": "Répondre 501 · service vision en stub",
+            "node": "13 · Attendre le réveil",
             "type": "main"
           }
         ],
         [
           {
             "index": 0,
-            "node": "Répondre 502 · service vision en erreur",
+            "node": "14 · Préparer l'échec",
             "type": "main"
           }
         ]
@@ -265,7 +292,7 @@
       "name": "02 · COMPRENDRE",
       "parameters": {
         "color": 6,
-        "content": "## 02 · COMPRENDRE\n`POST /analyse` du service vision\n\n200 = failles · 202 = en cours · 501 = stub · autre = erreur.",
+        "content": "## 02 · COMPRENDRE\n`POST /analyse` du service vision\n\n202 = accepté · 503/502/404/sans réponse = Space en démarrage, nouvel essai toutes les 20 s (`ESSAIS_REVEIL`) · autre = échec renvoyé à l'app.",
         "height": 400,
         "width": 680
       },
@@ -297,7 +324,7 @@
       "name": "04 · RESTITUER",
       "parameters": {
         "color": 4,
-        "content": "## 04 · RESTITUER\nRéponse HTTP explicite dans tous les cas\n\n200, 202, 400, 501 ou 502.",
+        "content": "## 04 · RESTITUER\nRéponse 202 immédiate à l'app (« vidéo reçue »), puis le résultat ou l'échec part sur `POST /api/analyse/resultat`.\n\n400 si l'entrée est invalide.",
         "height": 400,
         "width": 340
       },
@@ -451,6 +478,12 @@
               "name": "ESSAIS_MAX",
               "type": "number",
               "value": 45
+            },
+            {
+              "id": "20746fd6-eae9-441e-983b-0aaa0c28dcb2",
+              "name": "ESSAIS_REVEIL",
+              "type": "number",
+              "value": 70
             }
           ]
         },
@@ -548,11 +581,11 @@
           "parameters": [
             {
               "name": "Idempotency-Key",
-              "value": "={{ $json.cle_idempotence }}"
+              "value": "={{ $('02 · Contrôler l’entrée').first().json.cle_idempotence }}"
             }
           ]
         },
-        "jsonBody": "={{ JSON.stringify(Object.assign({ logement_id: $json.logement_id, video_url: $json.video_url }, $json.piece ? { piece: $json.piece } : {})) }}",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ logement_id: $('02 · Contrôler l’entrée').first().json.logement_id, video_url: $('02 · Contrôler l’entrée').first().json.video_url }, $('02 · Contrôler l’entrée').first().json.piece ? { piece: $('02 · Contrôler l’entrée').first().json.piece } : {})) }}",
         "method": "POST",
         "options": {
           "response": {
@@ -561,7 +594,7 @@
               "neverError": true
             }
           },
-          "timeout": 30000
+          "timeout": 20000
         },
         "sendBody": true,
         "sendHeaders": true,
@@ -674,25 +707,6 @@
       "typeVersion": 4.2
     },
     {
-      "id": "ad02e8a0-864b-8c93-b95b-242a90230fd5",
-      "name": "07 · Répondre 200 · failles prêtes",
-      "notes": "ecrit_dans_supabase vaut false tant que le nœud 06 est désactivé.",
-      "notesInFlow": false,
-      "parameters": {
-        "options": {
-          "responseCode": 200
-        },
-        "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ statut: 'ok', workflow: 'pipeline_analyse', logement_id: $('05 · Préparer les failles').first().json.logement_id, failles_retenues: $('05 · Préparer les failles').first().json.lignes.length, failles_rejetees: $('05 · Préparer les failles').first().json.rejetees, ecrit_dans_supabase: $('Config').first().json.SUPABASE_BRANCHE }) }}"
-      },
-      "position": [
-        2180,
-        190
-      ],
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.4
-    },
-    {
       "id": "cd056230-9aa0-8397-8625-8b121e9567e9",
       "name": "Analyse acceptée ?",
       "parameters": {
@@ -725,93 +739,6 @@
       ],
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2
-    },
-    {
-      "id": "d25db8d4-a7bc-8c59-9cae-abbea9d0c19b",
-      "name": "Répondre 202 · analyse en cours",
-      "notes": "Le service vision est asynchrone : le retour du résultat (rappel ou relève) reste à définir avec la vision.",
-      "notesInFlow": false,
-      "parameters": {
-        "options": {
-          "responseCode": 202
-        },
-        "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ statut: 'analyse_en_cours', workflow: 'pipeline_analyse', logement_id: $json.logement_id }) }}"
-      },
-      "position": [
-        1920,
-        560
-      ],
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.4
-    },
-    {
-      "id": "1977e7c7-95f6-8d36-aaeb-386956201a68",
-      "name": "Service en stub ?",
-      "parameters": {
-        "conditions": {
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "cb118a7d-7330-8e6c-817f-a677374d3abe",
-              "leftValue": "={{ $json.est_stub }}",
-              "operator": {
-                "operation": "true",
-                "singleValue": true,
-                "type": "boolean"
-              },
-              "rightValue": ""
-            }
-          ],
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          }
-        },
-        "options": {}
-      },
-      "position": [
-        1920,
-        760
-      ],
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2
-    },
-    {
-      "id": "0263c5e6-6e7b-8253-a264-5630a8a6e0c5",
-      "name": "Répondre 501 · service vision en stub",
-      "parameters": {
-        "options": {
-          "responseCode": 501
-        },
-        "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ statut: 'service_vision_non_implemente', workflow: 'pipeline_analyse', logement_id: $json.logement_id }) }}"
-      },
-      "position": [
-        2180,
-        760
-      ],
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.4
-    },
-    {
-      "id": "ad71a110-90a9-8b4d-87e7-6782477bbf3f",
-      "name": "Répondre 502 · service vision en erreur",
-      "parameters": {
-        "options": {
-          "responseCode": 502
-        },
-        "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ statut: 'erreur_service_vision', workflow: 'pipeline_analyse', logement_id: $json.logement_id, detail: $json.detail }) }}"
-      },
-      "position": [
-        2180,
-        960
-      ],
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.4
     },
     {
       "id": "6e6985e4-6e05-59eb-bec0-09d70920c02a",
@@ -981,13 +908,105 @@
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2
+    },
+    {
+      "id": "898f9055-a643-48b1-b79f-4b77f7d1018d",
+      "name": "Répondre 202 · vidéo reçue",
+      "parameters": {
+        "options": {
+          "responseCode": 202
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ statut: 'video_recue', workflow: 'pipeline_analyse', logement_id: $json.logement_id }) }}"
+      },
+      "position": [
+        870,
+        40
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4
+    },
+    {
+      "id": "628271df-b750-4c59-af38-e3d91ea6e0ad",
+      "name": "12 · Réessayer ?",
+      "parameters": {
+        "jsCode": "// Le Space Hugging Face se met en veille après 30 min : au réveil, il répond 503/502/404 ou rien pendant\n// plusieurs minutes. Ces cas sont transitoires : on réessaie. Une erreur 4xx du service (clé, entrée) ou un stub ne l'est pas.\nconst r = $json;\nconst essai = $runIndex + 1;\nconst max = Number($('Config').first().json.ESSAIS_REVEIL ?? 70);\nconst s = r.statut_http;\nconst transitoire = !r.est_stub && (s === null || s >= 500 || s === 404 || s === 429);\nreturn [{ json: { ...r, essai, retenter: transitoire && essai < max } }];\n"
+      },
+      "position": [
+        1920,
+        760
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "cce4a71e-e11c-4f0b-97f9-f976ff70b11a",
+      "name": "Space en démarrage ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "192581f0-de52-4b13-8d35-e0d4d6426118",
+              "leftValue": "={{ $json.retenter }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        2140,
+        760
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "e1cf557b-7053-487b-947f-e3cb8bb8a009",
+      "name": "13 · Attendre le réveil",
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "position": [
+        2360,
+        760
+      ],
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "webhookId": "0d5634e5-031e-4393-9286-1db6380d8ca3"
+    },
+    {
+      "id": "9e74550b-3acf-48b7-a1bc-0d2599041eac",
+      "name": "14 · Préparer l'échec",
+      "parameters": {
+        "jsCode": "// Échec définitif : l'app l'affiche (« analyse en échec, refilmez ») au lieu d'attendre sans fin.\nconst r = $json;\nconst erreur = r.est_stub\n  ? 'Service vision pas encore disponible'\n  : (r.retenter === false && r.essai >= Number($('Config').first().json.ESSAIS_REVEIL ?? 70)\n      ? 'Service vision toujours en démarrage après ' + r.essai + ' essais'\n      : (r.detail ?? 'Service vision en erreur'));\nreturn [{ json: {\n  analyse_id: r.analyse_id,\n  logement_id: r.logement_id,\n  etat: 'echec',\n  resultat: null,\n  service_analyse_id: null,\n  failles: [],\n  modele_3d_url: null,\n  erreur,\n} }];\n"
+      },
+      "position": [
+        2360,
+        960
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
     }
   ],
   "settings": {
     "availableInMCP": false,
     "callerPolicy": "workflowsFromSameOwner",
     "executionOrder": "v1",
-    "executionTimeout": 300,
+    "executionTimeout": 3600,
     "timezone": "Europe/Paris"
   }
 }

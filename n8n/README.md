@@ -162,3 +162,11 @@ Rien n'est activé. Les tests se font nœud par nœud, avec des données fictive
 4. **Embeddings** : dans `analyse_contrat`, activer « 08 · Calculer les embeddings (HF) », l'exécuter sur la sortie de « 07 · Préparer le graphe », puis vérifier dans « 09 · Assembler les écritures » que `embeddings` vaut `calcules`.
 5. **veille_reglementaire** : « Lancer à la main », puis lire « 14 · Bilan de la veille ». Chaque exécution fait jusqu'à 40 appels à l'API Légifrance. Sans Supabase, tous les textes lus sont `non_compares`.
 6. **Supabase**, après les migrations : créer le credential, renseigner `SUPABASE_URL`, activer les nœuds « (Supabase) » un par un, passer `SUPABASE_BRANCHE` à `true`, puis faire un pull et commiter.
+
+## Réveil du Space et nouveaux essais (18/11)
+
+Le Space Hugging Face se met en veille après 30 min sans requête et met plusieurs minutes à redémarrer.
+
+- `reveil_vision` (webhook `POST chez-soi/reveil-vision`, credential « Chez Soi · webhook ») : répond 202 tout de suite puis fait `GET /health` sur le Space (credential « Chez Soi · vision Space »). L'app l'appelle par `POST /api/vision/reveil` dès les écrans Contrat et Capture.
+- `pipeline_analyse` répond **202 « vidéo reçue » dès que l'entrée est valide**, avant d'appeler le Space. Si le Space répond 503, 502, 404, 429 ou rien (démarrage), nouvel essai toutes les 20 s, jusqu'à `ESSAIS_REVEIL` (70) essais. Une autre erreur, un stub ou trop d'essais : l'échec est renvoyé à l'app par `POST /api/analyse/resultat` (`etat: "echec"`), qui affiche « analyse en échec, refilmez ».
+- Délai maximal d'exécution du workflow : 3 600 s.

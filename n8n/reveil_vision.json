@@ -1,0 +1,97 @@
+{
+  "connections": {
+    "Demande de réveil": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Réveiller le Space",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "name": "reveil_vision",
+  "nodes": [
+    {
+      "id": "ca9b277f-2cf3-45e3-b6b3-514baa91f5cb",
+      "name": "Titre et légende",
+      "parameters": {
+        "color": 7,
+        "content": "# ⏰ RÉVEIL DU SPACE VISION\nL'app l'appelle dès que l'utilisateur ouvre l'écran Contrat ou Capture : le Space Hugging Face (en veille après 30 min) démarre pendant qu'on filme. Réponse 202 immédiate, puis `GET /health` sans calcul. Aucune donnée personnelle.",
+        "height": 160,
+        "width": 760
+      },
+      "position": [
+        -40,
+        -200
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qb6ZVKSFAnrnOdFo",
+          "name": "Chez Soi · webhook"
+        }
+      },
+      "id": "43151572-52fb-4e75-b0cb-adc391f0148b",
+      "name": "Demande de réveil",
+      "parameters": {
+        "authentication": "headerAuth",
+        "httpMethod": "POST",
+        "options": {
+          "responseCode": 202
+        },
+        "path": "chez-soi/reveil-vision",
+        "responseMode": "onReceived"
+      },
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "31a24d52-04b6-4f7b-be63-a4df6ea7489f"
+    },
+    {
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "GonCoee08q3s4Crd",
+          "name": "Chez Soi · vision Space"
+        }
+      },
+      "id": "6bd5174b-58f9-4aca-8e85-d508296af56b",
+      "name": "Réveiller le Space",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "method": "GET",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 15000
+        },
+        "url": "https://jeanlisek-chez-soi-vision.hf.space/health"
+      },
+      "position": [
+        260,
+        0
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    }
+  ],
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1",
+    "executionTimeout": 60,
+    "timezone": "Europe/Paris"
+  }
+}

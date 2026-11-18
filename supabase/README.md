@@ -15,6 +15,7 @@ Projet Supabase `chez-soi`, organisation « Chez Soi », région Paris (eu-west-
 | `migrations/0007_origine_mesure.sql` | `failles.origine` (`pipeline` ou `manuel`) : la mesure vient du service vision ou d'une saisie à la main (plan B de la démo) ; distincte de `source` |
 | `migrations/0008_agent_analyses_assureurs.sql` | `runs_agent.controle_document` (usage 1, PR #17) ; référentiel `assureurs` (domaines officiels) et `contrats.assureur_id` ; `webhooks_recus` (dédoublonnage par `X-H-Webhook-Delivery`) ; `analyses` (état de la vidéo et du contrat) ; `messages_agent` (pilotage) ; `actions` : `priorite`, `force`, `obligation_id`, `regle_id`, `explication` |
 | `migrations/0009_analyses_space.sql` | `analyses` alignée sur le Space vision (PR #18) : statut `termine` (et non `terminee`), `service_analyse_id` (l'`analyse_id` du Space, unique), `origine` (`pipeline` ou `precalcule`, obligatoire pour une vidéo terminée) |
+| `migrations/0010_obligations_absence.sql` | `obligations_contrat.liee_absence` et `source` (`cg` ou `cp`) ; `get_contrat_champs` accepte le champ `absence` : obligations liées à l'absence sans durée d'inoccupation (cas MAIF Raqvam, art. 7.2), citation retrouvée seulement, champ absent s'il n'y en a aucune |
 
 Une migration déjà appliquée ne se modifie jamais : on en ajoute une nouvelle.
 
@@ -23,9 +24,9 @@ Une migration déjà appliquée ne se modifie jamais : on en ajoute une nouvelle
 | Fichier | Contenu | Quand |
 |---|---|---|
 | `seed.sql` | 24 sources P1/P2 du Registre, 12 règles du doc CDO et leurs conditions, nœuds publics du graphe (Element, Regle, ContreMesure) et arêtes `PORTE_SUR`, `CORRIGE` | Après les migrations ; rejouable sans doublon |
-| `seed_demo.sql` | Personas fictifs (Marc et Jeanne, Léa, Sophie et Karim) et contrat fictif de Jeanne | Après création des comptes de démo dans Auth ; remplacer les e-mails en tête du fichier |
+| `seed_demo.sql` | Personas fictifs (Marc et Jeanne, Léa, Sophie et Karim) et contrat fictif de Jeanne, rattaché aux CG réelles MAIF Raqvam M2442 (art. 4 p. 18 et art. 7.2 p. 19 ; protections des conditions particulières fictives) | Après création des comptes de démo dans Auth ; remplacer les e-mails en tête du fichier |
 | `tests/rls_test.sql` | Preuve qu'un utilisateur A ne voit ni ne modifie rien de B | Après `seed.sql` ; tout est annulé à la fin |
-| `tests/graphe_test.sql` | `match_noeuds`, `sous_graphe`, nœuds privés invisibles, héritage des versions, `valider_regle`, pièces, `elements_inconnus`, `get_contrat_champs` | Après `seed.sql` ; tout est annulé à la fin |
+| `tests/graphe_test.sql` | `match_noeuds`, `sous_graphe`, nœuds privés invisibles, héritage des versions, `valider_regle`, pièces, `elements_inconnus`, `get_contrat_champs` (dont le champ `absence` de 0010) | Après `seed.sql` ; tout est annulé à la fin |
 | `tests/agent_test.sql` | Tables de 0008 : RLS, écriture serveur uniquement, doublon de webhook ignoré, une action « contrat » cite une clause, une action « loi » ou « recommandé » cite une règle, pas de clause d'un autre contrat | Après `seed.sql` ; tout est annulé à la fin |
 
 ## Commandes

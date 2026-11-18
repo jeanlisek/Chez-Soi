@@ -1,4 +1,4 @@
--- graphe_test.sql : vérifie 0005 et 0006 sur les données du seed. Tout est annulé à la fin.
+-- graphe_test.sql : vérifie 0005, 0006 et 0010 sur les données du seed. Tout est annulé à la fin.
 -- Succès : le message « GRAPHE OK » ; échec : une exception.
 
 begin;
@@ -91,6 +91,29 @@ begin
          ('00000000-0000-0000-0000-0000000000d1', 'exclusion', null, null, null, 'Exclusion sans élément', 'Exclusions', 5, true);
   v_json := public.get_contrat_champs('00000000-0000-0000-0000-0000000000b1', array['inoccupation']);
   assert v_json -> 'inoccupation' -> 'protections' = '["Serrure 3 points"]'::jsonb, 'protections : ' || v_json::text;
+
+  /* --- 0010 : obligations liées à l'absence sans durée (cas MAIF Raqvam, art. 7.2) --- */
+  v_json := public.get_contrat_champs('00000000-0000-0000-0000-0000000000b1', array['absence']);
+  assert not (v_json ? 'absence'), 'absence renvoyé sans ligne liée à l''absence : ' || v_json::text;
+  insert into public.obligations_contrat (contrat_id, type, element, seuil, unite, texte_court, clause, page, citation_retrouvee, liee_absence, source)
+  values ('00000000-0000-0000-0000-0000000000d1', 'prevention', 'serrure', 3, 'points', 'Serrure 3 points (CP)', 'CP', 1, true, true, 'cp'),
+         ('00000000-0000-0000-0000-0000000000d1', 'franchise', 'vol', 135, 'EUR', 'Franchise 135 €', 'Art. 7.2', 19, true, true, 'cg'),
+         ('00000000-0000-0000-0000-0000000000d1', 'franchise', 'vol', 1500, 'EUR', 'Franchise 1 500 €', 'Art. 4', 18, true, true, 'cg'),
+         ('00000000-0000-0000-0000-0000000000d1', 'franchise', 'vol', 99, 'EUR', 'Non liée', 'Art. X', 20, true, false, 'cg'),
+         ('00000000-0000-0000-0000-0000000000d1', 'franchise', 'vol', 98, 'EUR', 'Non retrouvée', 'Art. Y', 21, false, true, 'cg');
+  v_json := public.get_contrat_champs('00000000-0000-0000-0000-0000000000b1', array['absence']);
+  assert jsonb_array_length(v_json -> 'absence') = 3, 'absence : attendu 3 lignes : ' || v_json::text;
+  assert (v_json -> 'absence' -> 0 ->> 'page')::int = 18 and v_json -> 'absence' -> 0 ->> 'source' = 'cg', 'absence : ordre (cg, page) : ' || v_json::text;
+  assert v_json -> 'absence' -> 1 = '{"type": "franchise", "element": "vol", "valeur": 135, "unite": "EUR", "texte": "Franchise 135 €", "clause": "Art. 7.2", "page": 19, "source": "cg"}'::jsonb,
+    'absence : ligne 135 € : ' || (v_json -> 'absence' -> 1)::text;
+  assert v_json -> 'absence' -> 2 ->> 'source' = 'cp', 'absence : la ligne cp vient en dernier : ' || v_json::text;
+  assert not (v_json ? 'inoccupation'), 'inoccupation renvoyé sans être demandé';
+  begin
+    insert into public.obligations_contrat (contrat_id, type, element, clause, page, source)
+    values ('00000000-0000-0000-0000-0000000000d1', 'franchise', 'vol', 'Z', 1, 'autre');
+    raise exception 'source « autre » acceptée';
+  exception when check_violation then null;
+  end;
 
   /* --- runs_agent : un run d'usage 1 rattaché au logement, au format runAgentSchema --- */
   insert into public.runs_agent (logement_id, usage, agent, agent_revision, session_id, statut_final, motif_fin, tokens, cout_usd, ecarts_metier)

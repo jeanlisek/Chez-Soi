@@ -58,7 +58,15 @@ Aux deux premiers runs, l'agent a retenu un produit plus grand que le tapis (67,
 - Run avec la skill : `npm run agent:u2 -- --site <domaine> --agent chez-soi-acheteur:1`. Pas de surcharge `agent.skills` : `h/web-surfer-flash` porte quatre skills H, et une surcharge les aurait remplacées.
 - **Citation vérifiée sur la page** (`dev/fiche.ts`, après chaque run et dans `recontroler.ts`) : GET de la fiche publique, recherche mot à mot de `citation_decoupe` (tolérance d'un mot sur dix). `exacte` ne donne aucun écart ; `approchee` signale les mots changés ; `absente` donne « à REFUSER ».
 - **Premier run réel avec la skill** (18/11, `chez-soi-acheteur:2`, IKEA France, `2026-11-18_u2_462b0477-….json`) : 47 s, 9 étapes, 0,022 USD, arrêt au panier, validation refusée, aucune page interdite. STOPP 67,5 × 200 cm retenu **avec** une citation de découpe. La citation est juste à un mot près : l'agent écrit « tissus » là où la fiche dit « tapis », comme pour le nom du produit aux deux runs précédents. Le modèle lit ce mot de travers ; d'où le contrôle sur la page plutôt qu'une consigne de plus.
-- À faire : mesurer avec et sans la skill (`h/web-surfer-flash` contre `chez-soi-acheteur:1`), et noter les runs dans l'onglet Mesures agent.
+- **Comparaison avec et sans la skill** (18/11, même prompt, même schéma, IKEA France ; seul l'agent change) :
+
+  | Agent | Durée | Étapes | Coût | Produit | `citation_decoupe` | Verdict du code |
+  |---|---|---|---|---|---|---|
+  | `chez-soi-acheteur:2` (skill + instructions) | 47 s | 9 | 0,022 USD | STOPP 67,5 × 200 cm | donnée (« tissus » au lieu de « tapis ») | retrouvée à 1 mot près |
+  | `h/web-surfer-flash` (sans) | 70 s | 12 | 0,031 USD | STOPP 67,5 × 200 cm | **absente**, alors que le prompt la demande | **à REFUSER** |
+
+  Avec la skill, l'agent prouve la découpe ; sans elle, il l'affirme seulement dans `remarque`. Un run de chaque côté : à confirmer sur d'autres runs.
+- Ancienne note : mesurer avec et sans la skill (`h/web-surfer-flash` contre `chez-soi-acheteur:1`), et noter les runs dans l'onglet Mesures agent.
 
 ## Ce que l'usage 1 réutilisera (issue #7)
 

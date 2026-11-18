@@ -1,0 +1,111 @@
+{
+  "session_id": "6afb1a73-1d18-4054-ba68-2eb883e85f05",
+  "usage": "u1",
+  "agent": "chez-soi-sourcing:2",
+  "agent_revision": 2,
+  "site": "www.maif.fr",
+  "etat_final": "completed",
+  "outcome": null,
+  "error_code": null,
+  "erreur": null,
+  "motif_fin": "terminee",
+  "annulee_par_script": false,
+  "coupe_circuit": null,
+  "debut": "2026-11-18T13:14:53.086637Z",
+  "fin": "2026-11-18T13:17:09.972034Z",
+  "duree_s": 136.9,
+  "nb_etapes": 27,
+  "tokens": {
+    "entree": 545568,
+    "cache": 335808,
+    "sortie": 7361,
+    "raisonnement": 5597,
+    "par_modele": [
+      {
+        "modele": "holo4-35b-a3b",
+        "entree": 545568,
+        "cache": 335808,
+        "sortie": 7361,
+        "raisonnement": 5597
+      }
+    ]
+  },
+  "cout_usd": 0.08772424000000001,
+  "decision_validation": null,
+  "appels_outils": [
+    {
+      "outil": "get_contrat",
+      "args": {
+        "champs": [
+          "assureur",
+          "formule",
+          "reference_cg"
+        ],
+        "logement_id": "logement-demo-jeanne-01"
+      },
+      "reponse": {
+        "assureur": "MAIF",
+        "formule": "Raqvam",
+        "reference_cg": "M2442"
+      },
+      "erreur": null,
+      "duree_s": 0
+    }
+  ],
+  "sortie_finale": {
+    "titre": "Conditions générale MAIF ASSURANCE HABITATION Raqvam 1",
+    "raison": "",
+    "trouve": true,
+    "url_cg": "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf",
+    "date_version": "01/2023",
+    "reference_trouvee": "M2442",
+    "url_fiche_information": ""
+  },
+  "schema_valide": true,
+  "erreurs_schema": [],
+  "ecarts_metier": [],
+  "pages_vues": [
+    "https://www.maif.fr/",
+    "https://www.maif.fr/habitation/assurance-habitation",
+    "https://www.maif.fr/recherche",
+    "https://www.maif.fr/infos-conseils",
+    "https://www.maif.fr/infos-conseils/habitation",
+    "https://www.maif.fr/recherche",
+    "https://www.maif.fr/habitation/assurance-habitation",
+    "https://www.maif.fr/",
+    "https://www.maif.fr/annexes/plan-du-site"
+  ],
+  "actions_agent": {
+    "get_contrat": 1,
+    "click_web": 10,
+    "scroll_web": 6,
+    "write": 3,
+    "go_to_web": 3,
+    "ctrl_f_web": 1,
+    "web_search": 1,
+    "web_fetch": 1,
+    "answer": 1
+  },
+  "observations_api": {
+    "appels_sans_id": 0,
+    "attente_outils_s": 0,
+    "appels_encore_listes_apres_reponse": 0,
+    "renvois_de_resultat": 0,
+    "reponse_presente_apres_annulation": null,
+    "approbations_natives_vues": 0,
+    "outcome_brut": null
+  },
+  "controle_document": {
+    "url": "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf",
+    "url_finale": "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf",
+    "domaine_officiel": true,
+    "telecharge": true,
+    "est_pdf": true,
+    "octets": 414750,
+    "sha256": "016842588227965284733feb162e08baa82705ef2476876336db39bfb5eed231",
+    "reference": "trouvee",
+    "reference_attendue": "M2442",
+    "fichier_local": "agents\\bench\\pdf\\2026-11-18_maif_016842588227.pdf",
+    "erreur": null
+  }
+}

@@ -34,7 +34,7 @@ Drive de l'équipe (pour les humains) : https://drive.google.com/drive/folders/1
 |---|---|---|---|---|
 | 1 · Sourcing | `get_contrat` (assureur, formule, réf. CG) | Retrouve les conditions générales sur le site de l'assureur et renvoie leur URL. Le backend télécharge le PDF puis le passe dans le pipeline contrat. | Lecture seule | Navigateur cloud, sans connexion |
 | 2 · Objets | `get_mesures` (cotes confirmées, profil) | Compare les objets sur plusieurs sites, vérifie la dimension (skill `verifier_dimension`), met le produit compatible au panier | Panier affiché puis `demander_validation` | Navigateur cloud |
-| 3 · Démarches | `get_contrat` (inoccupation), dates d'absence | Préremplit l'information de l'assureur et l'Opération tranquillité vacances | Avant envoi, `demander_validation` | Navigateur de l'utilisateur, connecté par lui (voir points ouverts) |
+| 3 · Démarches | dates d'absence, `get_contrat` (inoccupation) s'il y a un contrat | Préremplit l'information de l'assureur et l'Opération tranquillité vacances | Avant envoi, `demander_validation` | Navigateur de l'utilisateur, connecté par lui (voir points ouverts) |
 
 L'usage 1 ne tourne qu'en parcours A (avec contrat) et seulement si les conditions générales n'ont pas été déposées.
 
@@ -43,7 +43,8 @@ L'usage 1 alimente le graphe de connaissances (v3, flux 7 et 8) : les lois arriv
 ### Parcours A / B
 
 - A, avec contrat : verdict dans l'ordre contrat, puis loi, puis recommandé.
-- B, sans contrat : pas d'étape contrat ni d'usage 1 ; verdict loi puis recommandé ; en mode absence, OTV seule.
+- B, sans contrat : pas d'étape contrat ni d'usage 1 ; verdict loi puis recommandé.
+- Mode absence, pour tous (décision de Jean-Li, 18/11) : l'OTV et l'information de l'assureur sont toujours proposées. L'information de l'assureur est « exigée par le contrat » (clause et page) quand une clause d'inoccupation est dépassée, sinon « recommandée ».
 
 ## Arborescence cible (v3, section 12)
 

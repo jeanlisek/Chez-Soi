@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
+import { completerEmbeddings } from "@/lib/graphe";
 import type { Database, Json } from "@/lib/supabase/types";
 
 /**
@@ -150,6 +151,9 @@ export async function enregistrerExtraction(
   if (e.reference_cg?.trim()) maj.reference_cg = e.reference_cg.trim();
   const { error: errC } = await admin.from("contrats").update(maj as never).eq("id", contrat.id);
   if (errC) throw new Error(`contrats : ${errC.message}`);
+
+  // Embeddings des nouvelles clauses (GraphRAG), sans bloquer si Hugging Face ne répond pas.
+  await completerEmbeddings(admin, contrat.id).catch(() => 0);
 
   return { obligations: lignes.length, rejetees, noeuds: noeuds.length, aretes };
 }

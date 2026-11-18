@@ -67,6 +67,39 @@
         ]
       ]
     },
+    "08 · Attendre le calcul": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "09 · Lire l'analyse du Space",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "09 · Lire l'analyse du Space": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Analyse finie ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "10 · Préparer le retour à l'app": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Analyse liée à l'app ?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
     "Analyse acceptée ?": {
       "main": [
         [
@@ -83,6 +116,36 @@
             "type": "main"
           }
         ]
+      ]
+    },
+    "Analyse finie ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "10 · Préparer le retour à l'app",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "08 · Attendre le calcul",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Analyse liée à l'app ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "11 · Renvoyer le résultat à l'app",
+            "type": "main"
+          }
+        ],
+        []
       ]
     },
     "Config": {
@@ -109,6 +172,17 @@
           {
             "index": 0,
             "node": "Répondre 400 · entrée invalide",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Répondre 202 · analyse en cours": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "08 · Attendre le calcul",
             "type": "main"
           }
         ]
@@ -352,19 +426,31 @@
               "id": "68e3908d-f7cd-8bc4-9cf0-d403cea50e1a",
               "name": "VISION_SERVICE_URL",
               "type": "string",
-              "value": "https://a-configurer.invalid"
+              "value": "https://jeanlisek-chez-soi-vision.hf.space"
             },
             {
               "id": "59dd29cb-abb8-8d62-bfa0-4de10581a0b0",
               "name": "SUPABASE_URL",
               "type": "string",
-              "value": "https://a-configurer.invalid"
+              "value": "https://hfcunqjqmtlozhiwfihl.supabase.co"
             },
             {
               "id": "d7e0301d-8b87-8e94-9a6a-14bfbd145c26",
               "name": "SUPABASE_BRANCHE",
               "type": "boolean",
               "value": false
+            },
+            {
+              "id": "2f6b8c1e-5a0d-4c7e-9b3a-7d1e2c4f6a80",
+              "name": "APP_URL",
+              "type": "string",
+              "value": "https://chez-soi-nu.vercel.app"
+            },
+            {
+              "id": "7c2d9e4a-1b3f-4e8d-a6c5-0f9b8e7d6c51",
+              "name": "ESSAIS_MAX",
+              "type": "number",
+              "value": 45
             }
           ]
         },
@@ -383,7 +469,7 @@
       "notes": "Refuse toute entrée incomplète avant d’appeler le service vision.",
       "notesInFlow": false,
       "parameters": {
-        "jsCode": "// Entrée attendue (corps JSON du webhook) : { logement_id, video_url }\nconst corps = $(\"01 · Logement et vidéo\").first().json.body ?? {};\nconst UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst logement_id = typeof corps.logement_id === 'string' ? corps.logement_id.trim() : '';\nconst video_url = typeof corps.video_url === 'string' ? corps.video_url.trim() : '';\n\nconst erreurs = [];\nif (!UUID.test(logement_id)) erreurs.push('logement_id : UUID attendu');\nif (!/^https:\\/\\/\\S+$/.test(video_url)) erreurs.push('video_url : URL signée en https attendue');\nif ('video_id' in corps || 'document_id' in corps) {\n  erreurs.push('video_id et document_id ne sont plus acceptés : envoyer logement_id et video_url');\n}\n\n// Clé d'idempotence : logement + chemin de la vidéo, sans la signature de l'URL.\nconst cle_idempotence = 'analyse:' + logement_id + ':' + video_url.split('?')[0];\n\nreturn [{ json: { valide: erreurs.length === 0, erreurs, logement_id, video_url, cle_idempotence } }];\n"
+        "jsCode": "// Entrée attendue (corps JSON du webhook) : { logement_id, video_url }\nconst corps = $(\"01 · Logement et vidéo\").first().json.body ?? {};\nconst UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst logement_id = typeof corps.logement_id === 'string' ? corps.logement_id.trim() : '';\nconst video_url = typeof corps.video_url === 'string' ? corps.video_url.trim() : '';\n\nconst erreurs = [];\nif (!UUID.test(logement_id)) erreurs.push('logement_id : UUID attendu');\nif (!/^https:\\/\\/\\S+$/.test(video_url)) erreurs.push('video_url : URL signée en https attendue');\nif ('video_id' in corps || 'document_id' in corps) {\n  erreurs.push('video_id et document_id ne sont plus acceptés : envoyer logement_id et video_url');\n}\n\n// Clé d'idempotence : logement + chemin de la vidéo, sans la signature de l'URL.\nconst cle_idempotence = 'analyse:' + logement_id + ':' + video_url.split('?')[0];\n\nconst analyse_id = typeof corps.analyse_id === 'string' && UUID.test(corps.analyse_id) ? corps.analyse_id : null;\nconst piece = typeof corps.piece === 'string' ? corps.piece.trim().slice(0, 60) : null;\n\nreturn [{ json: { valide: erreurs.length === 0, erreurs, logement_id, video_url, cle_idempotence, analyse_id, piece } }];\n"
       },
       "position": [
         520,
@@ -444,12 +530,20 @@
       "typeVersion": 1.4
     },
     {
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "GonCoee08q3s4Crd",
+          "name": "Chez Soi · vision Space"
+        }
+      },
       "id": "37aed065-0310-819a-a940-4a375feaa264",
       "name": "03 · Appeler le service vision",
       "notes": "POST /analyse { logement_id, video_url }. Un code HTTP d’erreur ou un service injoignable ne lèvent pas d’exception : le nœud suivant décide.",
       "notesInFlow": false,
       "onError": "continueRegularOutput",
       "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
         "headerParameters": {
           "parameters": [
             {
@@ -458,7 +552,7 @@
             }
           ]
         },
-        "jsonBody": "={{ JSON.stringify({ logement_id: $json.logement_id, video_url: $json.video_url }) }}",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ logement_id: $json.logement_id, video_url: $json.video_url }, $json.piece ? { piece: $json.piece } : {})) }}",
         "method": "POST",
         "options": {
           "response": {
@@ -487,7 +581,7 @@
       "notes": "Classe la réponse : resultat (200 avec failles), accepte (202), stub (501) ou erreur.",
       "notesInFlow": false,
       "parameters": {
-        "jsCode": "// Sortie du nœud HTTP : { statusCode, body } ; ou { error } si le service est injoignable.\nconst reponse = $json;\nconst statut = typeof reponse.statusCode === 'number' ? reponse.statusCode : null;\nconst corps = reponse.body && typeof reponse.body === 'object' ? reponse.body : {};\nconst entree = $(\"02 · Contrôler l’entrée\").first().json;\n\nlet cas = 'erreur';\nif (statut === 200 && Array.isArray(corps.failles)) cas = 'resultat';\nelse if (statut === 202) cas = 'accepte';\nelse if (statut === 501) cas = 'stub'; // le service vision n'est encore qu'un stub\n\nlet detail = null;\nif (cas === 'erreur') {\n  detail = statut === null ? 'service vision injoignable' : 'réponse inattendue du service vision (HTTP ' + statut + ')';\n}\n\nreturn [{\n  json: {\n    cas,\n    est_resultat: cas === 'resultat',\n    est_accepte: cas === 'accepte',\n    est_stub: cas === 'stub',\n    statut_http: statut,\n    logement_id: entree.logement_id,\n    failles: cas === 'resultat' ? corps.failles : [],\n    detail,\n  },\n}];\n"
+        "jsCode": "// Sortie du nœud HTTP : { statusCode, body } ; ou { error } si le service est injoignable.\nconst reponse = $json;\nconst statut = typeof reponse.statusCode === 'number' ? reponse.statusCode : null;\nconst corps = reponse.body && typeof reponse.body === 'object' ? reponse.body : {};\nconst entree = $(\"02 · Contrôler l’entrée\").first().json;\n\nlet cas = 'erreur';\nif (statut === 200 && Array.isArray(corps.failles)) cas = 'resultat';\nelse if (statut === 202) cas = 'accepte';\nelse if (statut === 501) cas = 'stub'; // le service vision n'est encore qu'un stub\n\nlet detail = null;\nif (cas === 'erreur') {\n  detail = statut === null ? 'service vision injoignable' : 'réponse inattendue du service vision (HTTP ' + statut + ')';\n}\n\nreturn [{\n  json: {\n    cas,\n    est_resultat: cas === 'resultat',\n    est_accepte: cas === 'accepte',\n    est_stub: cas === 'stub',\n    statut_http: statut,\n    logement_id: entree.logement_id,\n    analyse_id: entree.analyse_id,\n    service_analyse_id: typeof corps.analyse_id === 'string' ? corps.analyse_id : null,\n    failles: cas === 'resultat' ? corps.failles : [],\n    detail,\n  },\n}];\n"
       },
       "position": [
         1220,
@@ -718,6 +812,175 @@
       ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4
+    },
+    {
+      "id": "6e6985e4-6e05-59eb-bec0-09d70920c02a",
+      "name": "08 · Attendre le calcul",
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "position": [
+        2140,
+        560
+      ],
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "webhookId": "0a215701-34c9-500b-b281-62f046ab4a9a"
+    },
+    {
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "GonCoee08q3s4Crd",
+          "name": "Chez Soi · vision Space"
+        }
+      },
+      "id": "f719e5f9-9c7e-54d3-8fc5-367c7f195ecd",
+      "name": "09 · Lire l'analyse du Space",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "method": "GET",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "url": "={{ $('Config').first().json.VISION_SERVICE_URL }}/analyse/{{ $('04 · Interpréter la réponse').first().json.service_analyse_id }}"
+      },
+      "position": [
+        2360,
+        560
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "c35fbfa6-d471-5b8d-a65a-8f238717a4e4",
+      "name": "Analyse finie ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "a1",
+              "leftValue": "={{ ($json.body || {}).etat }}",
+              "operator": {
+                "operation": "notEquals",
+                "type": "string"
+              },
+              "rightValue": "en_cours"
+            },
+            {
+              "id": "a2",
+              "leftValue": "={{ $runIndex }}",
+              "operator": {
+                "operation": "gte",
+                "type": "number"
+              },
+              "rightValue": "={{ $('Config').first().json.ESSAIS_MAX }}"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        2580,
+        560
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "c06aa686-14c4-53df-8b82-c274e9103414",
+      "name": "10 · Préparer le retour à l'app",
+      "parameters": {
+        "jsCode": "// Résultat du Space (GET /analyse/{id}) → corps attendu par l'app (POST /api/analyse/resultat).\nconst r = $json.statusCode === 200 && $json.body && typeof $json.body === 'object' ? $json.body : {};\nconst i = $('04 · Interpréter la réponse').first().json;\nconst fini = r.etat === 'termine';\nreturn [{ json: {\n  analyse_id: i.analyse_id,\n  logement_id: i.logement_id,\n  etat: fini ? 'termine' : 'echec',\n  resultat: r.resultat ?? null,\n  service_analyse_id: i.service_analyse_id,\n  failles: fini && Array.isArray(r.failles) ? r.failles : [],\n  modele_3d_url: r.modele_3d_url ?? null,\n  erreur: fini ? null : (r.erreur ?? (r.etat === 'en_cours' ? 'Analyse trop longue : délai dépassé' : 'Service vision injoignable (HTTP ' + $json.statusCode + ')')),\n} }];\n"
+      },
+      "position": [
+        2800,
+        440
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "b86fc67b-7130-5fd4-9ecd-936ed26b63b3",
+      "name": "Analyse liée à l'app ?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b1",
+              "leftValue": "={{ $json.analyse_id }}",
+              "operator": {
+                "operation": "notEmpty",
+                "singleValue": true,
+                "type": "string"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        3020,
+        440
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qb6ZVKSFAnrnOdFo",
+          "name": "Chez Soi · webhook"
+        }
+      },
+      "id": "af7b0010-8893-571f-b25e-31de7ef35079",
+      "name": "11 · Renvoyer le résultat à l'app",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 30000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.APP_URL }}/api/analyse/resultat"
+      },
+      "position": [
+        3240,
+        440
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
     }
   ],
   "settings": {

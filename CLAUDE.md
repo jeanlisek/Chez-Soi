@@ -109,7 +109,7 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 
 ## Modèle de données (Supabase)
 
-Schéma en place sur le projet Supabase `chez-soi` (organisation « Chez Soi », Paris, eu-west-3) : migrations `0001` à `0006` dans `supabase/migrations/`, détail dans `supabase/README.md` (issue #1).
+Schéma en place sur le projet Supabase `chez-soi` (organisation « Chez Soi », Paris, eu-west-3) : migrations `0001` à `0007` dans `supabase/migrations/`, détail dans `supabase/README.md` (issue #1).
 Tables : `logements`, `pieces`, `occupants`, `declarations`, `absences`, `failles`, `actions`, `validations`, `runs_agent`, `sources`, `regles`, `regle_conditions`, `diagnostic_regles`, `contrats`, `obligations_contrat`, `elements`, `graphe_noeuds` (`embedding vector(1024)`, BAAI/bge-m3), `graphe_aretes`. Vues : `regles_en_vigueur`, `elements_inconnus`. RPC : `match_noeuds`, `sous_graphe` ; réservées au serveur : `get_contrat_champs`, `valider_regle`.
 Buckets privés : `videos`, `contrats`, `modeles3d`, `exports` (50 Mo par fichier sur l'offre gratuite), chemin `{user_id}/{logement_id}/…`. RLS sur toutes les tables : un utilisateur ne voit que son logement, son contrat et les nœuds du graphe liés à son contrat ; les nœuds publics (lois, règles, contre-mesures) sont lisibles par tout utilisateur connecté.
 Le moteur de verdict lit `regles_en_vigueur`. Une nouvelle version de règle hérite des seuils et des conditions de la précédente ; seule une personne la valide (`valider_regle`). La table `elements` est le vocabulaire commun du champ `element` (vision, contrat, règles). Types TypeScript : `apps/web/lib/supabase/types.ts`.
@@ -173,7 +173,7 @@ Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dan
 | Commande | Rôle |
 |---|---|
 | `supabase link --project-ref hfcunqjqmtlozhiwfihl` | Relie le dépôt au projet `chez-soi` |
-| `supabase migration repair --status applied 0001 0002 0003 0004 0005 0006` | Une seule fois : 0001 à 0006 ont été appliquées depuis l'éditeur SQL du dashboard |
+| `supabase migration repair --status applied 0001 0002 0003 0004 0005 0006 0007` | Une seule fois : 0001 à 0007 ont été appliquées depuis l'éditeur SQL du dashboard |
 | `supabase db push` | Applique les migrations manquantes (une migration appliquée ne se modifie jamais) |
 | `psql "$DATABASE_URL" -f supabase/seed.sql` | Référentiel : sources, règles, graphe public (rejouable) |
 | `psql "$DATABASE_URL" -f supabase/tests/rls_test.sql` | Test RLS, annulé à la fin (attendu : « RLS OK ») |

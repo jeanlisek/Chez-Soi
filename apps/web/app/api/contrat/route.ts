@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { enregistrerExtraction } from "@/lib/contrat";
+import { calculerPlan } from "@/lib/plan";
 import { clientAdmin, clientServeur } from "@/lib/supabase/server";
 
 const entreeSchema = z.object({ contrat_id: z.uuid() });
@@ -15,7 +17,7 @@ async function contratDeLUtilisateur(contratId: string) {
   if (!user) return { erreur: NextResponse.json({ message: "Connexion requise." }, { status: 401 }) };
   const { data: contrat } = await supabase
     .from("contrats")
-    .select("id, pdf_path, statut_extraction, assureur, formule, reference_cg, extrait_le")
+    .select("id, logement_id, pdf_path, statut_extraction, assureur, formule, reference_cg, extrait_le")
     .eq("id", contratId)
     .maybeSingle();
   if (!contrat) return { erreur: NextResponse.json({ message: "Contrat introuvable." }, { status: 404 }) };
@@ -24,8 +26,10 @@ async function contratDeLUtilisateur(contratId: string) {
 
 /**
  * POST /api/contrat : lance la lecture du contrat. L'app passe à n8n `analyse_contrat` une URL signée
- * du PDF (dix minutes) ; n8n appelle le service vision (`POST /contrat`, Docling), écrit
- * `obligations_contrat` et le graphe. Le PDF ne transite ni par n8n ni par l'agent.
+ * du PDF (dix minutes) ; n8n appelle le service vision (`POST /contrat`) et renvoie les clauses
+ * filtrées. L'app les écrit (`obligations_contrat`, nœuds Clause et arêtes IMPOSE, voir `lib/contrat.ts`)
+ * puis recalcule le plan. n8n n'a pas de clé Supabase. Le PDF ne transite ni par n8n ni par l'agent.
+ * Service vision en veille : réponse 202 « en_cours », l'écran relance la lecture.
  */
 export async function POST(request: Request) {
   const corps = entreeSchema.safeParse(await request.json().catch(() => null));
@@ -53,19 +57,25 @@ export async function POST(request: Request) {
       // La lecture est synchrone côté vision : on laisse du temps, dans la limite d'une fonction Vercel.
       signal: AbortSignal.timeout(55_000),
     });
-    const retour = (await r.json().catch(() => ({}))) as { statut?: string; obligations_retenues?: number };
+    const retour = (await r.json().catch(() => ({}))) as Record<string, unknown>;
     if (r.status === 200) {
-      await admin
-        .from("contrats")
-        .update({ statut_extraction: "termine", extrait_le: new Date().toISOString() })
-        .eq("id", contrat.id);
-      return NextResponse.json({ statut_extraction: "termine", obligations_retenues: retour.obligations_retenues ?? null });
+      const bilan = await enregistrerExtraction(admin, contrat, retour);
+      // Le contrat change le verdict (contrat avant loi) : plan recalculé, sans bloquer la réponse.
+      await calculerPlan(admin, contrat.logement_id).catch(() => undefined);
+      return NextResponse.json({ statut_extraction: "termine", obligations_retenues: bilan.obligations, ...bilan });
     }
-    if (r.status === 202) return NextResponse.json({ statut_extraction: "en_cours" }, { status: 202 });
+    // 202 (lecture acceptée) ou 502/503 (service vision en veille ou qui démarre) : l'écran relance.
+    if (r.status === 202 || r.status === 502 || r.status === 503) {
+      return NextResponse.json({ statut_extraction: "en_cours", message: "Service de lecture en démarrage." }, { status: 202 });
+    }
     await admin.from("contrats").update({ statut_extraction: "echec" }).eq("id", contrat.id);
     return NextResponse.json({ statut_extraction: "echec", message: `Lecture refusée (${r.status}).` }, { status: 502 });
-  } catch {
-    // Délai dépassé : n8n peut encore finir et écrire ; l'état reste « en_cours ».
+  } catch (erreur) {
+    if (erreur instanceof Error && !/abort|timeout/i.test(erreur.name + erreur.message)) {
+      await admin.from("contrats").update({ statut_extraction: "echec" }).eq("id", contrat.id);
+      return NextResponse.json({ statut_extraction: "echec", message: "Clauses non enregistrées." }, { status: 500 });
+    }
+    // Délai dépassé (service vision qui se réveille) : l'écran relance la lecture.
     return NextResponse.json({ statut_extraction: "en_cours", message: "Lecture en cours." }, { status: 202 });
   }
 }

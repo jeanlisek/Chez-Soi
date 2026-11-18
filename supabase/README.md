@@ -14,6 +14,7 @@ Projet Supabase `chez-soi`, organisation « Chez Soi », région Paris (eu-west-
 | `migrations/0006_raccordements.sql` | Vocabulaire `elements` (strict pour `regles`, vue `elements_inconnus` ailleurs), héritage des seuils et conditions d'une version de règle à la suivante, vue `regles_en_vigueur`, `valider_regle`, pièces reliées par nom, cotes des failles, `runs_agent` aligné sur `runAgentSchema`, sorties de l'usage 1 dans `contrats`, correction de la source rang 3 |
 | `migrations/0007_origine_mesure.sql` | `failles.origine` (`pipeline` ou `manuel`) : la mesure vient du service vision ou d'une saisie à la main (plan B de la démo) ; distincte de `source` |
 | `migrations/0008_agent_analyses_assureurs.sql` | `runs_agent.controle_document` (usage 1, PR #17) ; référentiel `assureurs` (domaines officiels) et `contrats.assureur_id` ; `webhooks_recus` (dédoublonnage par `X-H-Webhook-Delivery`) ; `analyses` (état de la vidéo et du contrat) ; `messages_agent` (pilotage) ; `actions` : `priorite`, `force`, `obligation_id`, `regle_id`, `explication` |
+| `migrations/0009_analyses_space.sql` | `analyses` alignée sur le Space vision (PR #18) : statut `termine` (et non `terminee`), `service_analyse_id` (l'`analyse_id` du Space, unique), `origine` (`pipeline` ou `precalcule`, obligatoire pour une vidéo terminée) |
 
 Une migration déjà appliquée ne se modifie jamais : on en ajoute une nouvelle.
 
@@ -61,7 +62,7 @@ npx supabase migration repair 0001 0002 0003 0004 0005 0006 0007 --status applie
 - **Moteur de verdict** : lire `regles_en_vigueur` (dernière version validée de chaque code).
 - **runs_agent** : `etat_final` du client H va dans `statut_final`, `usage` s'écrit 1, 2 ou 3, `sortie_finale` remplace `resultat`.
 - **Webhooks H** (`/api/webhooks/hai`) : insérer d'abord dans `webhooks_recus` avec `on conflict (livraison_id) do nothing` ; 0 ligne insérée = livraison déjà traitée, répondre 200 sans rien refaire.
-- **Analyses** : une ligne par vidéo de pièce ou par contrat, `statut` de `en_attente` à `terminee` ou `echec` (avec `erreur`). L'interface lit cette table pour savoir si la 3D ou l'extraction est prête.
+- **Analyses** : une ligne par vidéo de pièce ou par contrat, `statut` de `en_attente` à `termine` ou `echec` (avec `erreur`), valeurs recopiées du Space. `service_analyse_id` garde l'`analyse_id` renvoyé par `POST /analyse` pour interroger `GET /analyse/{id}`. Une vidéo terminée porte son `origine` : `pipeline` (calcul en direct) ou `precalcule` (plan B), que l'interface affiche. L'interface lit cette table pour savoir si la 3D ou l'extraction est prête.
 - **Pilotage** : chaque consigne envoyée à une session (`/api/agent/steer`) est une ligne de `messages_agent`.
 - **Plan d'action** (`/api/plan`) : `actions.force` suit `regles.force` ; une action `contrat` exige `obligation_id` (clause et page), une action `loi` ou `recommande` exige `regle_id`. `explication` est le texte du LLM, qui ne change jamais le verdict.
 - **Assureurs** : `assureurs.domaines` sert au contrôle du domaine officiel du PDF (usage 1). Le référentiel est vide : à remplir après le choix de l'assureur de démo.

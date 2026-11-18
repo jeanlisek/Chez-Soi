@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
+import { Component, Suspense, type ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Edges, Html, OrbitControls, RoundedBox, useGLTF } from "@react-three/drei";
+import { Bounds, Center, Edges, Html, OrbitControls, RoundedBox, useGLTF } from "@react-three/drei";
 
 /**
  * Plan 3D d'une pièce (three, @react-three/fiber, @react-three/drei).
@@ -23,7 +23,25 @@ export type Viewer3DProps = {
 
 function Modele({ url }: { url: string }) {
   const { scene } = useGLTF(url);
-  return <primitive object={scene} />;
+  // Le modèle du Space n'a ni échelle ni orientation connues : on le centre et on cadre la caméra dessus.
+  return (
+    <Bounds fit clip observe margin={1.15}>
+      <Center>
+        <primitive object={scene} />
+      </Center>
+    </Bounds>
+  );
+}
+
+/** Si le .glb ne se charge pas (URL expirée, fichier absent), on revient à la pièce schématique. */
+class RepliModele extends Component<{ repli: ReactNode; children: ReactNode }, { erreur: boolean }> {
+  state = { erreur: false };
+  static getDerivedStateFromError() {
+    return { erreur: true };
+  }
+  render() {
+    return this.state.erreur ? this.props.repli : this.props.children;
+  }
 }
 
 function PieceSchematique({
@@ -98,7 +116,13 @@ export function Viewer3D({
         <ambientLight intensity={0.9} />
         <directionalLight position={[2, 4, 3]} intensity={1.1} />
         <Suspense fallback={null}>
-          {modeleUrl ? <Modele url={modeleUrl} /> : <PieceSchematique piece={piece} objet={objet} apres={apres} />}
+          {modeleUrl ? (
+            <RepliModele repli={<PieceSchematique piece={piece} objet={objet} apres={apres} />}>
+              <Modele url={modeleUrl} />
+            </RepliModele>
+          ) : (
+            <PieceSchematique piece={piece} objet={objet} apres={apres} />
+          )}
         </Suspense>
         <OrbitControls
           target={[0, 0.25, -0.5]}

@@ -34,6 +34,8 @@ const entreeSchema = z.object({
   service_analyse_id: z.string().nullish(),
   failles: z.array(z.unknown()).default([]),
   modele_3d_url: z.string().nullish(),
+  /** Chemin du .glb copié par n8n dans le bucket `modeles3d` (voir /api/analyse/modele-url). */
+  modele_3d_path: z.string().nullish(),
   erreur: z.string().nullish(),
 });
 
@@ -118,10 +120,17 @@ export async function POST(request: Request) {
     }
   }
 
+  // On ne garde que le chemin prévu pour ce logement et cette analyse : rien d'autre ne s'écrit.
+  const { data: proprio } = await admin.from("logements").select("user_id").eq("id", e.logement_id).single();
+  const attendu = proprio ? `${proprio.user_id}/${e.logement_id}/${e.analyse_id}.glb` : null;
+  const modelePath = e.etat === "termine" && e.modele_3d_path && e.modele_3d_path === attendu ? attendu : null;
+  if (modelePath) await admin.from("logements").update({ modele_3d_path: modelePath }).eq("id", e.logement_id);
+
   const resultat = {
     origine: e.resultat ?? null,
     service_analyse_id: e.service_analyse_id ?? null,
     modele_3d_url: e.modele_3d_url ?? null,
+    modele_3d_path: modelePath,
     failles_retenues: retenues.length,
     failles_rejetees: rejetees,
   };

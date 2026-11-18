@@ -35,6 +35,8 @@ export type Piece = {
   video?: { duree_s: number; resolution: string; taille_mo: number };
   analyse: "en_attente" | "en_cours" | "terminee" | "echec";
   progression?: number;
+  /** Modèle 3D de la pièce (bucket privé `modeles3d`), en URL signée de courte durée. */
+  modele_url?: string | null;
 };
 
 export type Cote = {

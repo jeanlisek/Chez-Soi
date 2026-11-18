@@ -78,12 +78,27 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
         consentement_art9_le: null,
       };
 
+  // Modèle 3D de chaque pièce : dernière analyse terminée qui a copié son .glb dans `modeles3d`.
+  const cheminModele = (nom: string) =>
+    (ana.data ?? []).find(
+      (x) => x.piece === nom && x.statut === "termine" && (x.resultat as { modele_3d_path?: string } | null)?.modele_3d_path,
+    )?.resultat as { modele_3d_path: string } | undefined;
+  const chemins = [...new Set((pcs.data ?? []).map((p) => cheminModele(p.nom)?.modele_3d_path).filter(Boolean))] as string[];
+  const signees = chemins.length
+    ? (await supabase.storage.from("modeles3d").createSignedUrls(chemins, 3600)).data ?? []
+    : [];
+  const urlModele = (nom: string) => {
+    const c = cheminModele(nom)?.modele_3d_path;
+    return c ? (signees.find((s) => s.path === c)?.signedUrl ?? null) : null;
+  };
+
   const pieces: Piece[] = (pcs.data ?? []).map((p) => {
     const a = (ana.data ?? []).find((x) => x.piece === p.nom);
     const statut = a?.statut;
     return {
       id: p.id,
       nom: p.nom,
+      modele_url: urlModele(p.nom),
       analyse:
         statut === "termine" || statut === "terminee"
           ? "terminee"

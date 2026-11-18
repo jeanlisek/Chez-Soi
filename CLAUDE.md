@@ -84,6 +84,7 @@ chez-soi/
 | `POST /api/contrat` | Déclenche `analyse_contrat`, renvoie l'état d'extraction |
 | `POST /api/plan` | Recalcule le plan : failles + `regles_en_vigueur` + contrat → `actions` et `diagnostic_regles` (`lib/plan.ts`, verdict déterministe). Appelé aussi après chaque analyse et chaque profil. GraphRAG et explication LLM : pas encore |
 | `POST /api/absence` | Compare les dates au seuil d'inoccupation, prépare l'usage 3 |
+| `POST /api/analyse/modele-url` | n8n (`X-Chez-Soi-Secret`) : URL de dépôt signée pour copier le `.glb` d'une analyse dans `modeles3d` (`{user_id}/{logement_id}/{analyse_id}.glb`) avant la veille du Space |
 | `POST /api/agent/run` · `GET ?id=` | Crée une session H (usage 1, 2 ou 3), lit son état |
 | `POST /api/agent/steer` | Message envoyé à une session en cours (ex. « moins de 50 € ») |
 | `POST /api/agent/tools` | Custom tools : `get_mesures`, `get_contrat`, `demander_validation` |

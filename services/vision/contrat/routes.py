@@ -29,9 +29,9 @@ def verifier_cle(x_vision_key: str | None = Header(default=None)) -> None:
 def contrat(requete: ContratRequete) -> ResultatContrat:
     """PDF du contrat → assureur, formule, référence des CG et obligations, chacune citée avec sa page."""
     try:
-        pages, moteur = lire_url(requete.pdf_url)
+        pages, moteur, repli = lire_url(requete.pdf_url)
     except ContratIllisible as refus:
         raise HTTPException(status_code=422, detail=str(refus)) from refus
     except Exception as erreur:
         raise HTTPException(status_code=502, detail=f"PDF injoignable : {type(erreur).__name__}") from erreur
-    return extraire(requete.contrat_id, pages, moteur)
+    return extraire(requete.contrat_id, pages, moteur, repli)

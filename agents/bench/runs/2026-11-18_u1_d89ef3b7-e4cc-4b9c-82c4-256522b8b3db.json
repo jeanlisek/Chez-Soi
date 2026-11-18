@@ -1,0 +1,88 @@
+{
+  "session_id": "d89ef3b7-e4cc-4b9c-82c4-256522b8b3db",
+  "usage": "u1",
+  "agent": "chez-soi-sourcing:2",
+  "agent_revision": 2,
+  "site": "v2.acheel.com",
+  "etat_final": "completed",
+  "outcome": null,
+  "error_code": null,
+  "erreur": null,
+  "motif_fin": "terminee",
+  "annulee_par_script": false,
+  "coupe_circuit": null,
+  "debut": "2026-11-18T13:05:21.236167Z",
+  "fin": "2026-11-18T13:06:14.167831Z",
+  "duree_s": 52.9,
+  "nb_etapes": 13,
+  "tokens": {
+    "entree": 232943,
+    "cache": 160512,
+    "sortie": 2741,
+    "raisonnement": 1980,
+    "par_modele": [
+      {
+        "modele": "holo4-35b-a3b",
+        "entree": 232943,
+        "cache": 160512,
+        "sortie": 2741,
+        "raisonnement": 1980
+      }
+    ]
+  },
+  "cout_usd": 0.03202666,
+  "decision_validation": null,
+  "appels_outils": [
+    {
+      "outil": "get_contrat",
+      "args": {
+        "champs": [
+          "assureur",
+          "formule",
+          "reference_cg"
+        ],
+        "logement_id": "logement-demo-jeanne-01"
+      },
+      "reponse": {
+        "assureur": "Acheel",
+        "formule": "Assurance habitation"
+      },
+      "erreur": null,
+      "duree_s": 0
+    }
+  ],
+  "sortie_finale": {
+    "titre": null,
+    "raison": "Les conditions générales du contrat d'assurance habitation Acheel ne sont pas publiques sur le site de l'assureur. Selon la FAQ d'Acheel, tous les documents du contrat (incluant les Conditions Générales) ne sont accessibles qu'après connexion à l'espace personnel (https://www.acheel.com/client/login). Le lien « Conditions générale » présent en bas de page du site (https://v2.acheel.com/terms-and-conditions) correspond aux Conditions Générales d'Utilisation du site web, et non aux conditions du contrat d'assurance habitation. Je n'ai pas pu accéder aux conditions du contrat sans connexion.",
+    "trouve": false,
+    "url_cg": null,
+    "date_version": null,
+    "reference_trouvee": null,
+    "url_fiche_information": null
+  },
+  "schema_valide": true,
+  "erreurs_schema": [],
+  "ecarts_metier": [],
+  "pages_vues": [
+    "https://v2.acheel.com/insurance/property"
+  ],
+  "actions_agent": {
+    "get_contrat": 1,
+    "click_web": 3,
+    "scroll_web": 2,
+    "press_keys_web": 1,
+    "ctrl_f_web": 1,
+    "web_fetch": 3,
+    "web_search": 1,
+    "answer": 1
+  },
+  "observations_api": {
+    "appels_sans_id": 0,
+    "attente_outils_s": 0,
+    "appels_encore_listes_apres_reponse": 0,
+    "renvois_de_resultat": 0,
+    "reponse_presente_apres_annulation": null,
+    "approbations_natives_vues": 0,
+    "outcome_brut": null
+  }
+}

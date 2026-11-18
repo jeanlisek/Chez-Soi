@@ -1,6 +1,6 @@
 {
   "name": "get_contrat",
-  "description": "Renvoie uniquement les champs demandés du contrat d'assurance habitation du logement (par exemple assureur, formule, reference_cg, inoccupation). Ne renvoie jamais le PDF, l'adresse, le nom de l'assuré ni le numéro de contrat. À appeler avec le logement_id donné dans la consigne, avant toute recherche.",
+  "description": "Renvoie uniquement les champs demandés du contrat d'assurance habitation du logement (par exemple assureur, formule, reference_cg, inoccupation, absence). « absence » renvoie les clauses liées à une absence sans durée d'inoccupation (franchise, prévention), chacune avec sa source : « cg » pour les conditions générales, « cp » pour les conditions particulières. Ne renvoie jamais le PDF, l'adresse, le nom de l'assuré ni le numéro de contrat. À appeler avec le logement_id donné dans la consigne, avant toute recherche.",
   "input_schema": {
     "type": "object",
     "properties": {
@@ -11,7 +11,7 @@
       "champs": {
         "type": "array",
         "items": { "type": "string" },
-        "description": "Champs voulus, parmi : assureur, formule, reference_cg, inoccupation."
+        "description": "Champs voulus, parmi : assureur, formule, reference_cg, inoccupation, absence."
       }
     },
     "required": ["logement_id", "champs"],

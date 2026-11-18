@@ -14,7 +14,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { HAI_AGENT, outilHaiSchema, type OutilHai } from "../../apps/web/lib/hai";
+import { outilHaiSchema, type OutilHai } from "../../apps/web/lib/hai";
 import {
   getContratEntreeSchema,
   getContratSortieSchema,
@@ -119,7 +119,8 @@ async function main(): Promise<void> {
   ];
 
   const urlDepart = drapeau("sans-url-depart") ? undefined : controle.url_depart;
-  const agent = option("agent") ?? HAI_AGENT;
+  // Agent maison créé sur H (agents/definitions/), figé sur sa révision.
+  const agent = option("agent") ?? "chez-soi-sourcing:1";
   const site = new URL(controle.url_depart).hostname;
   console.log(`Usage 1 · conditions générales · assureur : ${cle} · départ : ${urlDepart ?? "page vierge"} · agent : ${agent}`);
 

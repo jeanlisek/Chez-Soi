@@ -1,0 +1,113 @@
+{
+  "session_id": "9a0b4d9b-0146-48f8-b281-9d02abcc541c",
+  "usage": "u2",
+  "agent": "h/web-surfer-flash",
+  "agent_revision": 2,
+  "site": "www.ikea.com/fr/fr",
+  "etat_final": "completed",
+  "outcome": null,
+  "error_code": null,
+  "erreur": null,
+  "motif_fin": "terminee",
+  "annulee_par_script": false,
+  "coupe_circuit": null,
+  "debut": "2026-11-17T23:09:09.518661Z",
+  "fin": "2026-11-17T23:12:19.010107Z",
+  "duree_s": 189.5,
+  "nb_etapes": 14,
+  "tokens": {
+    "entree": 242051,
+    "cache": 166848,
+    "sortie": 5313,
+    "raisonnement": 3064,
+    "par_modele": [
+      {
+        "modele": "holo4-35b-a3b",
+        "entree": 242051,
+        "cache": 166848,
+        "sortie": 5313,
+        "raisonnement": 3064
+      }
+    ]
+  },
+  "cout_usd": 0.03819234,
+  "decision_validation": "approuve",
+  "appels_outils": [
+    {
+      "outil": "get_mesures",
+      "args": {
+        "faille_id": "faille-demo-tapis-01"
+      },
+      "reponse": {
+        "element": "tapis",
+        "piece": "séjour",
+        "cote_confirmee_cm": 160,
+        "largeur_cm": 60,
+        "hauteur_cm": 160,
+        "contraintes_profil": [
+          "Occupante de 79 ans qui se déplace avec une canne (déplacement 2 sur 4).",
+          "Le tapis glisse : il faut un sous-tapis antidérapant, pour sol dur.",
+          "Sous-tapis fin, sans surépaisseur ni bord qui rebique : rien qui accroche la canne ou le pied.",
+          "Le sous-tapis ne doit pas dépasser du tapis : 60 × 160 cm au plus, ou plus grand mais découpable aux ciseaux."
+        ]
+      },
+      "erreur": null,
+      "duree_s": 0
+    },
+    {
+      "outil": "demander_validation",
+      "args": {
+        "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+        "action": "panier",
+        "resume": "Sous-tapis antidérapant STOPP (67.5x200 cm) ajouté au panier. Il est facile à couper pour s'adapter au tapis de 60x160 cm et respecte le profil de l'occupante (mince, sans surépaisseur).",
+        "produit": "STOPP Anti-dérapant pour tissus, 67.5x200 cm",
+        "montant_eur": 5.99
+      },
+      "reponse": {
+        "decision": "approuve",
+        "message": "Validation enregistrée. La mission s'arrête ici : ne fais plus aucune action dans le navigateur, n'ouvre pas le tunnel de commande, et rends ta réponse finale maintenant."
+      },
+      "erreur": null,
+      "duree_s": 124.5
+    }
+  ],
+  "sortie_finale": {
+    "lien": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+    "trouve": true,
+    "produit": "STOPP Anti-dérapant pour tissus, 67.5x200 cm",
+    "prix_eur": 5.99,
+    "remarque": "Sous-tapis antidipsant STOPP (67.5x200 cm) ajouté au panier. Facile à couper aux ciseaux pour s'adapter au tapis de 60x160 cm. Fin (122 g/m²), sans surépaisseur, conforme au profil de l'occupante de 79 ans avec canne.",
+    "au_panier": true,
+    "dimensions": null,
+    "delai_livraison": null
+  },
+  "schema_valide": true,
+  "erreurs_schema": [],
+  "ecarts_metier": [
+    "largeur_cm : absent ou vide alors que trouve est vrai",
+    "longueur_cm : absent ou vide alors que trouve est vrai",
+    "delai_livraison : absent ou vide alors que trouve est vrai"
+  ],
+  "pages_vues": [
+    "https://www.ikea.com/fr/fr/",
+    "https://www.ikea.com/fr/fr/search/",
+    "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+    "https://www.ikea.com/fr/fr/shoppingcart/"
+  ],
+  "actions_agent": {
+    "get_mesures": 1,
+    "click_web": 6,
+    "write": 1,
+    "scroll_web": 1,
+    "demander_validation": 1,
+    "answer": 5
+  },
+  "observations_api": {
+    "appels_sans_id": 0,
+    "attente_outils_s": 124.5,
+    "appels_encore_listes_apres_reponse": 0,
+    "renvois_de_resultat": 0,
+    "reponse_presente_apres_annulation": null,
+    "approbations_natives_vues": 0
+  }
+}

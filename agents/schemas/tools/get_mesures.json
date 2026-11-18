@@ -1,22 +1,15 @@
 {
   "name": "get_mesures",
-  "description": "Renvoie les cotes confirmées d'une faille et les contraintes du profil.",
+  "description": "Renvoie les cotes confirmées d'une faille du logement (en centimètres) et les contraintes du profil de l'occupant. À appeler avant toute recherche de produit, avec le faille_id donné dans la consigne. Réponse : { element, piece, cote_confirmee_cm, largeur_cm, hauteur_cm, contraintes_profil }.",
   "input_schema": {
     "type": "object",
-    "properties": { "faille_id": { "type": "string" } },
+    "properties": {
+      "faille_id": {
+        "type": "string",
+        "description": "Identifiant de la faille, donné dans la consigne."
+      }
+    },
     "required": ["faille_id"],
     "additionalProperties": false
-  },
-  "output_schema": {
-    "type": "object",
-    "properties": {
-      "element": { "type": "string" },
-      "piece": { "type": "string" },
-      "cote_confirmee_cm": { "type": "number" },
-      "largeur_cm": { "type": "number" },
-      "hauteur_cm": { "type": "number" },
-      "contraintes_profil": { "type": "array", "items": { "type": "string" } }
-    },
-    "required": ["element", "piece", "cote_confirmee_cm", "largeur_cm", "hauteur_cm", "contraintes_profil"]
   }
 }

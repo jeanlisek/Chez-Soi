@@ -37,7 +37,7 @@ const RACINE = path.resolve(__dirname, "../..");
 type FixtureU3 = {
   logement_id: string;
   absence: { depart_le: string; retour_le: string };
-  assureurs: Record<string, { contrat: Record<string, unknown>; controle: { domaines: string[]; url_depart: string } }>;
+  assureurs: Record<string, { contrat: Record<string, unknown> | null; controle: { domaines: string[]; url_depart: string } }>;
   otv: { domaines: string[]; url_depart: string };
 };
 
@@ -71,6 +71,8 @@ function creerGetContrat(fixture: FixtureU3, cle: string) {
     const permis = new Set(["assureur", "formule", "reference_cg", "inoccupation", "absence"]);
     const voulus = new Set(["assureur", "formule", ...champs.filter((champ) => permis.has(champ))]);
     const contrat = fixture.assureurs[cle].contrat;
+    // Parcours sans contrat : même erreur que la route serveur, l'agent continue sans.
+    if (!contrat) throw new Error("Aucun contrat pour ce logement.");
     const reponse = Object.fromEntries(Object.entries(contrat).filter(([champ]) => voulus.has(champ)));
     return analyser(getContratSortieSchema, reponse, "Fixture de get_contrat");
   };
@@ -136,9 +138,9 @@ async function main(): Promise<void> {
   }
 
   // Ce que /api/absence calcule pour cette absence (même fonction).
-  const contrat = getContratSortieSchema.parse(assureur.contrat);
+  const contrat = assureur.contrat ? getContratSortieSchema.parse(assureur.contrat) : null;
   const aujourdhui = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date());
-  const absence = evaluerAbsence({ ...fixture.absence, inoccupation: contrat.inoccupation }, aujourdhui);
+  const absence = evaluerAbsence({ ...fixture.absence, inoccupation: contrat?.inoccupation }, aujourdhui);
   console.log(
     `Absence ${fixture.absence.depart_le} → ${fixture.absence.retour_le} : ${absence.duree_jours} jours, seuil ${absence.seuil_jours ?? "aucun"} → informer l'assureur : ${absence.informer_assureur ? "oui" : "non"} ; fenêtre OTV ${absence.otv.ouverture_le} → ${absence.otv.limite_le} (${absence.otv.delai_ok ? "ouverte" : absence.otv.trop_tot ? "pas encore ouverte" : "fermée"}).`,
   );
@@ -195,7 +197,7 @@ async function main(): Promise<void> {
         retour_le: fixture.absence.retour_le,
         duree_jours: absence.duree_jours,
         seuil_jours: absence.seuil_jours,
-        sources_absence: (contrat.absence ?? []).map((clause) => clause.source),
+        sources_absence: (contrat?.absence ?? []).map((clause) => clause.source),
       }),
     site: `${new URL(fixture.otv.url_depart).hostname} + ${new URL(assureur.controle.url_depart).hostname}`,
     urlDepart: fixture.otv.url_depart,

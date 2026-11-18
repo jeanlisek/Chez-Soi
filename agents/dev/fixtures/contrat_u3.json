@@ -1,13 +1,25 @@
 {
-  "_note": "Persona et absence FICTIVES (Jeanne, 35 jours) ; clauses RÉELLES, relues le 18/11 dans les PDF des conditions générales (MAIF Raqvam M2442, 36 p. ; Altima MRH 202007_298, 24 p.). Règle du CLAUDE.md : un champ sans clause ni page retrouvées est rejeté. Les conditions générales MAIF Raqvam ne fixent AUCUNE durée d'inoccupation : get_contrat ne renvoie donc pas de bloc inoccupation pour la MAIF. Seul le bloc « contrat » est servi par get_contrat, et seulement les champs demandés ; le bloc « controle » reste côté code.",
+  "_note": "Persona et absence FICTIVES (Jeanne, 35 jours) ; clauses RÉELLES, relues le 18/11 dans les PDF des conditions générales (MAIF Raqvam M2442, 36 p. ; Altima MRH 202007_298, 24 p.). Règle du CLAUDE.md : un champ sans clause ni page retrouvées est rejeté. Les conditions générales MAIF Raqvam ne fixent AUCUNE durée d'inoccupation ; le bloc inoccupation de la MAIF vient des conditions particulières FICTIVES de Jeanne (PR #37 : « Article 1 Inoccupation des locaux (clause fictive) », 30 jours, page 1), comme le renverra get_contrat. « sans_contrat » : parcours sans contrat, get_contrat répond « Aucun contrat » et l'information de l'assureur est seulement recommandée. Seul le bloc « contrat » est servi par get_contrat, et seulement les champs demandés ; le bloc « controle » reste côté code.",
   "logement_id": "logement-demo-jeanne-01",
-  "absence": { "depart_le": "2026-12-15", "retour_le": "2027-01-19" },
+  "absence": {
+    "depart_le": "2026-12-15",
+    "retour_le": "2027-01-19"
+  },
   "assureurs": {
     "maif": {
       "contrat": {
         "assureur": "MAIF",
         "formule": "Raqvam",
         "reference_cg": "M2442",
+        "inoccupation": {
+          "duree_max_jours": 30,
+          "protections": [
+            "Toutes les portes d'accès, dont la porte d'entrée, fermées à clé",
+            "Volets fermés"
+          ],
+          "clause": "Article 1 Inoccupation des locaux (clause fictive)",
+          "page": 1
+        },
         "absence": [
           {
             "type": "franchise",
@@ -42,7 +54,9 @@
         ]
       },
       "controle": {
-        "domaines": ["maif.fr"],
+        "domaines": [
+          "maif.fr"
+        ],
         "url_depart": "https://www.maif.fr",
         "clause_absence_sans_seuil": {
           "texte": "7.2 - Dispositions concernant les sociétaires relevant des tranches de tarification H à J. Dans les hypothèses visées ci dessous, la franchise applicable est de 135 € : – s'il est constaté que les moyens de protection décrits aux conditions particulières ont été mis en place et activés pendant l'absence, […]",
@@ -68,14 +82,27 @@
         }
       },
       "controle": {
-        "domaines": ["altima-assurances.fr"],
+        "domaines": [
+          "altima-assurances.fr"
+        ],
         "url_depart": "https://www.altima-assurances.fr",
         "_lecture": "Clause p. 6 : le « […] » remplace une liste d'exclusions intercalée dans le PDF entre les mesures de prévention et la sanction. La retenue de 30 % ne s'applique que si un sinistre survient ou est aggravé du fait du manquement. La vidange ne dépend pas de l'absence : elle vaut du 1er novembre au 1er avril dès que les locaux ne sont pas chauffés. Elle reste dans protections parce que l'absence de démo (décembre-janvier) tombe dans cette période."
+      }
+    },
+    "sans_contrat": {
+      "contrat": null,
+      "controle": {
+        "domaines": [],
+        "url_depart": "https://www.service-public.gouv.fr"
       }
     }
   },
   "otv": {
-    "domaines": ["service-public.gouv.fr", "service-public.fr", "interieur.gouv.fr"],
+    "domaines": [
+      "service-public.gouv.fr",
+      "service-public.fr",
+      "interieur.gouv.fr"
+    ],
     "url_depart": "https://www.service-public.gouv.fr"
   }
 }

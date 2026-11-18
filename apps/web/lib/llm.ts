@@ -47,6 +47,12 @@ export function explicationAcceptable(texte: string, faits: FaitsAction): boolea
   if (faits.force !== "loi" && faits.force !== "contrat" && obligation.test(texte)) return false;
   if (faits.force !== "contrat" && /\b(votre contrat|assureur|assurance)\b/i.test(texte)) return false;
   if (/\b(conforme aux normes|sans danger|aucun risque|garanti)\b/i.test(texte)) return false;
+  // Constat « à vérifier » : la vidéo montre l'élément, pas son état. Le texte doit le dire,
+  // et ne jamais affirmer un défaut qui n'a pas été constaté.
+  if (faits.verdict === "a_verifier") {
+    if (!/vérifi/i.test(texte)) return false;
+    if (/\b(n[’']est pas|n[’']a pas|ne sont pas|n[’']ont pas|absence de|dépourvu|manque)\b/i.test(texte)) return false;
+  }
   return true;
 }
 
@@ -80,13 +86,15 @@ export async function expliquerAction(faits: FaitsAction): Promise<string | null
         "N'invente aucun chiffre, aucune norme, aucune loi. Ne parle pas des habitants ni de leur santé.",
         "Si le statut est une recommandation, ne dis jamais que c'est obligatoire. Ne promets aucun résultat.",
         "Dis ce qui a été vu, pourquoi c'est un risque, et ce que l'action change. Cite la source telle qu'elle est donnée.",
+        "Si le constat est « à vérifier sur place » : la vidéo a seulement repéré l'élément. N'affirme aucun défaut (ne dis pas qu'il n'est pas fixé, qu'il manque quelque chose). Écris qu'il faut vérifier, avec le mot « vérifier ».",
+        "Parle à la deuxième personne (« votre tapis », « vous »), sans « nous ».",
       ].join("\n"),
       prompt: JSON.stringify({
         element: faits.element,
         piece: faits.piece,
         mesure_sur_la_video: faits.mesure,
         seuil_de_la_regle: faits.seuil,
-        constat: faits.verdict === "non_conforme" ? "ne respecte pas le seuil" : "à vérifier sur place",
+        constat: faits.verdict === "non_conforme" ? "mesuré : ne respecte pas le seuil" : "à vérifier sur place (élément repéré, état inconnu)",
         statut: LIBELLE_FORCE[faits.force],
         action: faits.contre_mesure,
         regle: faits.regle,

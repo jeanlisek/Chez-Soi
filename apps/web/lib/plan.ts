@@ -72,7 +72,13 @@ export type ResultatPlan = {
   failles: number;
   ignorees: number;
   /** Failles pour lesquelles le graphe a fourni un contexte, et éléments reconnus grâce à lui. */
-  graphe: { contextes: number; elements_reconnus: number; embeddings_calcules: number };
+  graphe: {
+    contextes: number;
+    elements_reconnus: number;
+    embeddings_calcules: number;
+    /** Éléments que la vision nomme hors vocabulaire, avec le nœud Element le plus proche et ses scores. */
+    hors_vocabulaire: { element: string; proche: string; similarite: number; second: number; retenu: boolean }[];
+  };
   /** Explications rédigées par le LLM et acceptées par le garde-fou. */
   explications_llm: number;
 };
@@ -268,6 +274,8 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
   }
   const elementsConnus = new Set([...regles.map((r) => r.element), ...obligations.map((o) => o.element).filter(Boolean)]);
   let elementsReconnus = 0;
+  const arrondi = (x: number) => Math.round(x * 1000) / 1000;
+  const horsVocabulaire: ResultatPlan["graphe"]["hors_vocabulaire"] = [];
 
   type Ligne = {
     faille: Faille;
@@ -292,7 +300,8 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
     if (!elementsConnus.has(element)) {
       // Élément hors vocabulaire : on prend le nœud Element le plus proche, s'il ressemble nettement.
       const proche = elementProche(contextes.get(f.id) ?? null);
-      if (proche && elementsConnus.has(proche.element)) {
+      if (proche) horsVocabulaire.push({ element: f.element, proche: proche.element, similarite: arrondi(proche.similarite), second: arrondi(proche.second), retenu: proche.retenu });
+      if (proche?.retenu && elementsConnus.has(proche.element)) {
         element = proche.element;
         elementsReconnus++;
       }
@@ -430,6 +439,7 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
       contextes: [...contextes.values()].filter(Boolean).length,
       elements_reconnus: elementsReconnus,
       embeddings_calcules: embeddingsCalcules,
+      hors_vocabulaire: horsVocabulaire,
     },
     explications_llm: explicationsLlm,
   };

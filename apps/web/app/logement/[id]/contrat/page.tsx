@@ -51,7 +51,7 @@ export default function PageContrat() {
           l&apos;ajouter plus tard.
         </Carte>
         <p className="flex items-start gap-2 px-1 text-sm text-encre-douce">
-          <Lock className="mt-0.5 size-4 shrink-0 text-[#1c2f7a]" />
+          <Lock className="mt-0.5 size-4 shrink-0 text-[#1a3a86]" />
           Seuls les champs utiles sont extraits, chacun avec sa clause et sa page. Le PDF ne va jamais à
           l&apos;agent.
         </p>

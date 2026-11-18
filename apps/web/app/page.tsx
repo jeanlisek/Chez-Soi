@@ -13,7 +13,7 @@ export default function Accueil() {
         </span>
         <Link
           href="/connexion"
-          className="rounded-full bg-lavande-claire px-5 py-3 text-sm font-bold text-[#1c2f7a]"
+          className="rounded-full bg-lavande-claire px-5 py-3 text-sm font-bold text-[#1a3a86]"
         >
           J&apos;ai un compte
         </Link>

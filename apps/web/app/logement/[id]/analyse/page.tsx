@@ -106,7 +106,7 @@ export default function PageAnalyse() {
 
         <div className="flex items-baseline justify-between">
           <h2 className="text-lg font-bold">Avancement par pièce</h2>
-          <span className="text-sm font-bold text-[#1c2f7a]">
+          <span className="text-sm font-bold text-[#1a3a86]">
             {terminees} sur {n}
           </span>
         </div>

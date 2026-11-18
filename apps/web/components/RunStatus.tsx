@@ -32,7 +32,7 @@ export function RunStatus({
           <span
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-bold",
-              enCours ? "border-[#1c2f7a]/40 bg-white/70 text-[#1c2f7a]" : "border-vert bg-vert-clair text-vert",
+              enCours ? "border-[#1a3a86]/40 bg-white/70 text-[#1a3a86]" : "border-vert bg-vert-clair text-vert",
             )}
           >
             {enCours ? "En cours" : "Terminé"}
@@ -70,10 +70,10 @@ export function RunStatus({
             <span
               className={cn(
                 "size-4 shrink-0 rounded-full border-2",
-                i < franchies ? "border-vert bg-vert" : i === franchies && enCours ? "animate-pulse border-[#1c2f7a]" : "border-ambre/70",
+                i < franchies ? "border-vert bg-vert" : i === franchies && enCours ? "animate-pulse border-[#1a3a86]" : "border-ambre/70",
               )}
             />
-            <span className={cn(i === franchies && enCours && "font-bold text-[#1c2f7a]")}>{e}</span>
+            <span className={cn(i === franchies && enCours && "font-bold text-[#1a3a86]")}>{e}</span>
           </li>
         ))}
       </ol>

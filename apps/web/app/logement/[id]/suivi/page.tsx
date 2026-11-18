@@ -129,7 +129,7 @@ export default function PageSuivi() {
         </Link>
         <div className="flex items-center gap-3 rounded-full bg-white p-2">
           <span className="grid size-11 place-items-center rounded-full bg-lavande-claire">
-            <MousePointer2 className="size-5 fill-current text-[#1c2f7a]" />
+            <MousePointer2 className="size-5 fill-current text-[#1a3a86]" />
           </span>
           <span className="flex-1">
             <span className="block font-bold">Veille des prix</span>

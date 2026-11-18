@@ -31,6 +31,12 @@
   --color-rouge-clair: #fbe5e7;
   --color-gris-ligne: #e4e4ea;
 
+  /* Charte graphique de Chez Soi (Drive CPO) : logo et accents de marque. */
+  --color-cobalt: #1a3a86;
+  --color-persimmon: #d96f45;
+  --color-parchment: #e9dfc8;
+  --color-ciel: #8da3c7;
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);

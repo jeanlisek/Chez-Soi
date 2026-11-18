@@ -34,7 +34,7 @@ export function BarreOnglets() {
             href={href}
             className={cn(
               "relative flex flex-col items-center gap-0.5 py-1 text-xs font-semibold",
-              estActif ? "text-[#1c2f7a]" : "text-encre-douce",
+              estActif ? "text-[#1a3a86]" : "text-encre-douce",
             )}
             aria-current={estActif ? "page" : undefined}
           >
@@ -47,7 +47,7 @@ export function BarreOnglets() {
               )}
             </span>
             {label}
-            {estActif && <span className="absolute -bottom-1 size-1 rounded-full bg-[#1c2f7a]" />}
+            {estActif && <span className="absolute -bottom-1 size-1 rounded-full bg-[#1a3a86]" />}
           </Link>
         );
       })}

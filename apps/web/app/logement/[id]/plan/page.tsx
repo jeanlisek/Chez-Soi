@@ -163,7 +163,7 @@ export default function PagePlan() {
 
         <div className="flex items-baseline justify-between">
           <h2 className="text-xl font-bold">{nomPiece}</h2>
-          <span className="text-sm font-semibold text-[#1c2f7a]">
+          <span className="text-sm font-semibold text-[#1a3a86]">
             {listePiece.length} point{listePiece.length > 1 ? "s" : ""}
           </span>
         </div>

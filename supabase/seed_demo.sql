@@ -34,7 +34,8 @@ begin
 
     -- Assureur de la démo : MAIF (décision du 18/11). Le contrat de Jeanne est fictif, mais il renvoie
     -- aux conditions générales publiques MAIF Raqvam, réf. M2442 - 01/2023 (36 p.), relues le 18/11.
-    -- Ces CG ne fixent AUCUNE durée d'inoccupation : pas de ligne inoccupation (pas de clause, pas de champ).
+    -- Ces CG ne fixent AUCUNE durée d'inoccupation : le seuil de 30 jours vient des conditions particulières
+    -- fictives de Jeanne (lignes 3 à 6, source 'cp').
     -- assureur_id reste vide : la ligne MAIF du référentiel assureurs arrive après la PR #17.
     insert into public.contrats (logement_id, titulaire_accord_le, assureur, formule, reference_cg, version_cg,
                                  version_cg_verifiee, statut_extraction, extrait_le, conservation_jusqu_au)
@@ -48,7 +49,9 @@ begin
     -- franchise est de 135 € dans tous les cas et la clause ne change rien.
     -- La ligne 1 n'est pas une clause d'absence en soi, mais elle donne l'enjeu : c'est la franchise qui
     -- s'applique si les protections ne sont pas activées pendant l'absence. D'où liee_absence = true.
-    -- Ligne 3 : protection des conditions particulières, FICTIVE (page 1 de ces CP inventées).
+    -- Lignes 3 à 6 : conditions particulières FICTIVES de Jeanne, page 1 (même texte que le PDF de la
+    -- PR #37, services/vision/tests/donnees/conditions_particulieres_fictives_jeanne.pdf) : seuil
+    -- d'inoccupation de 30 jours et protections. Décision du 18/11 : CG réelles + CP fictives.
     insert into public.obligations_contrat (contrat_id, type, element, seuil, unite, texte_court, citation, clause, page,
                                             citation_retrouvee, confirmee_le, liee_absence, source)
     values
@@ -60,10 +63,22 @@ begin
        'Franchise vol ramenée à 135 € si les protections des conditions particulières sont mises en place et activées pendant l''absence (tranches H à J).',
        'Dans les hypothèses visées ci dessous, la franchise applicable est de 135 € : – s’il est constaté que les moyens de protection décrits aux conditions particulières ont été mis en place et activés pendant l’absence',
        'Garantie particulière en cas de vol, B (vols autres que dans un véhicule), article 7.2', 19, true, now(), true, 'cg'),
+      (v_contrat, 'inoccupation', 'inoccupation', 30, 'jours',
+       'Au-delà de 30 jours d''inoccupation, informer l''assureur avant le départ.',
+       'En cas d''inoccupation de plus de 30 jours consécutifs, l''assuré informe l''assureur avant le départ.',
+       'Conditions particulières (fictives), article 1 Inoccupation des locaux', 1, true, now(), true, 'cp'),
+      (v_contrat, 'prevention', 'porte_entree', null, null,
+       'Portes d''accès, dont la porte d''entrée, fermées à clé',
+       'Toutes les portes d''accès, dont la porte d''entrée, doivent alors être fermées à clé.',
+       'Conditions particulières (fictives), article 1 Inoccupation des locaux', 1, true, now(), true, 'cp'),
+      (v_contrat, 'prevention', 'fenetre', null, null,
+       'Volets fermés',
+       'Les volets doivent alors être fermés.',
+       'Conditions particulières (fictives), article 1 Inoccupation des locaux', 1, true, now(), true, 'cp'),
       (v_contrat, 'prevention', 'serrure', 3, 'points',
-       'Porte d''entrée équipée d''une serrure 3 points, fermée à clé pendant l''absence.',
-       'Moyens de protection : la porte d''entrée est équipée d''une serrure à trois points de fermeture, fermée à clé pendant toute absence (texte fictif).',
-       'Conditions particulières (fictives) : moyens de protection', 1, true, now(), true, 'cp');
+       'Serrure 3 points sur la porte d''entrée',
+       'La porte d''entrée doit obligatoirement être équipée d''une serrure à trois points de fermeture.',
+       'Conditions particulières (fictives), article 2 Moyens de protection', 1, true, now(), true, 'cp');
   end if;
 
   /* ---------- Léa, 24 ans, locataire ---------- */

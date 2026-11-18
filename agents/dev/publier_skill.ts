@@ -59,7 +59,7 @@ async function main(): Promise<void> {
     throw new Error(`La skill ${skill.name} existe déjà : nouvelle révision depuis la console H, puis --skill ${skill.name}:N.`);
   }
   if (!reponse.ok) throw new Error(`POST /skills : HTTP ${reponse.status}. ${texte.slice(0, 500)}`);
-  console.log(`Skill ${skill.name} créée (révision ${reponse.headers.get("etag") ?? "1"}).`);
+  console.log(`Skill ${skill.name} créée (révision ${(reponse.headers.get("etag") ?? "1").replaceAll('"', "")}).`);
   console.log(`À utiliser figée : npm run agent:u2 -- --site <domaine> --skill ${skill.name}:1`);
 }
 

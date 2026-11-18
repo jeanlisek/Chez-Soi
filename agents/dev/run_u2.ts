@@ -10,6 +10,8 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 import { HAI_AGENT, outilHaiSchema, type OutilHai } from "../../apps/web/lib/hai";
 import {
@@ -31,6 +33,9 @@ import { creerPilotage } from "./pilotage";
 
 const RACINE = path.resolve(__dirname, "../..");
 const FAILLE_ID = "faille-demo-tapis-01";
+let mesuresLues = false;
+let dernierePreuve: Record<string, unknown> | null = null;
+const executerFichier = promisify(execFile);
 
 function option(nom: string): string | undefined {
   const index = process.argv.indexOf(`--${nom}`);
@@ -60,7 +65,18 @@ async function getMesures(args: Record<string, unknown>): Promise<GetMesuresSort
   ) as { failles: Record<string, unknown> };
   const mesures = fixture.failles[faille_id];
   if (!mesures) throw new Error(`Faille inconnue : ${faille_id}. Utilise le faille_id de la consigne.`);
-  return analyser(getMesuresSortieSchema, mesures, "Fixture de get_mesures");
+  const resultat = analyser(getMesuresSortieSchema, mesures, "Fixture de get_mesures");
+  mesuresLues = true;
+  return resultat;
+}
+
+async function lireFicheProduit(args: Record<string, unknown>) {
+  if (!mesuresLues) throw new Error("Appelle get_mesures seul avant de lire une fiche.");
+  if (typeof args.url !== "string") throw new Error("url HTTPS de la fiche requise");
+  const { stdout } = await executerFichier("python3", [path.join(RACINE, "agents/bench/lire_fiche.py"), args.url],
+    { timeout: 25_000, maxBuffer: 300_000 });
+  dernierePreuve = JSON.parse(stdout) as Record<string, unknown>;
+  return dernierePreuve;
 }
 
 /** Question dans le terminal. Entrée seule = REFUS ; il faut taper « approuve ». */
@@ -106,7 +122,8 @@ async function demanderValidation(
       : {
           decision: "refuse",
           message:
-            "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant.",
+            "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant." +
+            (dernierePreuve ? " La dernière fiche lue a fourni les valeurs exactes suivantes (source_url identifie la référence ; ne les rapporte que pour cette référence). Copie ces chaînes sans reformulation dans les champs correspondants : " + JSON.stringify({source_url:dernierePreuve.url,produit:dernierePreuve.nom_source,citation_decoupe:dernierePreuve.citation_decoupe_source,citation_dimensions:dernierePreuve.citation_dimensions_source}) + ". Le champ delai_livraison doit être présent, avec non indiquée avant commande si le délai est inconnu." : ""),
         },
     "Sortie de demander_validation",
   );
@@ -132,6 +149,7 @@ async function main(): Promise<void> {
 
   const outils: OutilLocal[] = [
     { declaration: await chargerOutil("get_mesures"), executer: getMesures },
+    { declaration: await chargerOutil("lire_fiche_produit"), executer: lireFicheProduit },
     { declaration: await chargerOutil("demander_validation"), executer: demanderValidation, validation: true },
   ];
 

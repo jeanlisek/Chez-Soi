@@ -50,7 +50,7 @@ L'usage 1 alimente le graphe de connaissances (v3, flux 7 et 8) : les lois arriv
 ```
 chez-soi/
 ├── apps/web/                 Next.js 15, App Router, TypeScript → Vercel
-│   ├── app/                  profil/ · logement/[id]/{capture,plan,actions,absence}/
+│   ├── app/                  profil/ · connexion/ · logement/[id]/{profil,contrat,capture,analyse,plan,faille/[failleId],actions,agent,agent/validation,absence,suivi}/
 │   │   └── api/              upload · contrat · plan · absence · agent/{run,steer,tools} · webhooks/hai
 │   ├── components/           Viewer3D · PlanAction · SourceBadge · ContratUpload · ModeAbsence
 │   │                         RunStatus · SteerInput · ValidationModal · ARButton
@@ -184,6 +184,8 @@ Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dan
 
 État du squelette : les routes API de `apps/web` et du service vision renvoient un stub typé en HTTP 501 (`StubReponse` dans `apps/web/lib/schemas.ts`, helper `apps/web/lib/stub.ts`).
 
+Interface (18/11) : les 12 écrans de la maquette (Figma « Chez soi · Parcours utilisateurs et écrans ») sont codés dans `apps/web`. Le logement `exemple` (Marc et Jeanne, fictifs) tourne sans compte ni API : données dans `lib/demo/logement-exemple.ts`, état du parcours dans `lib/demo/etat.tsx` (sessionStorage). Charte dans `app/globals.css` (crème, lavande, lilas, encre), police Inter auto-hébergée (`@fontsource-variable/inter`, le build n'appelle pas Google Fonts). Les vrais logements passent par `lib/donnees.ts` (Supabase, à brancher).
+
 ## Conventions
 
 - TypeScript strict. Schémas Zod partagés dans `apps/web/lib/schemas.ts`, Pydantic côté Python.
@@ -202,6 +204,7 @@ Variables nécessaires : `N8N_URL` et `N8N_API_KEY`, dans l'environnement ou dan
 - **Relecture** : Jean-Li par défaut ; Briac pour `supabase/`, `apps/` et `services/` ; Bastian pour `n8n/`. Vérifier la preview Vercel de la PR avant de fusionner.
 - **En cas de conflit** : rebase de la branche sur `origin/main`, jamais de merge de `main` dans la branche.
 - **Claude** : crée la branche au début de la session, commite par petites étapes, pousse la branche et ouvre la PR (`gh pr create`), puis donne le lien. **Ne fusionne jamais une PR toi-même** et ne pousse jamais sur `main`.
+- **Exception (décision de Jean-Li, 18/11)** : pour les PR de l'application (`apps/web`) ouvertes par Claude, Claude fusionne lui-même une fois `lint`, `typecheck`, `build` et la preview Vercel vérifiés, puis prévient Jean-Li ; Briac relit après coup. Rien d'autre ne change : jamais de push sur `main`, jamais de fusion de la PR de quelqu'un d'autre sans accord.
 - **Suivi** : une tâche de code = une issue GitHub. Le tableau de Pilotage (Drive) reste le suivi d'équipe ; on y note le numéro d'issue.
 
 ## Priorités pour la démo de jeudi soir (proposition)

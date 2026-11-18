@@ -36,3 +36,6 @@ services/vision/sorties/
 services/vision/precalcule/**/*
 !services/vision/precalcule/**/
 !services/vision/precalcule/**/failles.json
+
+# PDF téléchargés par l'usage 1 de l'agent (documents d'assureurs, pas versionnés)
+agents/bench/pdf/

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "typecheck:agents": "tsc --noEmit -p tsconfig.agents.json",
+    "agent:u1": "tsx --env-file=../../.env ../../agents/dev/run_u1.ts",
     "agent:u2": "tsx --env-file=../../.env ../../agents/dev/run_u2.ts",
     "agent:recontroler": "tsx ../../agents/dev/recontroler.ts"
   },

@@ -29,3 +29,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Plan non calculé.", erreur: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
 }
+
+export const maxDuration = 60;

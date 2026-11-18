@@ -2,6 +2,8 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { completerEmbeddings, contexteGraphe, elementProche, embarquer, type ContexteGraphe } from "@/lib/graphe";
+import { expliquerAction, type FaitsAction } from "@/lib/llm";
 import type { Database } from "@/lib/supabase/types";
 
 /**
@@ -16,7 +18,12 @@ import type { Database } from "@/lib/supabase/types";
  *
  * Idempotent : les actions encore « proposee » et les diagnostics du logement sont recalculés ;
  * une action déjà lancée (agent, faite) n'est jamais effacée.
- * Pas encore : GraphRAG (`match_noeuds`, `sous_graphe`) et explication par LLM.
+ *
+ * GraphRAG (`lib/graphe`) : chaque faille est vectorisée, rapprochée des nœuds du graphe
+ * (`match_noeuds`), puis étendue à 2 sauts (`sous_graphe`). Le graphe sert à reconnaître un
+ * élément que la vision nomme hors vocabulaire, et à nourrir l'explication. Il ne décide de rien.
+ * Explication (`lib/llm`) : rédigée par un LLM à partir des faits calculés ici, relue par un
+ * garde-fou ; sinon le texte de règle ci-dessous. Sans `HF_TOKEN`, ces deux étapes sont sautées.
  */
 
 type Admin = SupabaseClient<Database>;
@@ -59,7 +66,31 @@ type Obligation = {
 
 export type Verdict = "non_conforme" | "a_verifier" | "conforme";
 
-export type ResultatPlan = { actions: number; diagnostics: number; failles: number; ignorees: number };
+export type ResultatPlan = {
+  actions: number;
+  diagnostics: number;
+  failles: number;
+  ignorees: number;
+  /** Failles pour lesquelles le graphe a fourni un contexte, et éléments reconnus grâce à lui. */
+  graphe: { contextes: number; elements_reconnus: number; embeddings_calcules: number };
+  /** Explications rédigées par le LLM et acceptées par le garde-fou. */
+  explications_llm: number;
+};
+
+function texteFaille(f: Faille): string {
+  const dims = [f.largeur_cm, f.longueur_cm ?? f.hauteur_cm].filter((x): x is number => x !== null).map((x) => `${Math.round(x)} cm`);
+  return `Element : ${f.element.replace(/_/g, " ")}${f.piece ? `, pièce ${f.piece}` : ""}, risque ${f.risque}${dims.length ? `, ${dims.join(" × ")}` : ""}`;
+}
+
+/** Libellés du sous-graphe qui concernent l'élément ou la règle retenue : matière de l'explication. */
+function contexteUtile(c: ContexteGraphe | null, element: string, codeRegle: string | null): string[] {
+  if (!c) return [];
+  return c.voisins
+    .filter((n) => ["ContreMesure", "Clause", "Regle"].includes(n.type))
+    .filter((n) => n.proprietes?.element === element || (codeRegle !== null && (n.proprietes?.code_regle === codeRegle || n.proprietes?.code === codeRegle)))
+    .slice(0, 5)
+    .map((n) => `${n.type} : ${n.libelle}`);
+}
 
 const FORCE_RANG: Record<string, number> = { contrat: 0, loi: 1, recommande: 2, information: 3 };
 
@@ -226,8 +257,23 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
     : { data: [] as { id: string; faille_id: string | null; statut: string }[] };
   const engagees = new Set((existantes ?? []).filter((a) => a.statut !== "proposee").map((a) => a.faille_id));
 
+  // GraphRAG : embeddings manquants complétés, puis une recherche par faille (tout est facultatif).
+  const contratId = ctr.data?.[0]?.id ?? null;
+  const embeddingsCalcules = await completerEmbeddings(admin, contratId).catch(() => 0);
+  const vecteurs = failles.length ? await embarquer(failles.map(texteFaille)) : null;
+  const contextes = new Map<string, ContexteGraphe | null>();
+  if (vecteurs) {
+    const lus = await Promise.all(failles.map((_, i) => contexteGraphe(admin, vecteurs[i], contratId).catch(() => null)));
+    failles.forEach((f, i) => contextes.set(f.id, lus[i]));
+  }
+  const elementsConnus = new Set([...regles.map((r) => r.element), ...obligations.map((o) => o.element).filter(Boolean)]);
+  let elementsReconnus = 0;
+
   type Ligne = {
     faille: Faille;
+    element: string;
+    mesure: string | null;
+    seuil: string | null;
     regle: Regle | null;
     obligation: Obligation | null;
     force: string;
@@ -242,7 +288,15 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
   let ignorees = 0;
 
   for (const f of failles) {
-    const element = elementCommun(f.element, f.piece);
+    let element = elementCommun(f.element, f.piece);
+    if (!elementsConnus.has(element)) {
+      // Élément hors vocabulaire : on prend le nœud Element le plus proche, s'il ressemble nettement.
+      const proche = elementProche(contextes.get(f.id) ?? null);
+      if (proche && elementsConnus.has(proche.element)) {
+        element = proche.element;
+        elementsReconnus++;
+      }
+    }
     const candidates = regles.filter(
       (r) => r.element === element && regleApplicable((conds ?? []).filter((c) => c.regle_id === r.id), occupants, lg.data),
     );
@@ -254,6 +308,9 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
       if (ev.verdict === "conforme") continue;
       const cm = contreMesure(element, f, ev.seuil, r.intitule);
       const ligne = {
+        element,
+        mesure: ev.mesure,
+        seuil: ev.seuil,
         regle: r,
         obligation: null,
         force: r.force === "loi" ? "loi" : r.force === "information" ? "information" : "recommande",
@@ -271,6 +328,9 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
     if (ob) {
       const cm = contreMesure(element, f, null, ob.texte_court ?? "Exigence du contrat");
       retenue = {
+        element,
+        mesure: retenue?.mesure ?? null,
+        seuil: retenue?.seuil ?? null,
         regle: retenue?.regle ?? null,
         obligation: ob,
         force: "contrat",
@@ -294,6 +354,34 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
       FORCE_RANG[a.force] - FORCE_RANG[b.force] ||
       b.gravite - a.gravite ||
       (a.faille.risque === "chute" ? 0 : 1) - (b.faille.risque === "chute" ? 0 : 1),
+  );
+
+  // Explication par LLM, en parallèle, sur les faits déjà calculés. Le verdict ne change pas ;
+  // un texte refusé par le garde-fou ou une erreur laissent l'explication de règle.
+  let explicationsLlm = 0;
+  await Promise.all(
+    lignes.map(async (l) => {
+      const faits: FaitsAction = {
+        element: l.element.replace(/_/g, " "),
+        piece: l.faille.piece,
+        mesure: l.mesure,
+        seuil: l.seuil,
+        verdict: l.verdict === "non_conforme" ? "non_conforme" : "a_verifier",
+        force: l.force as FaitsAction["force"],
+        contre_mesure: l.texte,
+        regle: l.regle?.intitule ?? null,
+        source: l.regle?.source_ref ?? null,
+        clause: l.obligation
+          ? { texte: l.obligation.texte_court ?? "", reference: l.obligation.clause ?? "clause du contrat", page: l.obligation.page }
+          : null,
+        contexte: contexteUtile(contextes.get(l.faille.id) ?? null, l.element, l.regle?.code ?? null),
+      };
+      const texte = await expliquerAction(faits);
+      if (texte) {
+        l.explication = texte;
+        explicationsLlm++;
+      }
+    }),
   );
 
   // Recalcul : on remplace les actions encore proposées et les diagnostics du logement.
@@ -333,5 +421,16 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
     await admin.from("failles").update({ gravite: l.gravite, priorite: debut + i } as never).eq("id", l.faille.id);
   }
 
-  return { actions: valides.length, diagnostics: diagnostics.length, failles: failles.length, ignorees };
+  return {
+    actions: valides.length,
+    diagnostics: diagnostics.length,
+    failles: failles.length,
+    ignorees,
+    graphe: {
+      contextes: [...contextes.values()].filter(Boolean).length,
+      elements_reconnus: elementsReconnus,
+      embeddings_calcules: embeddingsCalcules,
+    },
+    explications_llm: explicationsLlm,
+  };
 }

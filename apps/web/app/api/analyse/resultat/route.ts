@@ -164,3 +164,5 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ statut: "ok", failles_ecrites: retenues.length, failles_rejetees: rejetees, analyse: statutEcrit, plan });
 }
+
+export const maxDuration = 60;

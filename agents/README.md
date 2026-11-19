@@ -17,7 +17,7 @@ Prompts, schémas d'outils, skill, scripts locaux et banc de mesure de l'agent H
   - `fixtures/` : données fictives servies par les outils.
 - `bench/runs/` : un fichier JSON par run, au futur format de `runs_agent` (`runAgentSchema` dans `apps/web/lib/schemas.ts`).
 - `skills/verifier_dimension.md` : skill publiée sur H (`verifier-dimension:2`).
-- `prompts/`, `workflows.ts`, `bench/cas_*.json`, `bench/run_bench.py` : amorces du 16/11, gardées pour l'historique. Les consignes en service sont dans `definitions/*.instructions.md` (instructions permanentes) et `apps/web/lib/agent/usages.ts` (consigne de session). Le banc Flash/Pro est dans la PR #32. Résultats mesurés : [`docs/resultats.md`](../docs/resultats.md).
+- `prompts/u1_sourcing.md`, `prompts/u3_administratif.md`, `workflows.ts`, `bench/run_bench.py` : amorces du 16/11, gardées pour l'historique ; `prompts/u2_recommandation.md` est le gabarit du banc Flash/Pro (`bench/README.md`, PR #32). Les consignes en service sont dans `definitions/*.instructions.md` (instructions permanentes) et `apps/web/lib/agent/usages.ts` (consigne de session). Résultats mesurés : [`docs/resultats.md`](../docs/resultats.md).
 
 Le client de l'API est `apps/web/lib/hai.ts`. Il ne contient rien de propre à un usage.
 

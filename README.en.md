@@ -10,6 +10,7 @@
 | **Repository** | https://github.com/jeanlisek/Chez-Soi |
 | **Try it** | [How to test](#how-to-test), 2 minutes without an account |
 | **Agent results** | [40 real runs, measured](docs/resultats.md) (in French) |
+| **Detailed architecture** | [Miro board, code status on 19 Nov](https://miro.com/app/board/uXjVEMi8KjI=/) (in French) |
 | **Public replays** | [Use 1, MAIF](https://agp.eu.hcompany.ai/share/api/v1/trajectories/6737e71f-59a5-4dc5-ab92-20c49a33d469) · [Use 2, IKEA, demo fallback](https://agp.eu.hcompany.ai/share/api/v1/trajectories/dfb8e4d2-8a96-448b-9a87-c5e8b3740cab) |
 <!-- Demo video (5 min): add a "| **Demo video** | <link> |" row here once the link exists, and check that it opens in a private window. -->
 
@@ -109,7 +110,7 @@ flowchart LR
 - **The agent only sees what it asks for.** Its tools use the session's home, never one the agent names, and return only the useful fields.
 - **A circuit breaker in code** cancels the session as soon as the agent opens an order, payment, sign-in or non-allow-listed page.
 
-Circuit details: [`docs/architecture.md`](docs/architecture.md) (in French).
+Circuit details: [`docs/architecture.md`](docs/architecture.md) (in French). Full diagram of the layers and the base: [Miro](https://miro.com/app/board/uXjVEMi8KjI=/).
 
 ## How to test
 
@@ -121,6 +122,9 @@ Circuit details: [`docs/architecture.md`](docs/architecture.md) (in French).
 2. Fill in the profile, then upload a video of one room (MP4 or MOV, 50 MB max). The Space wakes up when the screen opens; the analysis takes a few minutes.
 3. Optional: upload a home insurance contract as a PDF. Kept clauses appear with their page. The same screen can start the agent that finds the general terms on the insurer's site.
 4. Open the action plan, confirm a risk point's size, then start the agent. The screen follows the real H session and asks for approval before any commitment. Approving orders nothing.
+5. Open absence mode and ask the agent to prepare the steps: it prepares the OTV registration and the insurer notice without signing in, then stops; the only possible answer refuses sending.
+
+The Account screen then lets you edit the profile, add an occupant or re-film a room.
 
 **3. Locally.**
 
@@ -144,21 +148,22 @@ Environment variables are listed in [`.env.example`](.env.example) (names only).
 
 In production:
 
-- sign-in with Google or e-mail link, home and profile creation;
-- video upload, analysis on the Space (automatic wake-up, retries), risk points and sizes stored, 3D model of each room kept and displayed;
+- sign-in with Google or e-mail link, home creation; Account screen to edit the profile, manage several occupants (the rule protecting the most vulnerable applies) and re-film a room;
+- guided capture (filming tips, import of an existing video, review before sending), analysis on the Space (automatic wake-up, retries), risk points and sizes stored, 3D model and annotated image of each room in private storage; a re-filmed room replaces its old points, except those whose size was confirmed;
+- risk point screen: photo cropped on the element and a "relief photo" of the filmed surface; on the vision side, an object seen in several frames is counted once;
 - action plan computed from the rules, with the graph to recognise elements and an LLM-written explanation checked by code;
 - end-to-end contract reading, tested with fictitious special conditions;
-- H agent inside the app for uses 1 and 2: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker.
+- H agent inside the app for all three uses: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker. On 19 Nov in production: use 2 end to end on `chez-soi-acheteur:2` (130 s, 9 steps, steering sent, stop at the cart on `demander_validation`), use 1 from the Contract screen, and a first real use 3 run after it was wired (#86).
 
 Known limits:
 
-- use 3 succeeded in 4 out of 4 scripted runs but is not yet started from the Absence screen;
-- on a real home, the Absence screen still shows the persona's dates: date entry is not wired;
+- use 3: on the first real run after it was wired, the agent returned its answer without calling `demander_validation`; the prompt now reminds it, not yet re-checked by a new run (nothing can be sent: the agent does not sign in and the circuit breaker cuts any sign-in page);
+- on a real home, the absence departure date cannot be entered yet (15 Dec by default); only the duration can be set;
 - use 2 miscopies some product pages: the quote check detects it and rejects the product;
 - the Space sleeps after 30 minutes: the first call waits for it to wake up;
 - the vision sizes have been compared with a tape measure on one door only (72.9 cm measured for 71.5 cm actual): no accuracy figure is claimed yet ([`docs/mesures.md`](docs/mesures.md)).
 
-Next steps considered: wire use 3 and absence dates, a session prompt that names the plan's countermeasure, one sub-agent per retail site to compare offers, the MaPrimeAdapt' home adaptation grant and tradespeople quotes.
+Next steps considered: departure date entry, a session prompt that names the plan's countermeasure, one sub-agent per retail site to compare offers, the MaPrimeAdapt' home adaptation grant and tradespeople quotes.
 
 ## What the code guarantees
 

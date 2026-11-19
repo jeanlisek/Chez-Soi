@@ -124,7 +124,7 @@ La fiche distingue les secours vérifiés du clip app, dont la disponibilité re
 
 **2. Avec un compte (5 minutes).**
 
-1. Se connecter par Google ou par lien e-mail : le logement est créé, le parcours commence au profil.
+1. Se connecter par lien e-mail, avec n'importe quelle adresse. La connexion Google n'accepte que les comptes `@eugeniaschool.com` : l'application Google est limitée à l'organisation Google d'Eugenia. Le logement est créé et le parcours commence au profil.
 2. Remplir le profil, puis déposer la vidéo d'une pièce (MP4 ou MOV, 50 Mo au plus). Le Space se réveille à l'ouverture de l'écran ; l'analyse prend quelques minutes.
 3. Facultatif : déposer un contrat d'assurance habitation en PDF. Les clauses retenues apparaissent avec leur page. Le même écran peut lancer l'agent qui retrouve les conditions générales sur le site de l'assureur.
 4. Ouvrir le plan d'action, confirmer la cote d'un point, puis lancer l'agent. L'écran suit la vraie session H et demande la validation avant tout engagement. Approuver ne commande rien.
@@ -154,7 +154,7 @@ Les variables d'environnement sont listées dans [`.env.example`](.env.example) 
 
 En production :
 
-- connexion par Google ou lien e-mail, création du logement ; écran Compte pour modifier le profil, gérer plusieurs occupants (la règle du plus vulnérable s'applique) et refilmer une pièce ;
+- connexion par lien e-mail (toute adresse) ou par Google (comptes Eugenia uniquement), création du logement ; écran Compte pour modifier le profil, gérer plusieurs occupants (la règle du plus vulnérable s'applique) et refilmer une pièce ;
 - capture guidée (conseils pour bien filmer, import d'une vidéo déjà tournée, relecture avant l'envoi), analyse sur le Space (réveil automatique, nouveaux essais), points de risque et cotes en base, modèle 3D et image annotée de chaque pièce dans le stockage privé ; une pièce refilmée remplace ses anciens points, sauf ceux dont la cote a été confirmée ;
 - écran du point : photo cadrée sur l'élément et « photo en relief » de la surface filmée ; côté vision, un objet revu dans plusieurs images n'est compté qu'une fois ;
 - profil en trois étapes, accord des habitants retirable à tout moment (capacités effacées sans accord) ; détection étendue aux serrures, escaliers, éclairages et détecteurs de fumée, repérés sans cote ;

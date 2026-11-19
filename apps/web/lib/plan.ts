@@ -115,6 +115,11 @@ export function elementCommun(element: string, piece: string | null): string {
   return e;
 }
 
+/** Vrai si la clause vise la porte d'entrée ou d'accès du logement. */
+export function visePorteEntree(o: { texte_court?: string | null; clause?: string | null }): boolean {
+  return /porte\s+d\s*['’]\s*(entr[ée]e|acc[eè]s)/iu.test(`${o.texte_court ?? ""} ${o.clause ?? ""}`);
+}
+
 function nombre(v: unknown): number | null {
   if (v === null || v === undefined || v === "") return null;
   const n = Number(v);
@@ -301,6 +306,7 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
   const lignes: Ligne[] = [];
   const diagnostics: { logement_id: string; faille_id: string; regle_id: string; regle_version: number; verdict: Verdict }[] = [];
   let ignorees = 0;
+  const obligationsRetenues = new Set<string>();
 
   for (const f of failles) {
     let element = elementCommun(f.element, f.piece);
@@ -340,8 +346,13 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
         retenue = ligne;
     }
     // Le contrat passe avant la loi et le recommandé, avec sa clause et sa page.
-    const ob = obligations.find((o) => o.element === element);
+    // Une clause qui vise la porte d'entrée ne s'applique qu'au point repéré dans l'entrée (et une seule
+    // fois) : la serrure de la salle de bain ne doit pas hériter de la serrure 3 points du contrat.
+    const ob = obligations.find(
+      (o) => o.element === element && !obligationsRetenues.has(o.id) && (!visePorteEntree(o) || /entr[ée]e/i.test(f.piece ?? "")),
+    );
     if (ob) {
+      obligationsRetenues.add(ob.id);
       const cm = contreMesure(element, f, null, ob.texte_court ?? "Exigence du contrat");
       retenue = {
         element,

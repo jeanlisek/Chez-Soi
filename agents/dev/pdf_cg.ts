@@ -69,14 +69,17 @@ export function chercherReference(pdf: Buffer, reference: string): "trouvee" | "
 
 /**
  * Télécharge le document et contrôle la référence. Lecture seule : un GET public, sans
- * cookie ni identifiant. Le PDF est rangé dans `dossierPdf` (ignoré par git).
+ * cookie ni identifiant. Le PDF est rangé par `enregistrer` (serveur : bucket privé
+ * `contrats`) ou, à défaut, dans `dossierPdf` (scripts locaux, dossier ignoré par git).
  */
 export async function controlerDocument(options: {
   url: string;
   domaines: readonly string[];
   referenceAttendue: string;
-  dossierPdf: string;
+  dossierPdf?: string;
   prefixe: string;
+  /** Range le PDF vérifié et renvoie son chemin (`fichier_local`). */
+  enregistrer?: (pdf: Buffer, sha256: string) => Promise<string | null>;
 }): Promise<ControleDocument> {
   const resultat: ControleDocument = {
     url: options.url,
@@ -127,10 +130,14 @@ export async function controlerDocument(options: {
     }
     resultat.sha256 = createHash("sha256").update(pdf).digest("hex");
     resultat.reference = chercherReference(pdf, options.referenceAttendue);
-    await mkdir(options.dossierPdf, { recursive: true });
-    const fichier = path.join(options.dossierPdf, `${options.prefixe}_${resultat.sha256.slice(0, 12)}.pdf`);
-    await writeFile(fichier, pdf);
-    resultat.fichier_local = path.relative(path.resolve(options.dossierPdf, "../../.."), fichier);
+    if (options.enregistrer) {
+      resultat.fichier_local = await options.enregistrer(pdf, resultat.sha256);
+    } else if (options.dossierPdf) {
+      await mkdir(options.dossierPdf, { recursive: true });
+      const fichier = path.join(options.dossierPdf, `${options.prefixe}_${resultat.sha256.slice(0, 12)}.pdf`);
+      await writeFile(fichier, pdf);
+      resultat.fichier_local = path.relative(path.resolve(options.dossierPdf, "../../.."), fichier);
+    }
   } catch (erreur) {
     resultat.erreur = erreur instanceof Error ? erreur.message : String(erreur);
   }

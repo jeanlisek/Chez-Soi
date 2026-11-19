@@ -14,20 +14,14 @@ import {
 import { estEtatTerminal, outcomeConnu, type ClientHai } from "@/lib/hai";
 import type { Database, Json } from "@/lib/supabase/types";
 
+import { ErreurRoute } from "./erreurs";
 import { traiterAppels } from "./outils";
-import { definitionUsage } from "./usages";
+import { definitionUsage, type ActionRun } from "./usages";
+
+export { ErreurRoute };
 
 type Admin = SupabaseClient<Database>;
 type Utilisateur = SupabaseClient<Database>;
-
-export class ErreurRoute extends Error {
-  constructor(
-    readonly statut: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
 
 function sansRequete(texte: string): string {
   try {
@@ -41,10 +35,11 @@ function sansRequete(texte: string): string {
 /* ---------- Création d'un run ---------- */
 
 /**
- * Crée une session H pour une action du logement de l'utilisateur. Vérifie, dans l'ordre :
- * le logement (RLS : l'utilisateur ne voit que le sien), l'action et sa faille, l'usage
- * connu, puis le quota de l'organisation (`queue: false` : jamais de session qui démarre
- * seule plus tard). Écrit la ligne `runs_agent` dès la création, avant tout webhook.
+ * Crée une session H pour le logement de l'utilisateur. Vérifie, dans l'ordre : l'usage, le
+ * logement (RLS : l'utilisateur ne voit que le sien), l'action quand l'usage en exige une
+ * (faille pour l'usage 2, absence pour l'usage 3, aucune pour l'usage 1), puis le quota de
+ * l'organisation (`queue: false` : jamais de session qui démarre seule plus tard). Écrit la
+ * ligne `runs_agent` dès la création, avant tout webhook.
  */
 export async function creerRun(params: {
   utilisateur: Utilisateur;
@@ -52,7 +47,7 @@ export async function creerRun(params: {
   hai: ClientHai;
   logementId: string;
   usage: number;
-  actionId: string;
+  actionId: string | null;
 }): Promise<{ session_id: string; run_id: string; agent: string }> {
   const { utilisateur, admin, hai, logementId, usage, actionId } = params;
   const definition = definitionUsage(usage);
@@ -61,13 +56,19 @@ export async function creerRun(params: {
   const { data: logement } = await utilisateur.from("logements").select("id").eq("id", logementId).maybeSingle();
   if (!logement) throw new ErreurRoute(404, "Logement introuvable.");
 
-  const { data: action } = await admin
-    .from("actions")
-    .select("id, faille_id, usage, failles!inner(logement_id)")
-    .eq("id", actionId)
-    .maybeSingle();
-  const failleLogement = (action?.failles as { logement_id?: string } | null)?.logement_id;
-  if (!action || failleLogement !== logementId) throw new ErreurRoute(404, "Action introuvable pour ce logement.");
+  let action: ActionRun = null;
+  if (definition.action) {
+    if (!actionId) throw new ErreurRoute(400, "Action requise pour cet usage.");
+    const { data } = await admin
+      .from("actions")
+      .select("id, faille_id, absence_id, failles(logement_id), absences(logement_id)")
+      .eq("id", actionId)
+      .maybeSingle();
+    const origine = (definition.action === "faille" ? data?.failles : data?.absences) as { logement_id?: string } | null;
+    if (!data || origine?.logement_id !== logementId) throw new ErreurRoute(404, "Action introuvable pour ce logement.");
+    action = { id: data.id, faille_id: data.faille_id, absence_id: data.absence_id };
+  }
+  const preparation = await definition.preparer(admin, logementId, action);
 
   const quota = await hai.lireQuota();
   if (quota.active >= quota.limit) {
@@ -76,9 +77,9 @@ export async function creerRun(params: {
 
   const session = await hai.creerSession({
     agent: definition.agent,
-    messages: definition.consigne({ faille_id: action.faille_id ?? undefined, logement_id: logementId, site: definition.site }),
+    messages: preparation.consigne,
     formatReponse: definition.formatReponse,
-    urlDepart: definition.urlDepart,
+    urlDepart: preparation.urlDepart,
     maxTimeS: 600,
     fileAttente: false,
     timezone: "Europe/Paris",
@@ -91,9 +92,9 @@ export async function creerRun(params: {
       session_id: session.id,
       usage: definition.usage,
       agent: definition.agent,
-      site: definition.site,
+      site: preparation.site,
       logement_id: logementId,
-      action_id: actionId,
+      action_id: action?.id ?? null,
       statut_final: session.status.status,
       agent_revision: session.agent_revision ?? null,
       debut: session.created_at ?? new Date().toISOString(),
@@ -105,7 +106,7 @@ export async function creerRun(params: {
     await hai.annulerSession(session.id).catch(() => undefined);
     throw new ErreurRoute(500, "Run non enregistré : session annulée.");
   }
-  await admin.from("actions").update({ statut: "en_cours" }).eq("id", actionId);
+  if (action) await admin.from("actions").update({ statut: "en_cours" }).eq("id", action.id);
   return { session_id: session.id, run_id: run.id, agent: definition.agent };
 }
 
@@ -138,7 +139,10 @@ export async function traiterSession(admin: Admin, hai: ClientHai, sessionId: st
   const actions: Record<string, number> = {};
   let coupe: { motif: string; source: string; url: string } | null = null;
   const motifs = {
-    stricts: [...MOTIFS_INTERDITS_PAR_DEFAUT.stricts, ...(definition?.motifsEnPlus ?? [])],
+    stricts: [
+      ...MOTIFS_INTERDITS_PAR_DEFAUT.stricts.filter((m) => !definition?.motifsEnMoins?.includes(m)),
+      ...(definition?.motifsEnPlus ?? []),
+    ],
     tunnel: MOTIFS_INTERDITS_PAR_DEFAUT.tunnel,
   };
   for (const evenement of changements.new_events) {
@@ -175,21 +179,12 @@ export async function traiterSession(admin: Admin, hai: ClientHai, sessionId: st
 
   // 3. Fin de session.
   if (estEtatTerminal(changements.status)) {
-    // Cote de la faille du run (et pas le tapis de démo) pour juger la dimension du produit.
-    let cote: { largeur_cm: number; longueur_cm: number } | undefined;
-    if (run.action_id) {
-      const { data: action } = await admin
-        .from("actions")
-        .select("failles(largeur_cm, longueur_cm, cote_confirmee_cm)")
-        .eq("id", run.action_id)
-        .maybeSingle();
-      const f = action?.failles as { largeur_cm: number | null; longueur_cm: number | null; cote_confirmee_cm: number | null } | null;
-      // Jamais `hauteur_cm` ici : pour un tapis, c'est l'épaisseur (contrat de la PR #46).
-      const largeur = f?.largeur_cm ?? f?.cote_confirmee_cm;
-      const longueur = f?.longueur_cm ?? f?.cote_confirmee_cm;
-      if (largeur && longueur) cote = { largeur_cm: largeur, longueur_cm: longueur };
-    }
-    const evaluation = definition?.evaluer(changements.answer, cote) ?? null;
+    const runUsage = { session_id: sessionId, logement_id: run.logement_id ?? "", action_id: run.action_id };
+    // Une évaluation qui échoue (contrat retiré entre-temps…) ne doit pas empêcher de clore le run.
+    const evaluation =
+      definition && run.logement_id ? await definition.evaluer(admin, runUsage, changements.answer).catch(() => null) : null;
+    const enPlus =
+      definition?.apresFin && evaluation ? await definition.apresFin(admin, runUsage, evaluation).catch(() => ({})) : {};
     await admin
       .from("runs_agent")
       .update({
@@ -207,6 +202,7 @@ export async function traiterSession(admin: Admin, hai: ClientHai, sessionId: st
         ecarts_metier: evaluation?.ecarts_metier ?? null,
         pages_vues: [...pages],
         actions_agent: actions as Json,
+        ...enPlus,
       })
       .eq("session_id", sessionId);
     if (run.action_id) await admin.from("actions").update({ statut: "proposee" }).eq("id", run.action_id);

@@ -1,55 +1,140 @@
+import "server-only";
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import type { CheminsAutorises } from "../../../../agents/dev/boucle";
-import { controlerSortieUsage2, evaluerSortie, type Evaluation } from "../../../../agents/dev/controle";
-import { sortieUsage2Schema, versJsonSchema } from "@/lib/schemas";
+import { controlerSortieUsage1, controlerSortieUsage2, evaluerSortie, type Evaluation } from "../../../../agents/dev/controle";
+import { sortieUsage1Schema, sortieUsage2Schema, versJsonSchema } from "@/lib/schemas";
+import type { Database } from "@/lib/supabase/types";
+
+import { verifierCgUsage1 } from "./contrat_cg";
+import { ErreurRoute } from "./erreurs";
+
+type Admin = SupabaseClient<Database>;
 
 /**
  * Ce que l'application sait de chaque usage de l'agent H. Les règles permanentes (aucune
- * connexion, panier comme dernière page, validation…) et la déclaration des custom tools
+ * connexion, panier comme dernière page, aucun envoi…) et la déclaration des custom tools
  * vivent dans l'agent maison créé sur H (`agents/definitions/`, figé sur `nom:N`) : la session
  * ne porte que la tâche, le format de réponse et la page de départ.
  *
- * Usages 1 et 3 : leurs schémas de sortie et leurs contrôles arrivent avec les PR #17 et #21.
- * Ils s'ajoutent ici dès leur fusion (même forme que l'usage 2).
+ * Usage 3 : il s'ajoute ici avec la PR #21, sous la même forme.
  */
-export type ContexteTache = { faille_id?: string; logement_id: string; site?: string };
+export type RunUsage = { session_id: string; logement_id: string; action_id: string | null };
+export type ActionRun = { id: string; faille_id: string | null; absence_id: string | null } | null;
+export type Preparation = { site: string; urlDepart: string; consigne: string };
 
 export type DefinitionUsage = {
   usage: 1 | 2 | 3;
   /** Agent maison sur H, révision figée. */
   agent: string;
-  site: string;
-  urlDepart: string;
   formatReponse: Record<string, unknown>;
-  consigne: (contexte: ContexteTache) => string;
-  /** `cote` : dimensions de la faille du run, pour comparer le produit (usage 2). */
-  evaluer: (reponse: unknown, cote?: { largeur_cm: number; longueur_cm: number }) => Evaluation<unknown>;
+  /** Origine de l'action exigée : faille (usage 2), absence (usage 3), aucune (usage 1, lecture seule). */
+  action: "faille" | "absence" | null;
+  preparer: (admin: Admin, logementId: string, action: ActionRun) => Promise<Preparation>;
+  evaluer: (admin: Admin, run: RunUsage, reponse: unknown) => Promise<Evaluation<unknown>>;
+  /** Après la fin : colonnes `runs_agent` en plus (usage 1 : `controle_document`). */
+  apresFin?: (
+    admin: Admin,
+    run: RunUsage,
+    evaluation: Evaluation<unknown>,
+  ) => Promise<Partial<Database["public"]["Tables"]["runs_agent"]["Update"]>>;
   /** Mots d'URL qui déclenchent le coupe-circuit, en plus des motifs par défaut. */
   motifsEnPlus?: string[];
+  /** Motifs par défaut retirés pour cet usage. */
+  motifsEnMoins?: string[];
   /** Liste blanche des pages pour la démo : toute autre page déclenche le coupe-circuit. */
   cheminsAutorises?: CheminsAutorises;
 };
 
+/* ---------- Contrat et assureur du logement ---------- */
+
+async function contratEtAssureur(admin: Admin, logementId: string) {
+  const { data: contrat } = await admin
+    .from("contrats")
+    .select("id, reference_cg, assureur, assureurs(nom, domaines, url_depart)")
+    .eq("logement_id", logementId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!contrat) throw new ErreurRoute(409, "Aucun contrat pour ce logement : l'usage 1 en a besoin.");
+  const assureur = contrat.assureurs as { nom: string; domaines: string[]; url_depart: string | null } | null;
+  if (!assureur?.domaines?.length) throw new ErreurRoute(409, "Contrat sans assureur du référentiel (contrats.assureur_id).");
+  return { contrat, assureur };
+}
+
+/* ---------- Usage 1 : conditions générales (lecture seule) ---------- */
+
+const usage1: DefinitionUsage = {
+  usage: 1,
+  agent: "chez-soi-sourcing:1",
+  formatReponse: versJsonSchema(sortieUsage1Schema),
+  action: null,
+  preparer: async (admin, logementId) => {
+    const { assureur } = await contratEtAssureur(admin, logementId);
+    const urlDepart = assureur.url_depart ?? `https://www.${assureur.domaines[0]}`;
+    return {
+      site: new URL(urlDepart).hostname,
+      urlDepart,
+      consigne: [
+        `Retrouve, sur le site officiel de l'assureur, les conditions générales du contrat d'assurance habitation du logement ${logementId}, et renvoie leur adresse.`,
+        `Appelle d'abord get_contrat avec logement_id = "${logementId}" et champs = ["assureur", "formule", "reference_cg"].`,
+        "Rends ta réponse dès que tu as l'adresse des conditions générales. La fiche d'information est facultative : donne-la seulement si son lien est sur la même page. Dans reference_trouvee, le code de référence lu (jamais le nom du fichier). Si le document n'est pas public, trouve = false avec la raison.",
+      ].join("\n"),
+    };
+  },
+  evaluer: async (admin, run, reponse) => {
+    const { contrat, assureur } = await contratEtAssureur(admin, run.logement_id);
+    return evaluerSortie(reponse, sortieUsage1Schema, (s) =>
+      controlerSortieUsage1(s, { domaines: assureur.domaines, reference: contrat.reference_cg ?? "" }),
+    ) as Evaluation<unknown>;
+  },
+  apresFin: async (admin, run, evaluation) => {
+    const controle = await verifierCgUsage1(admin, run, evaluation);
+    return controle ? { controle_document: controle } : {};
+  },
+};
+
+/* ---------- Usage 2 : objets (arrêt au panier) ---------- */
+
 const usage2: DefinitionUsage = {
   usage: 2,
   agent: "chez-soi-acheteur:1",
-  site: "www.ikea.com/fr/fr",
-  urlDepart: "https://www.ikea.com/fr/fr",
   formatReponse: versJsonSchema(sortieUsage2Schema),
+  action: "faille",
   // IKEA France : accueil, recherche, catégories, fiche produit et panier. Rien d'autre.
   cheminsAutorises: [
     { hote: "ikea.com", exacts: ["/fr/fr"], prefixes: ["/fr/fr/search", "/fr/fr/cat/", "/fr/fr/p/", "/fr/fr/shoppingcart"] },
   ],
-  consigne: ({ faille_id, site }) =>
-    [
-      `Trouve sur le site ${site ?? "www.ikea.com/fr/fr"} un équipement compatible avec la faille ${faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
-      `Appelle d'abord get_mesures avec faille_id = "${faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,
+  preparer: async (_admin, _logementId, action) => ({
+    site: "www.ikea.com/fr/fr",
+    urlDepart: "https://www.ikea.com/fr/fr",
+    consigne: [
+      `Trouve sur le site www.ikea.com/fr/fr un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
+      `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,
       "Applique tes règles permanentes : vérification de la dimension sur la fiche, panier comme dernière page, demander_validation avec action « panier », puis plus aucune action et la réponse finale au format demandé.",
     ].join("\n"),
-  evaluer: (reponse, cote) =>
-    evaluerSortie(reponse, sortieUsage2Schema, (sortie) => controlerSortieUsage2(sortie, cote)) as Evaluation<unknown>,
+  }),
+  evaluer: async (admin, run, reponse) => {
+    // Cote de la faille du run (et pas le tapis de démo) pour juger la dimension du produit.
+    let cote: { largeur_cm: number; longueur_cm: number } | undefined;
+    if (run.action_id) {
+      const { data: action } = await admin
+        .from("actions")
+        .select("failles(largeur_cm, longueur_cm, cote_confirmee_cm)")
+        .eq("id", run.action_id)
+        .maybeSingle();
+      const f = action?.failles as { largeur_cm: number | null; longueur_cm: number | null; cote_confirmee_cm: number | null } | null;
+      // Jamais `hauteur_cm` ici : pour un tapis, c'est l'épaisseur (contrat de la PR #46).
+      const largeur = f?.largeur_cm ?? f?.cote_confirmee_cm;
+      const longueur = f?.longueur_cm ?? f?.cote_confirmee_cm;
+      if (largeur && longueur) cote = { largeur_cm: largeur, longueur_cm: longueur };
+    }
+    return evaluerSortie(reponse, sortieUsage2Schema, (s) => controlerSortieUsage2(s, cote)) as Evaluation<unknown>;
+  },
 };
 
-export const USAGES: Partial<Record<1 | 2 | 3, DefinitionUsage>> = { 2: usage2 };
+export const USAGES: Partial<Record<1 | 2 | 3, DefinitionUsage>> = { 1: usage1, 2: usage2 };
 
 export function definitionUsage(usage: number): DefinitionUsage | null {
   return USAGES[usage as 1 | 2 | 3] ?? null;

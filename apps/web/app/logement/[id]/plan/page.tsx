@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { Chip, ExempleTag, Illus, Logo, RoundButton, Ring, Screen, Signal, SignalShape, cx, useValidationEnAttente } from "@/components/cs/ui";
+import { Chip, ExempleTag, Illus, Logo, Pill, RoundButton, Ring, Screen, Signal, SignalShape, cx, useValidationEnAttente } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { LIBELLE_NIVEAU, type Faille, type Niveau, type Piece, type Risque } from "@/lib/domaine";
 
@@ -59,6 +59,9 @@ export default function PagePlan() {
   const plan = disposer(logement.pieces);
   const prenom = logement.occupant.libelle;
 
+  // Maquette : tant qu'aucune pièce n'est analysée et qu'aucun point n'existe, l'accueil invite à filmer.
+  const sansDiagnostic = !logement.exemple && toutes.length === 0 && !logement.pieces.some((p) => p.analyse === "terminee");
+
   return (
     <Screen nav="accueil" className="gap-3">
       <div className="flex items-center gap-3">
@@ -69,6 +72,7 @@ export default function PagePlan() {
             Logement de {prenom}{logement.type ? ` · ${logement.type}` : ""}
           </Link>
         </span>
+        <RoundButton icon="chart" label="Suivi du logement" href={`${base}/suivi`} />
         <RoundButton icon="user" label="Compte et profil" href={`${base}/compte`} />
         <span className="relative">
           <RoundButton icon="bell" label={enAttente ? "Notifications, 1 validation en attente" : "Notifications"} href={enAttente ? `${base}/agent/validation` : undefined} />
@@ -77,6 +81,19 @@ export default function PagePlan() {
       </div>
       {logement.exemple && <ExempleTag />}
 
+      {sansDiagnostic ? (
+        <div className="anim-in flex flex-1 flex-col gap-3.5">
+          <section className="relative flex min-h-[220px] flex-col justify-end gap-1.5 overflow-hidden rounded-card bg-pervenche px-5 pt-[110px] pb-5">
+            <Illus name="appareil" width={110} className="absolute top-5 left-1/2 -translate-x-1/2" />
+            <h1 className="text-[23px] leading-7 font-extrabold">Pas encore de diagnostic</h1>
+            <p className="text-sm leading-[19px] text-ink-soft">
+              {logement.pieces.length ? "Vos vidéos sont en cours d'analyse. Le diagnostic arrive dès la première pièce terminée." : "Il faut d'abord filmer le logement. Une vidéo par pièce, 30 secondes."}
+            </p>
+          </section>
+          <Pill href={logement.pieces.length ? `${base}/analyse` : `${base}/capture`}>{logement.pieces.length ? "Suivre l'analyse" : "Filmer ce logement"}</Pill>
+          <Pill href={`${base}/compte`} variant="contour">Voir le profil</Pill>
+        </div>
+      ) : (<>
       <section className="relative h-[170px] flex-none overflow-hidden rounded-card bg-pervenche px-5 py-[18px]">
         <span className="absolute top-4 right-4"><Ring value={reglees} total={Math.max(toutes.length, 1)} /></span>
         <h1 className="text-[23px] leading-7 font-extrabold">
@@ -146,6 +163,7 @@ export default function PagePlan() {
           )}
         </>
       )}
+      </>)}
     </Screen>
   );
 }

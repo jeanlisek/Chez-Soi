@@ -24,9 +24,9 @@ Persona de démo, fictif : Marc aide sa mère Jeanne, 79 ans, qui vit seule en r
 
 ## La solution
 
-1. **Profil** de l'occupant : capacités fonctionnelles (déplacement, vue, audition, vigilance), jamais de diagnostic, avec un consentement daté.
+1. **Profil** des occupants (plusieurs par logement) : capacités fonctionnelles (déplacement, vue, audition, vigilance), jamais de diagnostic, avec un accord daté et retirable. Sans accord, les capacités sont effacées.
 2. **Contrat** (facultatif) : le PDF est lu, chaque clause retenue garde sa citation et sa page. Une clause sans preuve dans le PDF est rejetée.
-3. **Visite** : une vidéo par pièce. Le service vision reconstruit la pièce en 3D, repère les points de risque et estime leurs cotes.
+3. **Visite** : une vidéo par pièce, filmée de l'intérieur. Le service vision reconstruit la pièce en 3D, repère les points de risque (tapis, portes, fenêtres, serrure, escalier, éclairage, détecteur de fumée) et estime les cotes des tapis, portes et fenêtres. Un second modèle d'images revoit chaque point pour écarter les confusions (une pomme de douche n'est pas un détecteur de fumée). L'utilisateur confirme les cotes avant toute action, et peut signaler une erreur de détection.
 4. **Plan d'action** : chaque point est confronté aux règles validées. Ordre du verdict : contrat (clause et page), puis loi, puis recommandation. Un LLM rédige l'explication, un garde-fou en code la relit.
 5. **Agent** : l'agent H cherche un produit du bon type et aux bonnes dimensions, le met au panier et s'arrête. Rien ne part sans le clic de l'utilisateur.
 6. **Absence** : au-delà du seuil d'inoccupation du contrat, l'app prépare l'information de l'assureur et l'Opération tranquillité vacances, sans envoi.
@@ -35,11 +35,11 @@ Persona de démo, fictif : Marc aide sa mère Jeanne, 79 ans, qui vit seule en r
 
 | Couche | Rôle | Technologie |
 |---|---|---|
-| Voir | Reconstruction 3D, cotes, détection ; lecture du contrat | Space GPU **Hugging Face** (FastAPI, modèles de vision), embeddings `BAAI/bge-m3` et LLM par HF Inference Providers |
+| Voir | Reconstruction 3D, cotes, détection ; lecture du contrat | Space GPU **Hugging Face** (FastAPI) : MoGe-2 (cotes), Grounding DINO et SAM 2.1 (détection, contours), SigLIP (vérification des points), MapAnything (3D) ; Docling (contrat). Embeddings `BAAI/bge-m3` et LLM par HF Inference Providers. Tous les modèles sont figés sur une révision, sous licence MIT ou Apache 2.0 |
 | Décider | Règles, graphe de connaissances, verdict, explication | Postgres + pgvector (Supabase), TypeScript, **Vercel AI SDK**, Zod |
 | Agir | Conditions générales de l'assureur, achat d'objets, démarches | **H Company** Agents API : agents maison, custom tools, skill `verifier-dimension`, webhooks signés |
 | Montrer | Parcours, vue 3D, validation, mode absence | Next.js 15 sur **Vercel**, Tailwind, three.js |
-| Socle | Données, stockage, authentification, orchestration | Supabase (RLS sur les 22 tables), n8n |
+| Socle | Données, stockage, authentification, orchestration | Supabase (RLS sur les 22 tables, hébergé à Paris), n8n |
 
 ## L'architecture
 
@@ -62,10 +62,7 @@ flowchart LR
 
 Détail des circuits : [`docs/architecture.md`](docs/architecture.md). Contexte complet et règles de travail : [`CLAUDE.md`](CLAUDE.md).
 
-Démo : [fiche de déroulé](docs/deroule-demo.md), [PDF d’une page](output/pdf/chez-soi-deroule-demo.pdf)
-et [protocole du replay depuis l’app](docs/protocole-replay-app.md). Jean-Li enregistre
-et parle, Hoang-Kim prépare la trame ; Bastian fournit le protocole et la fiche.
-La fiche distingue les secours vérifiés du clip app, dont la disponibilité reste à contrôler.
+Démo : [fiche de déroulé](docs/deroule-demo.md) et [protocole du replay depuis l’app](docs/protocole-replay-app.md).
 
 ## Comment tester
 
@@ -92,20 +89,24 @@ Les variables d'environnement sont listées dans [`.env.example`](.env.example) 
 
 ## État au 19 novembre
 
-En production :
+En production sur https://chezsoi.vercel.app :
 
-- connexion par Google ou lien e-mail, création du logement et du profil ;
-- dépôt de la vidéo, analyse sur le Space (réveil automatique, nouveaux essais), failles et cotes en base, modèle 3D de chaque pièce conservé et affiché ;
-- plan d'action calculé sur les règles, avec le graphe pour reconnaître les éléments et une explication rédigée par un LLM puis contrôlée par du code ;
+- connexion par Google ou lien e-mail, logement, profil complet de plusieurs occupants, accord retirable, déménagement (les vidéos et analyses de l'ancien logement sont effacées) ;
+- dépôt d'une vidéo par pièce, analyse sur le Space GPU (réveil automatique, nouveaux essais), points de risque et cotes en base, photo annotée et modèle 3D de chaque pièce ;
+- plan d'action calculé sur 13 règles en vigueur, chacune sourcée (24 sources : Légifrance, Santé publique France, HAS, AFNOR, Service-Public…) et validée par une personne ; le graphe de connaissances (50 nœuds, 35 arêtes) relie clauses, articles de loi, règles, éléments et contre-mesures ;
 - lecture du contrat de bout en bout, testée avec des conditions particulières fictives ;
-- agent H dans l'application, usage 2 (achat d'objets, depuis le plan d'action) et usage 1 (conditions générales de l'assureur, depuis l'écran Contrat, PDF vérifié par le code) : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Les routes ont été prouvées par un run réel le 19/11 ; le parcours complet à l'écran reste à rejouer en production.
-
-Prêt dans le code, pas encore lancé depuis un écran : usage 3 (préparer l'OTV et l'information de l'assureur avant une absence).
+- les trois usages de l'agent H, lancés depuis l'app avec de vrais runs le 19/11 :
+  - **usage 1**, conditions générales : l'agent retrouve le PDF sur le site de l'assureur ; le code le télécharge et vérifie lui-même la référence ;
+  - **usage 2**, achat d'objets : l'agent trouve un antidérapant pour tapis aux bonnes dimensions sur IKEA France, le met au panier, puis s'arrête sur `demander_validation` ; l'utilisateur a refusé, rien n'a été commandé ;
+  - **usage 3**, absence : à partir des dates saisies, l'agent prépare le récapitulatif de l'Opération tranquillité vacances et de l'information de l'assureur ; rien n'est envoyé, l'utilisateur se connecte lui-même ;
+- chaque run est suivi à l'écran, pilotable en cours de route (« moins de 50 € »), arrêtable, et tracé dans `runs_agent` (étapes, pages vues, coût : 0,03 à 0,08 $ par session).
 
 Limites connues :
 
-- sur un vrai logement, l'écran Absence affiche encore les dates de la persona : la saisie des dates n'est pas branchée ;
-- le service vision repose sur un Space qui se met en veille après 30 minutes : le premier appel attend son réveil.
+- la détection peut encore se tromper : l'utilisateur confirme les cotes et peut retirer un point ;
+- seul l'intérieur du logement est analysé ;
+- le Space se met en veille après 30 minutes : le premier appel attend son réveil ;
+- l'usage 3 tourne dans le navigateur cloud de H, pas dans celui de l'utilisateur ; « voir le navigateur en direct » n'existe que sur le logement exemple (replay).
 
 Pas commencé : réalité augmentée, export Minecraft.
 
@@ -113,6 +114,7 @@ Pas commencé : réalité augmentée, export Minecraft.
 
 - **Le LLM explique, il ne décide pas.** Le verdict vient des règles validées ; la sortie du modèle ne contient que le texte de l'explication, relu par un garde-fou (aucun chiffre inventé, pas de « obligatoire » pour une recommandation).
 - **L'agent s'arrête avant tout engagement** : l'outil `demander_validation` et un coupe-circuit dans le code, pas seulement une consigne.
+- **Le code relit le travail de l'agent** : dimensions, nom du produit, citation de la fiche. Lors du run du 19/11 au soir, il a relevé une citation qui n'était pas mot pour mot celle de la fiche (« tissus » au lieu de « tapis ») et a marqué le produit à refuser.
 - **Le PDF du contrat ne va jamais à l'agent** ; il ne reçoit que les champs demandés.
 - **Données de santé** : rien de ce qui décrit une personne ne part chez l'agent ni chez le LLM, seulement les contraintes sur l'objet.
 - **Aucun secret dans le dépôt** ; données de démo fictives uniquement.
@@ -124,7 +126,7 @@ Pas commencé : réalité augmentée, export Minecraft.
 | `apps/web/` | Application Next.js : écrans, routes API, calcul du plan (`lib/plan.ts`), graphe (`lib/graphe`), explication (`lib/llm.ts`), agent H (`lib/agent`) |
 | `services/vision/` | Service FastAPI du Space : pipeline vidéo (`/analyse`) et lecture du contrat (`/contrat`) |
 | `agents/` | Définitions des agents maison, prompts, déclarations d'outils, skill `verifier_dimension`, runs réels enregistrés |
-| `supabase/` | Migrations 0001 à 0010, seed des règles et du graphe, tests SQL |
+| `supabase/` | Migrations 0001 à 0012, seed des règles et du graphe, tests SQL |
 | `n8n/` | Workflows exportés : analyse vidéo, lecture du contrat, réveil du Space, veille réglementaire |
 | `docs/` | Architecture, mesures, règles |
 
@@ -138,4 +140,8 @@ Jean-Li Sek (CEO), Briac Turquety (CTO, CDO), Aurélie Périchon (CAIO), Bastian
 
 [1] Santé publique France, « Hospitalisations et mortalité en lien avec une chute chez les personnes de 65 ans et plus en France. Données 2015-2024 », bulletin national, 12 mars 2026, mis à jour le 16 mars 2026. [En ligne]. Disponible : https://www.santepubliquefrance.fr/traumatismes/chute/bulletin-national/hospitalisations-et-mortalite-en-lien-avec-une-chute-chez-les-personnes-de-65-ans-et-plus-en-france
 
-[2] SSMSI, bilan statistique « Insécurité et délinquance en 2025 », cité par DegroupTest, « Bonne nouvelle : les cambriolages ont reculé en 2025, mais les grandes villes restent plus exposées » (source secondaire). [En ligne]. Disponible : https://www.degrouptest.com/actualite/cambriolages-recul-2025-ssmsi-disparites-regionales
+[2] SSMSI, « Insécurité et délinquance en 2025 : bilan statistique et atlas départemental », Interstats, ministère de l'Intérieur, 9 juillet 2026. [En ligne]. Disponible : https://www.interieur.gouv.fr/Interstats/Actualites/Insecurite-et-delinquance-en-2025-bilan-statistique-et-atlas-departemental. Chiffre de 211 600 repris par DegroupTest : https://www.degrouptest.com/actualite/cambriolages-recul-2025-ssmsi-disparites-regionales
+
+## In English
+
+Chez Soi turns a video of a home (and, optionally, the home insurance contract) into a safety plan fitted to the people who live there, against falls and burglary. A Hugging Face GPU Space reconstructs each room in 3D, finds risk points and measures them; a second vision model double-checks every point. A rules engine on Postgres + pgvector decides the verdict (contract clause with page, then law, then recommendation); an LLM only writes the explanation. H Company agents then do the legwork on real websites (insurer's terms, a product with the right dimensions in the cart, holiday-watch paperwork) and always stop before paying, sending or signing: the stop is enforced in code through the `demander_validation` tool and a circuit breaker. Try it without an account at https://chezsoi.vercel.app (example home, fictitious persona).

@@ -154,6 +154,28 @@
         [
           {
             "index": 0,
+            "node": "18 · Télécharger l'image annotée",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "18 · Télécharger l'image annotée": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "19 · Déposer l'image annotée",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "19 · Déposer l'image annotée": {
+      "main": [
+        [
+          {
+            "index": 0,
             "node": "10 · Préparer le retour à l'app",
             "type": "main"
           }
@@ -883,7 +905,7 @@
       "id": "c06aa686-14c4-53df-8b82-c274e9103414",
       "name": "10 · Préparer le retour à l'app",
       "parameters": {
-        "jsCode": "// Résultat du Space (GET /analyse/{id}) → corps attendu par l'app (POST /api/analyse/resultat).\nconst lu = $('09 · Lire l\\'analyse du Space').last().json;\nconst r = lu.statusCode === 200 && lu.body && typeof lu.body === 'object' ? lu.body : {};\n// Modèle 3D copié dans Supabase (nœuds 15 à 17) : chemin renvoyé à l'app, sinon null.\nlet modele_3d_path = null;\ntry {\n  const depot = $('17 · Déposer dans modeles3d').last().json;\n  const url = $('15 · Demander l\\'URL de dépôt').first().json;\n  if (depot.statusCode >= 200 && depot.statusCode < 300 && url.body && url.body.path) modele_3d_path = url.body.path;\n} catch (e) { /* nœuds non exécutés : pas de modèle */ }\nconst i = $('04 · Interpréter la réponse').first().json;\nconst fini = r.etat === 'termine';\nreturn [{ json: {\n  analyse_id: i.analyse_id,\n  logement_id: i.logement_id,\n  etat: fini ? 'termine' : 'echec',\n  resultat: r.resultat ?? null,\n  service_analyse_id: i.service_analyse_id,\n  failles: fini && Array.isArray(r.failles) ? r.failles : [],\n  modele_3d_url: r.modele_3d_url ?? null,\n  modele_3d_path,\n  erreur: fini ? null : (r.erreur ?? (r.etat === 'en_cours' ? 'Analyse trop longue : délai dépassé' : 'Service vision injoignable (HTTP ' + lu.statusCode + ')')),\n} }];\n"
+        "jsCode": "// Résultat du Space (GET /analyse/{id}) → corps attendu par l'app (POST /api/analyse/resultat).\nconst lu = $('09 · Lire l\\'analyse du Space').last().json;\nconst r = lu.statusCode === 200 && lu.body && typeof lu.body === 'object' ? lu.body : {};\n// Modèle 3D copié dans Supabase (nœuds 15 à 17) : chemin renvoyé à l'app, sinon null.\nlet modele_3d_path = null;\ntry {\n  const depot = $('17 · Déposer dans modeles3d').last().json;\n  const url = $('15 · Demander l\\'URL de dépôt').first().json;\n  if (depot.statusCode >= 200 && depot.statusCode < 300 && url.body && url.body.path) modele_3d_path = url.body.path;\n} catch (e) { /* nœuds non exécutés : pas de modèle */ }\n// Image annotée copiée dans Supabase (nœuds 18 et 19) : chemin renvoyé à l'app, sinon null.\nlet image_annotee_path = null;\ntry {\n  const depotImage = $('19 · Déposer l\\'image annotée').last().json;\n  const url = $('15 · Demander l\\'URL de dépôt').first().json;\n  if (depotImage.statusCode >= 200 && depotImage.statusCode < 300 && url.body && url.body.image_path) image_annotee_path = url.body.image_path;\n} catch (e) { /* nœuds non exécutés : pas d'image */ }\nconst i = $('04 · Interpréter la réponse').first().json;\nconst fini = r.etat === 'termine';\nreturn [{ json: {\n  analyse_id: i.analyse_id,\n  logement_id: i.logement_id,\n  etat: fini ? 'termine' : 'echec',\n  resultat: r.resultat ?? null,\n  service_analyse_id: i.service_analyse_id,\n  failles: fini && Array.isArray(r.failles) ? r.failles : [],\n  modele_3d_url: r.modele_3d_url ?? null,\n  modele_3d_path,\n  image_annotee_path,\n  erreur: fini ? null : (r.erreur ?? (r.etat === 'en_cours' ? 'Analyse trop longue : délai dépassé' : 'Service vision injoignable (HTTP ' + lu.statusCode + ')')),\n} }];\n"
       },
       "position": [
         2800,
@@ -1205,6 +1227,82 @@
       },
       "position": [
         3460,
+        240
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "GonCoee08q3s4Crd",
+          "name": "Chez Soi · vision Space"
+        }
+      },
+      "id": "cbb5e77c-e0e0-4471-887d-ae15fab76595",
+      "name": "18 · Télécharger l'image annotée",
+      "notes": "GET du .glb sur le Space (jeton HF et clé du service via le credential).",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "method": "GET",
+        "options": {
+          "response": {
+            "response": {
+              "outputPropertyName": "image",
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 60000
+        },
+        "url": "={{ $('Config').first().json.VISION_SERVICE_URL }}{{ $('09 · Lire l\\'analyse du Space').last().json.body.image_annotee_url || '/analyse/' + $('04 · Interpréter la réponse').first().json.service_analyse_id + '/fichiers/image_annotee.jpg' }}"
+      },
+      "position": [
+        3680,
+        240
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "f1794e69-40d1-4913-9619-f9b43848b46a",
+      "name": "19 · Déposer l'image annotée",
+      "notes": "PUT du fichier sur l'URL signée. Un échec ici n'empêche pas le retour à l'app : la vue 3D reprend alors la pièce schématique.",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "contentType": "binaryData",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "image/jpeg"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "inputDataFieldName": "image",
+        "method": "PUT",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 60000
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "url": "={{ $('15 · Demander l\\'URL de dépôt').first().json.body.image_signed_url }}"
+      },
+      "position": [
+        3900,
         240
       ],
       "type": "n8n-nodes-base.httpRequest",

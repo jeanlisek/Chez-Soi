@@ -119,6 +119,10 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     audition_reduite: o.audition_reduite,
     troubles_memoire: o.vigilance === "troubles_cognitifs",
     consentement_art9_le: o.consentement_art9_le,
+    nom: o.nom,
+    naissance: o.naissance,
+    contraintes: o.contraintes ?? [],
+    autre: o.autre,
   }));
   const occupant: Occupant = occupants[0]
     ? occupants[0]
@@ -282,6 +286,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     aidant: nomAidant,
     occupant,
     occupants,
+    adresse: l.adresse ?? null,
     type: l.type ?? "Logement",
     etage: l.etage == null ? "—" : l.etage === 0 ? "RDC" : `${l.etage}e`,
     statut:

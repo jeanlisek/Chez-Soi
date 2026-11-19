@@ -28,6 +28,11 @@ export type Occupant = {
   audition_reduite: boolean;
   troubles_memoire: boolean;
   consentement_art9_le: string | null;
+  /** Profil complet (migration 0011), facultatif. Jamais transmis à l'agent. */
+  nom?: string | null;
+  naissance?: string | null;
+  contraintes?: string[];
+  autre?: string | null;
 };
 
 export type Piece = {
@@ -117,6 +122,8 @@ export type Logement = {
   occupant: Occupant;
   /** Tous les occupants du logement (la règle qui protège le plus vulnérable s'applique). */
   occupants?: Occupant[];
+  /** Adresse du logement (facultative, jamais transmise à l'agent ni au service vision). */
+  adresse?: string | null;
   type: string;
   etage: string;
   statut: string;

@@ -623,6 +623,7 @@ export type Database = {
       }
       logements: {
         Row: {
+          adresse: string | null
           annee_construction: number | null
           ascenseur: boolean | null
           conservation_jusqu_au: string | null
@@ -639,6 +640,7 @@ export type Database = {
           zone_otv: string | null
         }
         Insert: {
+          adresse?: string | null
           annee_construction?: number | null
           ascenseur?: boolean | null
           conservation_jusqu_au?: string | null
@@ -655,6 +657,7 @@ export type Database = {
           zone_otv?: string | null
         }
         Update: {
+          adresse?: string | null
           annee_construction?: number | null
           ascenseur?: boolean | null
           conservation_jusqu_au?: string | null
@@ -777,6 +780,10 @@ export type Database = {
       }
       occupants: {
         Row: {
+          autre: string | null
+          contraintes: string[]
+          naissance: string | null
+          nom: string | null
           audition_reduite: boolean
           consentement_art9_le: string
           created_at: string
@@ -788,6 +795,10 @@ export type Database = {
           vue_reduite: boolean
         }
         Insert: {
+          autre?: string | null
+          contraintes?: string[]
+          naissance?: string | null
+          nom?: string | null
           audition_reduite?: boolean
           consentement_art9_le: string
           created_at?: string
@@ -799,6 +810,10 @@ export type Database = {
           vue_reduite?: boolean
         }
         Update: {
+          autre?: string | null
+          contraintes?: string[]
+          naissance?: string | null
+          nom?: string | null
           audition_reduite?: boolean
           consentement_art9_le?: string
           created_at?: string

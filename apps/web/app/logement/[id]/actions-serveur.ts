@@ -17,6 +17,12 @@ const profilSchema = z.object({
   type: z.string().max(10).optional(),
   etage: z.number().int().min(-1).max(60).optional(),
   statut_occupation: z.enum(["proprietaire", "locataire", "heberge"]).optional(),
+  /** Profil complet (migration 0011), facultatif. */
+  nom: z.string().trim().max(60).optional(),
+  naissance: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  contraintes: z.array(z.string().trim().min(1).max(60)).max(12).optional(),
+  autre: z.string().trim().max(300).optional(),
+  adresse: z.string().trim().max(200).optional(),
   /** Occupant à modifier (écran Compte). Absent : le premier occupant du logement. */
   occupant_id: z.uuid().optional(),
   /** Vrai : ajoute un occupant au logement au lieu d'en modifier un. */
@@ -39,6 +45,10 @@ export async function enregistrerProfil(entree: z.input<typeof profilSchema>): P
     audition_reduite: d.audition_reduite,
     vigilance: d.troubles_memoire ? ("troubles_cognitifs" as const) : ("adulte" as const),
     consentement_art9_le: new Date(d.consentement_art9_le).toISOString(),
+    nom: d.nom || null,
+    naissance: d.naissance || null,
+    contraintes: d.contraintes ?? [],
+    autre: d.autre || null,
   };
   const recherche = supabase.from("occupants").select("id").eq("logement_id", d.logement_id);
   const { data: existant } = d.nouveau
@@ -50,10 +60,10 @@ export async function enregistrerProfil(entree: z.input<typeof profilSchema>): P
     : await supabase.from("occupants").insert(occupant);
   if (error) return { ok: false, message: "Profil non enregistré." };
 
-  if (d.type || d.etage !== undefined || d.statut_occupation)
+  if (d.type || d.etage !== undefined || d.statut_occupation || d.adresse !== undefined)
     await supabase
       .from("logements")
-      .update({ type: d.type, etage: d.etage, statut_occupation: d.statut_occupation })
+      .update({ type: d.type, etage: d.etage, statut_occupation: d.statut_occupation, ...(d.adresse !== undefined ? { adresse: d.adresse || null } : {}) })
       .eq("id", d.logement_id);
 
   // Le profil change les règles applicables : on recalcule le plan (l'écriture ci-dessus, sous RLS,

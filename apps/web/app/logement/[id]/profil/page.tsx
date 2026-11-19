@@ -3,12 +3,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { BackButton, Chip, Header, Illus, Pill, Ring, Screen, cx } from "@/components/cs/ui";
+import { BackButton, Chip, DateField, Field, Header, Illus, Pill, Ring, Screen, TextArea, cx } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { LIBELLE_DEPLACEMENT, type Occupant } from "@/lib/domaine";
 
 import { enregistrerProfil } from "../actions-serveur";
 
+const CONTRAINTES = ["Se lève la nuit", "Vit seul", "Peur de tomber", "Se fatigue vite", "Difficulté à se baisser", "Utilise une aide technique", "Reçoit de l'aide à domicile"];
 const TYPES = ["Studio", "T1", "T2", "T3", "T4", "T5+"];
 const ETAGES: [string, number][] = [["RDC", 0], ["1er", 1], ["2e", 2], ["3e+", 3]];
 const STATUTS: [string, "proprietaire" | "locataire" | "heberge"][] = [["Propriétaire", "proprietaire"], ["Locataire", "locataire"], ["Hébergé", "heberge"]];
@@ -27,6 +28,8 @@ export default function PageProfil() {
     () => logement.occupants?.find((x) => x.id === cible) ?? { libelle: "", deplacement: 0, vue_reduite: false, audition_reduite: false, troubles_memoire: false, consentement_art9_le: null },
   );
   const o = cible ? local : etat.occupant;
+  const [etape, setEtape] = useState(1);
+  const [adresse, setAdresse] = useState(logement.adresse ?? "");
   const [type, setType] = useState(logement.type);
   const [etage, setEtage] = useState(logement.etage);
   const [statut, setStatut] = useState(logement.statut);
@@ -55,6 +58,11 @@ export default function PageProfil() {
       type: TYPES.includes(type) ? type : undefined,
       etage: ETAGES.find(([l]) => l === etage)?.[1],
       statut_occupation: STATUTS.find(([l]) => l === statut)?.[1],
+      nom: o.nom?.trim() || undefined,
+      naissance: o.naissance || undefined,
+      contraintes: o.contraintes ?? [],
+      autre: o.autre?.trim() || undefined,
+      adresse: adresse.trim(),
       occupant_id: cible && cible !== "nouveau" ? cible : undefined,
       nouveau: cible === "nouveau",
     });
@@ -68,8 +76,9 @@ export default function PageProfil() {
 
   return (
     <Screen className="gap-3.5">
-      <Header left={<BackButton href={depuisCompte ? suivant : "/"} />} title="Profil" right={depuisCompte ? undefined : <Ring value={1} total={3} size={48} track="#E3E5EE" />} />
+      <Header left={<BackButton href={depuisCompte ? suivant : "/"} />} title="Profil" right={<Ring value={etape} total={3} size={48} track="#E3E5EE" />} />
 
+      {etape === 2 && (<>
       <section className="relative min-h-[150px] overflow-hidden rounded-card bg-pervenche p-5">
         <div className="flex max-w-[190px] flex-col gap-1.5">
           <h2 className="text-[22px] leading-[27px] font-extrabold">Qui vit dans ce logement ?</h2>
@@ -129,7 +138,20 @@ export default function PageProfil() {
           <Chip active={o.troubles_memoire} onClick={() => setO({ troubles_memoire: !o.troubles_memoire })}>Troubles de mémoire</Chip>
         </div>
       </div>
+      {!logement.exemple && (
+        <div className="flex flex-col gap-2.5 rounded-[26px] bg-white px-4 py-3.5">
+          <Field id="nom" label="Nom (facultatif)" value={o.nom ?? ""} onChange={(v) => setO({ nom: v })} autoComplete="off" />
+          <DateField id="naissance" label="Date de naissance (facultative)" value={o.naissance ?? ""} onChange={(v) => setO({ naissance: v || null })} />
+        </div>
+      )}
+      </>)}
 
+      {etape === 1 && (<>
+      <section className="flex flex-col gap-1.5 rounded-card bg-pervenche p-5">
+        <h2 className="text-[22px] leading-[27px] font-extrabold">Le logement</h2>
+        <p className="text-sm leading-[19px] text-ink-soft">Son type et son étage changent les règles qui s&apos;appliquent.</p>
+      </section>
+      {!logement.exemple && <Field id="adresse" label="Adresse (facultative)" value={adresse} onChange={setAdresse} autoComplete="street-address" placeholder="12 rue des Lilas, Angers" />}
       {logement.exemple ? (
         <div className="flex gap-2">
           {[[logement.type, "logement"], [logement.etage, "étage"], [logement.statut, "statut"]].map(([v, l]) => (
@@ -163,7 +185,20 @@ export default function PageProfil() {
           ))}
         </section>
       )}
+      </>)}
 
+      {etape === 3 && (<>
+      <div className="flex flex-col gap-2.5">
+        <b className="text-[15px]">Au quotidien</b>
+        <p className="text-[13px] text-ink-muted">Ce qui compte pour adapter le logement. Des situations, jamais des diagnostics.</p>
+        <div className="flex flex-wrap gap-2">
+          {CONTRAINTES.map((c) => {
+            const on = (o.contraintes ?? []).includes(c);
+            return <Chip key={c} active={on} onClick={() => setO({ contraintes: on ? (o.contraintes ?? []).filter((x) => x !== c) : [...(o.contraintes ?? []), c] })}>{c}</Chip>;
+          })}
+        </div>
+        {!logement.exemple && <TextArea id="autre" label="Autre chose à savoir (facultatif)" value={o.autre ?? ""} onChange={(v) => setO({ autre: v })} />}
+      </div>
       <button
         type="button"
         role="checkbox"
@@ -182,12 +217,18 @@ export default function PageProfil() {
           </span>
         </span>
       </button>
+      </>)}
 
       <div className="mt-auto flex flex-col gap-2">
         {erreur && <p role="alert" className="rounded-[20px] bg-danger-bg px-4 py-3 text-sm font-semibold text-danger-text">{erreur}</p>}
-        <Pill onClick={continuer} disabled={!accord || envoi || prenomManquant}>
-          {!accord ? "Accord nécessaire pour continuer" : prenomManquant ? "Indiquez son prénom" : envoi ? "Enregistrement…" : "Continuer"}
-        </Pill>
+        {etape < 3 ? (
+          <Pill onClick={() => setEtape(etape + 1)} disabled={etape === 2 && prenomManquant}>{etape === 2 && prenomManquant ? "Indiquez son prénom" : "Continuer"}</Pill>
+        ) : (
+          <Pill onClick={continuer} disabled={!accord || envoi || prenomManquant}>
+            {!accord ? "Accord nécessaire pour continuer" : envoi ? "Enregistrement…" : "Enregistrer le profil"}
+          </Pill>
+        )}
+        {etape > 1 && <Pill onClick={() => setEtape(etape - 1)} variant="contour">Étape précédente</Pill>}
       </div>
     </Screen>
   );

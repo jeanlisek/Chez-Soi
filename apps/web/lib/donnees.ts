@@ -192,6 +192,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     const rg = a?.regles as { intitule: string; source_ref: string | null; source_url: string | null; force: string } | null | undefined;
     if (a?.force === "contrat" && ob) return { force: "contrat", clause: ob.clause ?? "Clause du contrat", page: ob.page };
     if (a?.force === "loi" && rg?.source_url) return { force: "loi", reference: rg.source_ref ?? rg.intitule, url: rg.source_url };
+    if (!a) return { force: "recommande", reference: "Repéré : aucune règle ne demande d'action" };
     return { force: "recommande", reference: rg?.intitule ? `Recommandé · ${rg.intitule}` : "Recommandé" };
   };
 
@@ -219,7 +220,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
       element: f.element,
       risque: f.risque,
       niveau: niveau(f.gravite, f.priorite),
-      description: a?.explication ?? "Point repéré sur votre vidéo.",
+      description: a?.explication ?? "Point repéré sur votre vidéo. Aucune règle (contrat, loi ou recommandation) ne demande d'action pour ce logement et ses habitants : il reste à surveiller.",
       source: sourceAction(a),
       cote:
         f.largeur_cm != null && f.longueur_cm != null

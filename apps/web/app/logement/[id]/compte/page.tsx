@@ -6,7 +6,10 @@ import { useEffect, useState } from "react";
 import { Icon } from "@/components/cs/icons";
 import { BackButton, ExempleTag, Header, Pill, Screen, SectionTitle, Signal } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
+import type { Occupant } from "@/lib/domaine";
 import { clientNavigateur } from "@/lib/supabase/client";
+
+import { supprimerOccupant } from "../actions-serveur";
 
 const DEPLACEMENT = ["sans gêne", "prudent", "avec une canne", "avec un déambulateur", "en fauteuil"];
 const ETAT_PIECE: Record<string, string> = { terminee: "analysée", en_cours: "analyse en cours", echec: "à refilmer", en_attente: "pas encore analysée" };
@@ -34,7 +37,18 @@ export default function PageCompte() {
     router.refresh();
   };
 
-  const particularites = [o.vue_reduite && "vue réduite", o.audition_reduite && "audition réduite", o.troubles_memoire && "troubles de la mémoire"].filter(Boolean) as string[];
+  const occupants: Occupant[] = logement.occupants?.length ? logement.occupants : [o];
+  const particularites = (x: Occupant) => [x.vue_reduite && "vue réduite", x.audition_reduite && "audition réduite", x.troubles_memoire && "troubles de la mémoire"].filter(Boolean) as string[];
+  const [envoi, setEnvoi] = useState(false);
+  const [alerte, setAlerte] = useState<string | null>(null);
+  const retirer = async (id: string) => {
+    setEnvoi(true);
+    setAlerte(null);
+    const r = await supprimerOccupant(logement.id, id);
+    setEnvoi(false);
+    if (r.ok) router.refresh();
+    else setAlerte(r.message ?? "Occupant non retiré.");
+  };
 
   return (
     <Screen nav="accueil" className="gap-3">
@@ -47,13 +61,23 @@ export default function PageCompte() {
         {email && <p className="text-[13px] text-ink-soft">Compte : {email}</p>}
       </section>
 
-      <SectionTitle>Occupant</SectionTitle>
-      <div className="flex flex-col gap-2 rounded-[26px] bg-white px-4 py-3.5 text-sm">
-        <p><b>{o.libelle}</b>{o.age ? `, ${o.age} ans` : ""}</p>
-        <p className="text-ink-soft">Se déplace {DEPLACEMENT[o.deplacement] ?? "sans gêne"}{particularites.length ? ` · ${particularites.join(", ")}` : ""}</p>
-        <p className="text-xs text-ink-muted">{o.consentement_art9_le ? "Consentement donné pour ces informations de mobilité." : "Consentement à confirmer dans le profil."}</p>
-        <Pill href={`${base}/profil?depuis=compte`} variant="contour"><Icon name="edit" size={18} />Modifier le profil</Pill>
-      </div>
+      <SectionTitle aside={`${occupants.length} personne${occupants.length > 1 ? "s" : ""}`}>Occupants</SectionTitle>
+      {occupants.map((x, i) => (
+        <div key={x.id ?? i} className="flex flex-col gap-2 rounded-[26px] bg-white px-4 py-3.5 text-sm">
+          <p><b>{x.libelle}</b>{x.age ? `, ${x.age} ans` : ""}</p>
+          <p className="text-ink-soft">Se déplace {DEPLACEMENT[x.deplacement] ?? "sans gêne"}{particularites(x).length ? ` · ${particularites(x).join(", ")}` : ""}</p>
+          <p className="text-xs text-ink-muted">{x.consentement_art9_le ? "Consentement donné pour ces informations de mobilité." : "Consentement à confirmer dans le profil."}</p>
+          <div className="flex gap-2">
+            <Pill href={`${base}/profil?depuis=compte${x.id && i > 0 ? `&occupant=${x.id}` : ""}`} variant="contour"><Icon name="edit" size={18} />Modifier</Pill>
+            {x.id && occupants.length > 1 && i > 0 && (
+              <Pill onClick={() => void retirer(x.id!)} variant="blanc" disabled={envoi}><Icon name="trash" size={18} />Retirer</Pill>
+            )}
+          </div>
+        </div>
+      ))}
+      {!logement.exemple && <Pill href={`${base}/profil?depuis=compte&occupant=nouveau`} variant="contour"><Icon name="plus" size={18} />Ajouter un occupant</Pill>}
+      {alerte && <p role="alert" className="rounded-xl2 bg-attention-bg px-3.5 py-3 text-[13px] font-semibold text-attention-text">{alerte}</p>}
+      <p className="text-xs text-ink-muted">Avec plusieurs occupants, la règle qui protège la personne la plus vulnérable s&apos;applique.</p>
 
       <SectionTitle aside={`${logement.pieces.length} pièce${logement.pieces.length > 1 ? "s" : ""}`}>Vidéos du logement</SectionTitle>
       <ul className="flex flex-col gap-2">

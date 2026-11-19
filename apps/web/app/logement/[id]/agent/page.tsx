@@ -71,6 +71,9 @@ export default function PageAgent() {
   const courant = reel ? courantReel : fini ? etapes.length - 1 : Math.min(step, etapes.length - 1);
   const echec = reel && termine && !validationAttendue && (coupe || suivi.etat?.run.statut_final !== "completed" || !suivi.etat?.run.decision_validation);
 
+  // Fin sans proposition : la raison donnée par l'agent (« le site ne vend pas… ») vaut mieux qu'un message générique.
+  const remarque = (suivi.etat?.run.sortie_finale as { remarque?: string } | null | undefined)?.remarque?.trim();
+
   const piloter = async (c: string) => {
     const t = c.trim();
     setTexte("");
@@ -155,6 +158,13 @@ export default function PageAgent() {
 
           {(alerte ?? suivi.erreur) && <p role="alert" className="rounded-[20px] bg-attention-bg px-4 py-3 text-sm font-semibold text-attention-text">{alerte ?? suivi.erreur}</p>}
           {reel && !etat.sessionId && <p role="alert" className="rounded-[20px] bg-attention-bg px-4 py-3 text-sm font-semibold text-attention-text">Session introuvable : relancez la mission depuis le plan d&apos;action.</p>}
+
+          {echec && remarque && (
+            <section role="status" className="flex flex-col gap-1 rounded-[26px] bg-white px-4 py-3.5">
+              <span className="text-xs font-bold tracking-[0.06em] text-ink-muted uppercase">Ce que dit l&apos;agent</span>
+              <p className="text-sm leading-5">{remarque}</p>
+            </section>
+          )}
 
           <ol className="flex flex-col gap-0.5" aria-label="Étapes de l'agent">
             {etapes.map((e, i) => {

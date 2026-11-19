@@ -1,0 +1,231 @@
+{
+  "session_id": "acbe0b56-bc87-4e30-b827-7fce753b0a0d",
+  "evenements": 63,
+  "actions": [
+    {
+      "index": 5,
+      "appels": [
+        {
+          "tool_name": "get_mesures",
+          "args": {
+            "faille_id": "faille-demo-tapis-01"
+          },
+          "id": "chatcmpl-tool-bdb88c2994e09a43"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 10,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.349,
+            "y": 0.539,
+            "element": "Lien \"Continuer sans accepter\" pour rejeter les cookies non essentiels"
+          },
+          "id": "chatcmpl-tool-8360f17866779849"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 14,
+      "appels": [
+        {
+          "tool_name": "write",
+          "args": {
+            "x": 0.681,
+            "y": 0.076,
+            "text": "sous-tapis antidérapant",
+            "enter": true,
+            "element": "Barre de recherche en haut de page",
+            "overwrite": true
+          },
+          "id": "chatcmpl-tool-ae50f6a9b8be6081"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 19,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.382,
+            "y": 0.35,
+            "element": "Produit STOPP Anti-dérapant pour tissus, 67,5x200 cm - premier résultat"
+          },
+          "id": "chatcmpl-tool-84dc5fee5f82336b"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 23,
+      "appels": [
+        {
+          "tool_name": "scroll_web",
+          "args": {
+            "direction": "down",
+            "num_pixels": 600,
+            "scroll_element": null
+          },
+          "id": "chatcmpl-tool-81e668bf5e3a89b3"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 27,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.315,
+            "y": 0.284,
+            "element": "Onglet \"Dimensions\" dans la section produit"
+          },
+          "id": "chatcmpl-tool-b4463dbabe7de4f7"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 31,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.191,
+            "y": 0.284,
+            "element": "Onglet \"Description produit\""
+          },
+          "id": "chatcmpl-tool-8029cc86744c847d"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 35,
+      "appels": [
+        {
+          "tool_name": "lire_fiche_produit",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/"
+          },
+          "id": "chatcmpl-tool-85b2a4a4d3fb67e6"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 40,
+      "appels": [
+        {
+          "tool_name": "scroll_web",
+          "args": {
+            "direction": "up",
+            "num_pixels": 600,
+            "scroll_element": null
+          },
+          "id": "chatcmpl-tool-8ad67cc47da0b820"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 44,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.829,
+            "y": 0.494,
+            "element": "Bouton \"Ajouter au panier\""
+          },
+          "id": "chatcmpl-tool-aadc4d5b7a692490"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 48,
+      "appels": [
+        {
+          "tool_name": "click_web",
+          "args": {
+            "x": 0.894,
+            "y": 0.962,
+            "element": "Bouton \"Voir mon panier\" en bas à droite du panneau"
+          },
+          "id": "chatcmpl-tool-bcbde551974fb6a0"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 52,
+      "appels": [
+        {
+          "tool_name": "demander_validation",
+          "args": {
+            "url": "https://www.ikea.com/fr/fr/shoppingcart/",
+            "action": "panier",
+            "resume": "Sous-tapis antidérapant STOPP (67,5×200 cm) ajouté au panier. Il est fin (122 g/m²), antidérapant pour sol dur, et peut être découpé aux ciseaux pour s'adapter aux dimensions 60×160 cm du gâteau. Prix : 5,99€ TTC.",
+            "produit": "STOPP Anti-dérapant pour tissus, 67.5x200 cm",
+            "montant_eur": 5.99
+          },
+          "id": "chatcmpl-tool-913df80c890d25a8"
+        }
+      ],
+      "erreurs_validation": []
+    },
+    {
+      "index": 57,
+      "appels": [
+        {
+          "tool_name": "answer",
+          "args": {
+            "lien": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+            "piece": "séjour",
+            "trouve": true,
+            "produit": "STOPP Anti-dérapant pour tissus, 67.5x200 cm",
+            "prix_eur": 5.99,
+            "remarque": "Produit STOPP Anti-dérapant pour tissus (67,5×200 cm, 5,99€ TTC) ajouté au panier. Il est fin (122 g/m²), antidérapant pour sol dur, et découpable aux ciseaux pour s'adapter aux cotes 60×160 cm du gâteau. L'utilisateur a refusé le produit.",
+            "au_panier": true,
+            "categorie": "Anti-dérapant / sous-tapis",
+            "largeur_cm": 67.5,
+            "longueur_cm": 200,
+            "delai_livraison": "non indiquée avant commande",
+            "citation_decoupe": "Antidérapant facile à couper ou à plier",
+            "mode_compatibilite": "couverture",
+            "citation_dimensions": "Longueur 200 cm Largeur 67.5 cm",
+            "citation_compatibilite": "Antidérapant facile à couper ou à plier, ou possibilité d'en combiner plusieurs, pour l'adapter à toutes les tailles et formes de tissus."
+          },
+          "id": "chatcmpl-tool-ad40494199b02348"
+        }
+      ],
+      "erreurs_validation": []
+    }
+  ],
+  "captures": [
+    {
+      "fichier": "01-51.png",
+      "url_marchand": "https://www.ikea.com/fr/fr/shoppingcart/",
+      "index": 51
+    },
+    {
+      "fichier": "01-43.png",
+      "url_marchand": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+      "index": 43
+    },
+    {
+      "fichier": "01-47.png",
+      "url_marchand": "https://www.ikea.com/fr/fr/p/stopp-anti-derapant-pour-tapis-90549052/",
+      "index": 47
+    }
+  ]
+}

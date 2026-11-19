@@ -1,0 +1,8 @@
+{
+  "session_id": "63e5056a-4eb6-40d4-b6a1-58e93ae21da7",
+  "message": "L’outil disponible s’appelle exactement get_mesures (g e t _ m e s u r e s). Appelle uniquement get_mesures avec {\"faille_id\":\"faille-demo-tapis-01\"}. Les noms get_esures et get_epures ne sont pas des outils disponibles. Garde les contraintes du sous-tapis, aucune commande ni envoi.",
+  "envoye_a": "2026-11-19T09:16:26.635559+00:00",
+  "statut_avant": "running",
+  "etape_avant": 9,
+  "http": 202
+}

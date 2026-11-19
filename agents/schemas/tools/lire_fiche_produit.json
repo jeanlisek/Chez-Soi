@@ -1,0 +1,17 @@
+{
+  "name": "lire_fiche_produit",
+  "description": "À utiliser après get_mesures et ouverture de la fiche, avant tout ajout au panier. Lit le texte public de la fiche autorisée pour recopier exactement nom, dimensions et autorisation de découpe. Aucune commande, connexion ou écriture. Un échec de lecture reste un blocage, pas une preuve.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "URL HTTPS exacte de la variante actuellement affichée sur la fiche marchand autorisée."
+      }
+    },
+    "required": [
+      "url"
+    ],
+    "additionalProperties": false
+  }
+}

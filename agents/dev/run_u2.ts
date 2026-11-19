@@ -3,14 +3,15 @@
  * persona fictive Jeanne. Arrêt au panier : aucune connexion, aucun paiement, aucune commande.
  *
  * Depuis apps/web/ :  npm run agent:u2 -- --site <domaine>
- * Options : --a-blanc (n'envoie rien), --agent <nom[:N]> (chez-soi-acheteur:N pour la skill
- *           verifier-dimension), --malgre-sessions-actives
+ * Options : --a-blanc (n'envoie rien), --agent <nom[:N]>, --malgre-sessions-actives
  *
  * UNE session par lancement, jamais de relance automatique.
  */
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 import { HAI_AGENT, outilHaiSchema, type OutilHai } from "../../apps/web/lib/hai";
 import {
@@ -18,19 +19,22 @@ import {
   demanderValidationSortieSchema,
   getMesuresEntreeSchema,
   getMesuresSortieSchema,
-  sortieUsage2Schema,
   versJsonSchema,
   type DemanderValidationSortie,
   type GetMesuresSortie,
   type SchemaZod,
-  type SortieUsage2,
 } from "../../apps/web/lib/schemas";
 import { executerRun, type ContexteOutil, type OutilLocal } from "./boucle";
 import { controlerSortieUsage2 } from "./controle";
 import { ecartsCitationFiche } from "./fiche";
+import { creerPilotage } from "./pilotage";
+import { sortieUsage2BancSchema, type SortieUsage2Banc } from "../bench/schema_u2";
 
 const RACINE = path.resolve(__dirname, "../..");
 const FAILLE_ID = "faille-demo-tapis-01";
+let mesuresLues = false;
+let dernierePreuve: Record<string, unknown> | null = null;
+const executerFichier = promisify(execFile);
 
 function option(nom: string): string | undefined {
   const index = process.argv.indexOf(`--${nom}`);
@@ -60,7 +64,18 @@ async function getMesures(args: Record<string, unknown>): Promise<GetMesuresSort
   ) as { failles: Record<string, unknown> };
   const mesures = fixture.failles[faille_id];
   if (!mesures) throw new Error(`Faille inconnue : ${faille_id}. Utilise le faille_id de la consigne.`);
-  return analyser(getMesuresSortieSchema, mesures, "Fixture de get_mesures");
+  const resultat = analyser(getMesuresSortieSchema, mesures, "Fixture de get_mesures");
+  mesuresLues = true;
+  return resultat;
+}
+
+async function lireFicheProduit(args: Record<string, unknown>) {
+  if (!mesuresLues) throw new Error("Appelle get_mesures seul avant de lire une fiche.");
+  if (typeof args.url !== "string") throw new Error("url HTTPS de la fiche requise");
+  const { stdout } = await executerFichier("python3", [path.join(RACINE, "agents/bench/lire_fiche.py"), args.url],
+    { timeout: 25_000, maxBuffer: 300_000 });
+  dernierePreuve = JSON.parse(stdout) as Record<string, unknown>;
+  return dernierePreuve;
 }
 
 /** Question dans le terminal. Entrée seule = REFUS ; il faut taper « approuve ». */
@@ -79,7 +94,9 @@ async function demanderValidation(
   console.log("Rien n'est commandé : quelle que soit ta réponse, la session s'arrête au panier.");
 
   let saisie = "";
-  if (process.stdin.isTTY) {
+  if (drapeau("refuser-validation")) {
+    console.log("Banc : refus explicite, aucune poursuite autorisée.");
+  } else if (process.stdin.isTTY) {
     const lecteur = createInterface({ input: process.stdin, output: process.stdout });
     lecteur.on("SIGINT", () => process.emit("SIGINT", "SIGINT"));
     try {
@@ -104,7 +121,8 @@ async function demanderValidation(
       : {
           decision: "refuse",
           message:
-            "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant.",
+            "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, ne commande rien, et rends ta réponse finale maintenant." +
+            (dernierePreuve ? " La dernière fiche lue a fourni les valeurs exactes suivantes (source_url identifie la référence ; ne les rapporte que pour cette référence). Copie ces chaînes sans reformulation dans les champs correspondants : " + JSON.stringify({source_url:dernierePreuve.url,produit:dernierePreuve.nom_source,citation_decoupe:dernierePreuve.citation_decoupe_source,citation_dimensions:dernierePreuve.citation_dimensions_source}) + ". Le champ delai_livraison doit être présent, avec non indiquée avant commande si le délai est inconnu." : ""),
         },
     "Sortie de demander_validation",
   );
@@ -119,48 +137,53 @@ async function main(): Promise<void> {
   // Un chemin est gardé : pour IKEA France, le site est « www.ikea.com/fr/fr ».
   const site = `${urlSite.hostname}${urlSite.pathname.replace(/\/+$/, "")}`;
 
-  const gabarit = await readFile(path.join(RACINE, "agents/dev/prompt_u2_provisoire.md"), "utf8");
+  const gabarit = await readFile(path.join(RACINE, "agents/prompts/u2_recommandation.md"), "utf8");
   const prompt = gabarit
     .replace(/<!--[\s\S]*?-->/g, "")
     .replaceAll("{{SITE}}", site)
+    .replaceAll("{{CONTEXTE}}", "CAS DE TEST TAPIS UNIQUEMENT : rechercher un sous-tapis antidérapant fin, pour sol dur, pour un tapis de 60 × 160 cm en une pièce ; un format plus petit est admis uniquement si une consigne explicite le demande. Les cotes au sol sont largeur_cm=60 et longueur_cm=160 ; hauteur_cm désigne seulement l’épaisseur, inconnue et donc absente. Ne pas plier ni superposer. Les contraintes plus strictes du cas (ex. découpe interdite) s’appliquent.")
     .replaceAll("{{FAILLE_ID}}", FAILLE_ID)
+    .replaceAll("{{CONTRAINTES}}", option("contraintes") ?? "Pas de budget initial ; appliquer les messages reçus pendant le run.")
     .trim();
 
   const outils: OutilLocal[] = [
     { declaration: await chargerOutil("get_mesures"), executer: getMesures },
+    { declaration: await chargerOutil("lire_fiche_produit"), executer: lireFicheProduit },
     { declaration: await chargerOutil("demander_validation"), executer: demanderValidation, validation: true },
   ];
 
-  // La skill verifier-dimension (issue #15) passe par l'agent maison chez-soi-acheteur
-  // (agents/definitions/), pas par une surcharge : `overrides["agent.skills"]` remplacerait
-  // les quatre skills H de l'agent. Lancer avec --agent chez-soi-acheteur:N.
+  const pilotage = creerPilotage(option("steer"), Number(option("steer-apres-etape") ?? 3));
   console.log(`Usage 2 · sous-tapis 60 × 160 cm · site : ${site} · agent : ${option("agent") ?? HAI_AGENT}`);
-  const resultat = await executerRun<SortieUsage2>({
+  const resultat = await executerRun<SortieUsage2Banc>({
     usage: "u2",
     agent: option("agent") ?? HAI_AGENT,
     prompt,
+    modele: option("modele"),
+    surEtatActif: pilotage.surEtatActif,
     outils,
-    schemaSortie: sortieUsage2Schema,
-    formatReponse: versJsonSchema(sortieUsage2Schema),
+    schemaSortie: sortieUsage2BancSchema,
+    formatReponse: versJsonSchema(sortieUsage2BancSchema),
     controlerSortie: controlerSortieUsage2,
     site,
-    urlDepart: `${urlSite.origin}${urlSite.pathname}`,
-    dossierRuns: path.join(RACINE, "agents/bench/runs"),
+    urlDepart: urlSite.href,
+    dossierRuns: path.resolve(option("dossier-runs") ?? path.join(RACINE, "agents/bench/runs")),
     aBlanc: drapeau("a-blanc"),
-    malgreSessionsActives: drapeau("malgre-sessions-actives"),
+    masquerLienPrive: drapeau("refuser-validation"),
+    malgreSessionsActives: false, // Une seule session pour toute l’organisation, sans dérogation U2.
   });
   if (!resultat) return;
 
-  const { run, sortie, fichier } = resultat;
-
-  // La citation de découpe est cherchée sur la fiche par le code (fiche.ts) : l'agent la
-  // recopie parfois mal. L'écart s'ajoute au run, qui est réécrit (champ dérivé seulement).
+  const { run, sortie } = resultat;
   const ecartsFiche = await ecartsCitationFiche(sortie);
-  if (ecartsFiche.length) {
-    run.ecarts_metier.push(...ecartsFiche);
-    await writeFile(fichier, `${JSON.stringify(run, null, 2)}\n`, "utf8");
+  run.ecarts_metier.push(...ecartsFiche);
+  await writeFile(resultat.fichier, JSON.stringify(run, null, 2) + "\n");
+  const fichierResultat = option("resultat");
+  if (fichierResultat) {
+    await mkdir(path.dirname(path.resolve(fichierResultat)), { recursive: true });
+    await writeFile(fichierResultat, JSON.stringify({
+      fichier_run: resultat.fichier, pilotage: pilotage.trace(),
+    }, null, 2) + "\n");
   }
-
   console.log("\n──────── Résultat ────────");
   console.log(`État final : ${run.etat_final} · outcome : ${run.outcome ?? "aucun"} · error_code : ${run.error_code ?? "aucun"}`);
   console.log(`Fin : ${run.motif_fin} · durée : ${run.duree_s} s · étapes : ${run.nb_etapes} · validation : ${run.decision_validation ?? "non demandée"}`);

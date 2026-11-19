@@ -116,7 +116,7 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 - **Pas de garde-fou natif sur une action du navigateur.** `demander_validation` n'est appelé que si l'agent suit le prompt. Ce que le code garantit : aucun identifiant, moyen de paiement ni adresse donnés à l'agent, refus par défaut, annulation après la validation, et le coupe-circuit de `agents/dev/boucle.ts`, qui annule la session dès qu'une page vue ou une action vise une page de commande, de paiement, de livraison, de connexion ou de compte (il réagit après coup, il n'empêche pas le clic). Côté application, le même coupe-circuit tourne dans `apps/web/lib/agent/serveur.ts` à chaque webhook (#12).
 - Endpoint européen : `agp.eu.hcompany.ai`. Agent : `h/web-surfer-flash` (comparer avec `-pro` dans le banc).
 - Résultat d'une session : `outcome` (success, partial, infeasible, blocked) ou `error_code`. Les deux vont dans `runs_agent`, puis dans l'onglet Mesures agent. L'outcome est une auto-évaluation : on vérifie la dimension nous-mêmes. Une valeur d'`outcome` hors de ces quatre s'écrit `null` (la colonne `runs_agent.outcome` la refuserait) et la valeur brute est gardée dans `observations_api.outcome_brut`. Conversion d'un run en ligne de `runs_agent` : `versLigneRunsAgent` (`apps/web/lib/runs_agent.ts`).
-- Budget : **3 sessions simultanées** (offre gratuite). En démo, les usages sont enchaînés, jamais lancés en parallèle. Sous-agents (manager + 2) seulement si rien d'autre ne tourne. En développement : une session par personne au maximum, annoncée dans le canal de l'équipe.
+- Budget H : plafond technique **3 sessions** pour l’organisation ; consigne CEO du 18/11 : **une seule session active à la fois pour toute l’organisation**, annoncée dans le canal. Ne pas lancer de sous-agents en parallèle pendant ces essais.
 - Figer la démo sur une révision d'agent (`nom:N`).
 - Usage 2 : le code relit la fiche produit IKEA (`agents/dev/fiche.ts`), en local comme dans l'app. La citation de découpe doit y figurer mot pour mot (règle stricte de Bastian : approchée = produit à REFUSER) ; un nom différent de la fiche est signalé dans `ecarts_metier`, et l'écran Validation affiche le nom de la fiche. La réponse brute de l'agent n'est jamais modifiée.
 
@@ -283,3 +283,51 @@ Plan B de la démo : run enregistré (replay H), 3D précalculée, partage de co
 Relecture n8n #4 : `node --test scripts/n8n-clauses.test.mjs` contrôle le rejet
 des clauses sans citation vérifiée et la conservation de `piece` pour le trigger
 Supabase (#16). Aucune requête externe dans ces tests.
+
+## U2 — prompt et banc (#6)
+
+Prompt définitif générique `agents/prompts/u2_recommandation.md` ; fixture tapis
+séparée dans `run_u2.ts`. Sortie plate avec `citation_decoupe?: string`, compatible
+avec la skill d’Aurélie (PR #20). Banc : `python3 agents/bench/run_bench.py` (plan
+sans API) ; `--a-blanc --limite 1` construit une requête ; essais réels avec
+`--executer --canal-annonce --agent nom:N --skill-ref nom:N`, H_API_KEY chargé depuis
+le .env local. Détails dans `agents/bench/README.md`. Jamais de dérogation U2 au quota
+actif nul. Depuis le 19/11, Bastian accède à `chez-soi-acheteur:1` et
+`verifier-dimension:1` de l’équipe dans Default (organisation de Jean-Li), lecture 200.
+Sa nouvelle clé est dans le `.env` local ignoré (permissions 600, expiration 21/11),
+jamais sur Slack ni GitHub ; cette restriction concerne le stockage, pas une liaison
+de la clé à un appareil par H. Les 25 runs du 18/11 utilisaient une copie personnelle,
+références distinctes de celles de l’équipe malgré les noms identiques.
+Depuis la PR #46 : les cotes au sol utilisent `largeur_cm` × `longueur_cm`,
+`hauteur_cm` reste une épaisseur optionnelle. Aucun âge ni donnée de santé dans
+les nouveaux prompts ou contraintes transmis à H.
+
+Le 18/11 : 20 runs comparatifs réels, conservés dans
+`agents/bench/resultats/2026-11-18-bastian/` (10 Flash + 10 Pro, prompt archivé ;
+les essais d’amélioration sont séparés). Le harness U2 ajoute `lire_fiche_produit`
+(lecture publique de fiches autorisées, Python 3 standard) par override de session.
+Ce handler local n’est pas encore raccordé aux routes de l’application. Une revue
+Codex documentée ne remplit jamais `revue_humaine` à la place d’une personne.
+
+T11 du 19/11 : run équipe Flash 38 partiel (panier réel 5,99 €, découpe/dimensions
+prouvées, nom et autre citation altérés) ; second run Pro 39 en échec (neuf noms
+d’outil de mesure incorrects, aucun ajout, annulation de supervision). Rapports
+séparés dans `agents/bench/resultats/2026-11-19-t11-equipe*/`. Quota final nul.
+Conserver Flash pour la démo ; plan B public du run 35 inchangé.
+
+Relecture #32 du 19/11 : `sortieUsage2Schema` de l’app reste exactement celui de
+`main`. Les champs expérimentaux (trois citations et catégories d’objets) vivent
+dans `agents/bench/schema_u2.ts`, importé seulement par le lanceur et ses tests.
+`lire_fiche_produit` reste un outil local de banc, absent de l’agent et des routes
+de production. Aucun gain du nouveau schéma sans lecteur n’est mesuré. Un essai
+depuis l’app est requis avant de modifier son contrat ou publier un nouvel agent.
+
+Après #60 : l’app utilise `chez-soi-acheteur:2` avec `verifier-dimension:2`.
+Les runs 38/39 restent des mesures de la révision 1. Après libération du créneau
+par Jean-Li, run 40 Flash sur la révision 2 : 57,7 s, 10 étapes, 0,02892024 $.
+Ajout STOPP à 5,99 € confirmé, arrêt sûr, mais nom et citation de découpe altérés :
+résultat partiel et contrôle métier négatif. Rapport `agents/bench/resultats/2026-11-19-t11-equipe-revision2/`.
+Le banc utilise toujours ses trois outils et son format expérimental, distincts de
+l’app. Quota final nul, aucun nouveau replay de succès ; aucun Pro avant vendredi.
+Le test vidéo/GLB en production a été effectué par Jean-Li (message du 19/11 à 11h04),
+pas par Bastian : ne pas téléverser une autre vidéo pour le refaire sans nécessité.

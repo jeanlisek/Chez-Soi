@@ -1,1 +1,53 @@
-[]
+[
+  {
+    "id": "ikea-reference",
+    "site": "www.ikea.com/fr/fr",
+    "contraintes": "Sous-tapis en une pièce couvrant 60 × 160 cm. Découpe autorisée si prouvée.",
+    "attendu": "panier",
+    "steer": null,
+    "steer_apres_etape": 3,
+    "budget_strict_eur": null,
+    "decoupe_autorisee": true
+  },
+  {
+    "id": "decoweb-secours",
+    "site": "www.decoweb.com/pose-entretien/sous-couche/antiderapant-pour-tapis-r-80500007",
+    "contraintes": "Choisir une largeur et une longueur achetées permettant 60 × 160 cm. Comparer le prix total TTC, pas le prix au m².",
+    "attendu": "panier",
+    "steer": null,
+    "steer_apres_etape": 3,
+    "budget_strict_eur": null,
+    "decoupe_autorisee": true
+  },
+  {
+    "id": "pilotage-sans-decoupe",
+    "site": "www.ikea.com/fr/fr",
+    "contraintes": "Pas de plafond initial. Un message pourra préciser le budget pendant le run.",
+    "attendu": "selection_ou_refus",
+    "steer": "Sans découpe, pliage ni superposition : cherche un sous-tapis plus petit que le tapis de 60 × 160 cm, restant entièrement dessous. Le STOPP 67,5 × 200 cm est refusé. Si aucun format ne convient, ne rien mettre au panier et expliquer le blocage.",
+    "steer_apres_etape": 3,
+    "budget_strict_eur": null,
+    "decoupe_autorisee": false,
+    "format_plus_petit": true
+  },
+  {
+    "id": "pilotage-budget-3",
+    "site": "www.ikea.com/fr/fr",
+    "contraintes": "Pas de plafond initial ; un message précisera le budget pendant le run.",
+    "attendu": "selection_ou_refus",
+    "steer": "Le produit doit coûter strictement moins de 3 € TTC hors livraison. Pas de coupon, abonnement ni réduction supposée. Si aucune offre ne convient, ne rien ajouter au panier.",
+    "steer_apres_etape": 3,
+    "budget_strict_eur": 3,
+    "decoupe_autorisee": true
+  },
+  {
+    "id": "budget-impossible",
+    "site": "www.ikea.com/fr/fr",
+    "contraintes": "Budget strict : prix TTC du produit < 0,01 €. Aucun coupon, achat minimum ou abonnement. Ne pas inventer une offre gratuite.",
+    "attendu": "refus",
+    "steer": null,
+    "steer_apres_etape": 3,
+    "budget_strict_eur": 0.01,
+    "decoupe_autorisee": true
+  }
+]

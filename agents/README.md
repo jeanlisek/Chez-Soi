@@ -87,3 +87,24 @@ L'inscription à l'OTV passe par FranceConnect dès l'entrée, et l'espace clien
 Tels quels : `apps/web/lib/hai.ts`, `dev/boucle.ts` (quota, création, suivi, cache des outils, coupe-circuit, délais, annulation, enregistrement dans `bench/runs/`) et `evaluerSortie` de `dev/controle.ts`.
 
 À ajouter par `dev/run_u1.ts` : `get_contrat.json` au format de la doc H, une fixture de contrat fictif, un prompt provisoire, le schéma de sortie `{ trouve, url_cg, … }` dans `schemas.ts`, puis le téléchargement du PDF et le contrôle de la référence par le code. Pas d'outil de validation : l'usage 1 est en lecture seule.
+
+
+## U2 définitif et banc (#6)
+
+`agents/prompts/u2_recommandation.md` est générique pour les objets du logement ;
+`agents/dev/run_u2.ts` injecte la fixture tapis uniquement pour les essais.
+Le JSON reste plat, notamment `citation_decoupe?: string`, compatible PR #20.
+Le schéma expérimental `bench/schema_u2.ts` est utilisé uniquement par le lanceur
+local. `apps/web/lib/schemas.ts` reste identique à `main` : l’app garde son format
+et les deux outils de l’agent publié. La #32 ne branche pas un nouvel outil serveur.
+Le banc séquentiel et les preuves indépendantes sont décrits dans `bench/README.md`.
+Référence équipe actuelle après #60 : `chez-soi-acheteur:2` avec `verifier-dimension:2`,
+dans Default, organisation de Jean-Li. Les mesures historiques du 18/11 utilisaient
+une copie personnelle, ressource distincte malgré le même nom ; elles l’indiquent.
+
+Le banc du 18/11 (10 Flash + 10 Pro, prompt archivé) est conservé dans
+`bench/resultats/2026-11-18-bastian/`. Les validations d’amélioration sont séparées.
+Le custom tool de développement `lire_fiche_produit` reste un outil de banc : il
+lit les fiches publiques autorisées après les mesures. Son raccordement serveur,
+la publication d’une nouvelle révision et un essai depuis l’app sont une décision
+séparée. Aucun gain des trois citations sans cet outil n’est établi par les essais.

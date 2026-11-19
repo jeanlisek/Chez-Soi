@@ -111,6 +111,9 @@ export function ecartDecoupe(citation: string | undefined): string | null {
     return "aucune citation_decoupe de la fiche : produit à REFUSER";
   }
   const texte = sansAccents(citation);
+  if (/\b(ne|pas|impossible|interdit|non)\b/.test(texte)) {
+    return "citation_decoupe négative ou ambiguë : produit à REFUSER";
+  }
   if (!MOTS_DECOUPE.some((motif) => motif.test(texte))) {
     return `citation_decoupe « ${citation} » ne dit pas que le produit se découpe : produit à REFUSER`;
   }

@@ -1,0 +1,2 @@
+cas,variante,repetition,session_id,outcome,etat_final,duree_s,nb_etapes,tokens_entree,tokens_cache,tokens_sortie,tokens_raisonnement,cout_usd,conforme_automatique,succes_valide,pilotage_envoye,erreurs,fichier_run
+t11-sous-tapis-60x160-budget-50,flash,1,acbe0b56-bc87-4e30-b827-7fce753b0a0d,,completed,63.8,13,248177,162624,2986,1687,0.03651662,False,,True,Nom du produit différent du nom source de la fiche ; Citation de compatibilité absente de la fiche lue,run.json

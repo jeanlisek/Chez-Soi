@@ -159,7 +159,7 @@ export function libelleSource(source: Source): string {
     case "loi":
       return `Obligation légale · ${source.reference}`;
     case "recommande":
-      return source.reference.startsWith("Recommandé") ? source.reference : `Recommandé · ${source.reference}`;
+      return source.reference.startsWith("Recommandé") || source.reference.startsWith("Repéré") ? source.reference : `Recommandé · ${source.reference}`;
   }
 }
 

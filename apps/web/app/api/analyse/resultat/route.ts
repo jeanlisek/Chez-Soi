@@ -3,7 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { calculerPlan } from "@/lib/plan";
+import { calculerPlan, elementCommun } from "@/lib/plan";
 import { clientAdmin } from "@/lib/supabase/server";
 
 /**
@@ -107,7 +107,8 @@ export async function POST(request: Request) {
         piece: nomPiece,
         piece_id: pieceParNom(nomPiece)?.id ?? null,
         risque: f.data.risque,
-        element: f.data.element,
+        // Vocabulaire commun (`elements`) dès l'écriture : la vision dit « porte », la base « porte_entree » / « porte_interieure ».
+        element: elementCommun(f.data.element, nomPiece),
         source: "vision",
         // Le plan B garde les valeurs du pipeline ; l'origine précise est notée dans `analyses.resultat`.
         origine: f.data.cote_estimee_cm != null ? "pipeline" : null,

@@ -182,7 +182,9 @@ function FailleRow({ f, href }: { f: Faille; href: string }) {
       ? `exigé par le contrat p. ${f.source.page}`
       : f.source.force === "loi"
         ? "Loi"
-        : "Recommandé";
+        : f.source.reference.startsWith("Repéré")
+          ? "Aucune action"
+          : "Recommandé";
   return (
     <li>
       <Link href={href} className="flex items-center gap-3 rounded-[22px] bg-white px-3 py-2.5">

@@ -35,13 +35,14 @@ Demo persona, fictitious: Marc looks after his mother Jeanne, 79, who lives alon
 2. **Contract** (optional): the PDF is read; every clause kept carries its quote and page. A clause without proof in the PDF is rejected.
 3. **Walkthrough**: one video per room. The vision service rebuilds the room in 3D, spots risk points and estimates their sizes in centimetres.
 4. **Action plan**: each point is checked against sourced, validated rules. Verdict order: contract (clause and page), then law, then recommendation. An LLM writes the explanation; a code guardrail checks it.
-5. **H agent**: it runs three tasks on real websites and always stops before any commitment.
+5. **H agent**: it runs four tasks on real websites and always stops before any commitment.
 
 | Use | What the agent does | Where it stops |
 |---|---|---|
 | 1 · General terms | Finds the contract's general terms on the insurer's official website; our code downloads the PDF and checks its reference | Read-only, no sign-in |
 | 2 · Countermeasure | Reads the risk point's sizes (`get_mesures`), picks a compatible product, proves compatibility with a quote from the product page, adds it to the cart | `demander_validation`: nothing is ordered without the user's click |
 | 3 · Absence | Prepares the OTV registration and the insurer notice from the dates and the contract clauses | Nothing sent, no FranceConnect sign-in |
+| 4 · Tradespeople | For the plan's works (three-point lock, door to widen…), finds up to three tradespeople near the town, with labels and contact details read on their page, and drafts the quote request. Only the postcode and town reach the agent, never the street | Read-only: contacts no one, fills in no form |
 
 ## Why a computer-use agent
 
@@ -67,7 +68,7 @@ Reading use 2: the agent reaches the right product and stops at the right time, 
 
 | Feature | In Chez Soi |
 |---|---|
-| Frozen custom agents (`name:N`) | `chez-soi-sourcing:1` (use 1), `chez-soi-acheteur:2` (use 2), `chez-soi-demarches:1` (use 3), created through the API from [`agents/definitions/`](agents/definitions/) |
+| Frozen custom agents (`name:N`) | `chez-soi-sourcing:1` (use 1), `chez-soi-acheteur:2` (use 2), `chez-soi-demarches:1` (use 3), `chez-soi-artisans:1` (use 4), created through the API from [`agents/definitions/`](agents/definitions/) |
 | Custom skill | `verifier-dimension:2`: size and cut-to-size are proven by a quote from the product page ([`agents/skills/verifier_dimension.md`](agents/skills/verifier_dimension.md)) |
 | Custom tools | `get_mesures` and `get_contrat` answer with the session's home data; `demander_validation` waits for the user's click |
 | Structured output | Flat JSON schemas, re-validated with Zod in the app |
@@ -155,7 +156,7 @@ In production:
 - three-step profile, occupants' consent revocable at any time (abilities erased without consent); detection extended to locks, stairs, lights and smoke detectors, spotted without a size; each detected point is re-checked by SigLIP and dropped if it looks more like a known confusion (a shower head taken for a detector, a cupboard handle for a lock);
 - action plan computed from the rules, with the graph to recognise elements and an LLM-written explanation checked by code;
 - end-to-end contract reading, tested with fictitious special conditions;
-- H agent inside the app for all three uses: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker. For use 2, the approval screen shows the product name re-read from the IKEA page, not the one copied by the agent, and a quote missing from the page is flagged "to refuse" in `runs_agent`. On 19 Nov in production: use 2 end to end on `chez-soi-acheteur:2` (130 s, 9 steps, steering sent, stop at the cart on `demander_validation`), use 1 from the Contract screen, and use 3 from absence mode, stopped on `demander_validation` (#86, #97).
+- H agent inside the app for all three uses: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker. For use 2, the approval screen shows the product name re-read from the IKEA page, not the one copied by the agent, and a quote missing from the page is flagged "to refuse" in `runs_agent`. On 19 Nov in production: use 2 end to end on `chez-soi-acheteur:2` (130 s, 9 steps, steering sent, stop at the cart on `demander_validation`), use 1 from the Contract screen, and use 3 from absence mode, stopped on `demander_validation` (#86, #97). Use 4, first real run on the evening of 19 Nov (front-door three-point lock): three nearby locksmiths with phone and source page, quote request ready, schema-valid answer with no check failure, 35 steps, USD 0.115 (#120).
 
 Known limits:
 
@@ -164,7 +165,7 @@ Known limits:
 - the Space sleeps after 30 minutes: the first call waits for it to wake up;
 - the vision sizes have been compared with a tape measure on one door only (72.9 cm measured for 71.5 cm actual): no accuracy figure is claimed yet ([`docs/mesures.md`](docs/mesures.md)).
 
-Next steps considered: departure date entry, a session prompt that names the plan's countermeasure, one sub-agent per retail site to compare offers, the MaPrimeAdapt' home adaptation grant and tradespeople quotes.
+Next steps considered: departure date entry, a session prompt that names the plan's countermeasure, one sub-agent per retail site to compare offers, and the MaPrimeAdapt' home adaptation grant.
 
 ## What the code guarantees
 

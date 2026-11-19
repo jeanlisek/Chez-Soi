@@ -32,6 +32,7 @@ Un produit plus grand que la cote n'est acceptable que s'il **se découpe** (aux
 
 - Cherche cette information **sur la fiche du produit**. Ouvre l'onglet ou la section qui la contient.
 - Si tu la trouves : recopie la phrase **mot pour mot**, telle qu'affichée, sans la reformuler ni la traduire, dans le champ `citation_decoupe` de ta réponse. Une phrase complète, pas un mot isolé.
+- Prends cette phrase dans le **texte** de la page, pas en la relisant sur une capture d'écran : une lettre mal lue (« tissus » au lieu de « tapis », « àcouper » au lieu de « à couper ») suffit à ce que le code ne la retrouve pas sur la fiche, et le produit est alors refusé. Garde les accents, les espaces et la ponctuation, jusqu'au point final.
 - Si tu ne la trouves pas sur la fiche, le produit est **refusé**, même si tu penses qu'il se découpe. Cherche un autre produit.
 - Un produit qui se découpe mais dont la plus petite taille reste trop petite d'un côté ne convient pas non plus.
 

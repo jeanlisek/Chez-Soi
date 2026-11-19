@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { CheminsAutorises } from "../../../../agents/dev/boucle";
 import { controlerSortieUsage1, controlerSortieUsage2, evaluerSortie, type Evaluation } from "../../../../agents/dev/controle";
+import { ecartNom, ecartsCitationFiche, estFicheAutorisee, lireNomSurFiche } from "../../../../agents/dev/fiche";
 import { sortieUsage1Schema, sortieUsage2Schema, sortieUsage3Schema, versJsonSchema, type SortieUsage3 } from "@/lib/schemas";
 import type { Database } from "@/lib/supabase/types";
 
@@ -141,7 +142,18 @@ const usage2: DefinitionUsage = {
       const longueur = f?.longueur_cm ?? f?.cote_confirmee_cm;
       if (largeur && longueur) cote = { largeur_cm: largeur, longueur_cm: longueur };
     }
-    return evaluerSortie(reponse, sortieUsage2Schema, (s) => controlerSortieUsage2(s, cote)) as Evaluation<unknown>;
+    const evaluation = evaluerSortie(reponse, sortieUsage2Schema, (s) => controlerSortieUsage2(s, cote));
+    const sortie = evaluation.sortie;
+    // Le code relit la fiche (run 40 du 19/11 : nom et citation mal recopiés par l'agent) : le nom
+    // est comparé à celui de la fiche, et la citation doit y figurer mot pour mot (règle stricte de
+    // Bastian, `ecartCitation`), comme dans run_u2.ts et recontroler.ts.
+    if (!sortie?.trouve || !sortie.lien || !estFicheAutorisee(sortie.lien)) return evaluation as Evaluation<unknown>;
+    const [citation, nom] = await Promise.all([ecartsCitationFiche(sortie), lireNomSurFiche(sortie.lien)]);
+    const ecartDuNom = ecartNom(sortie.produit, nom);
+    return {
+      ...evaluation,
+      ecarts_metier: [...evaluation.ecarts_metier, ...citation, ...(ecartDuNom ? [ecartDuNom] : [])],
+    } as Evaluation<unknown>;
   },
 };
 

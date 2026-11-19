@@ -163,6 +163,10 @@ La détection des éléments mesurables (tapis, porte, fenêtre) utilise sa prop
 
 Sans reconstruction, le `.glb` ne contient que la vue de référence. Avec `--reconstruction` (MapAnything), toutes les vues sont placées dans un même repère : le `.glb` couvre tout ce qui a été filmé et chaque faille y a sa position. Les cotes restent mesurées vue par vue avec MoGe-2. Si la reconstruction échoue, le résultat vue par vue est gardé et un avertissement est renvoyé. Sur une visite rapide de plusieurs pièces, la reconstruction n'est pas fiable (voir `docs/mesures.md`) : filmer une pièce à la fois. Un détecteur de fumée non vu n'est pas un détecteur absent.
 
+## Vérification des points (SigLIP)
+
+Grounding DINO trouve un élément à partir d'un mot et confond parfois des objets proches : une pomme de douche prise pour un détecteur de fumée, une poignée de placard prise pour une serrure. Après la détection, [`pipeline/verification.py`](pipeline/verification.py) découpe chaque point sur ses 3 plus grandes vues (avec du contexte autour) et demande à SigLIP s'il ressemble plus à l'élément annoncé qu'aux confusions connues (`DESCRIPTIONS`). Si la part de l'élément annoncé est sous 50 % en moyenne, le point est retiré avant d'arriver dans l'app. Chaque point gardé porte `position_3d.verification` (score, nombre de vues) ; `verification.json` trace aussi les points retirés et la confusion retenue, pour régler descriptions et seuil. Si SigLIP ne se charge pas, tous les points sont gardés et un avertissement est ajouté.
+
 ## Modèles, révisions et licences
 
 Chaque modèle est figé sur un commit de sa fiche Hugging Face dans [`modeles.py`](modeles.py). La licence est celle lue sur la fiche à cette révision, le 18/11/2026. Aucun modèle sous licence non commerciale.
@@ -172,6 +176,7 @@ Chaque modèle est figé sur un commit de sa fiche Hugging Face dans [`modeles.p
 | `Ruicheng/moge-2-vitl-normal` | `cb0e8bbd` | MIT | Points 3D métriques par image |
 | `IDEA-Research/grounding-dino-base` | `12bdfa31` | Apache 2.0 | Détection |
 | `facebook/sam2.1-hiera-small` | `ee5bba1d` | Apache 2.0 | Contour des éléments |
+| `google/siglip-base-patch16-224` | `7fd15f06` | Apache 2.0 | Deuxième avis sur chaque point (lu le 19/11/2026) |
 | `facebook/map-anything-apache` | `00f9c245` | Apache 2.0 | Reconstruction multi-vues (option `--reconstruction`) |
 | `depth-anything/DA3-BASE` | `f4a6c9b3` | Apache 2.0 | Secours (pas encore branché) |
 | `depth-anything/DA3METRIC-LARGE` | `4010e39f` | Apache 2.0 | Secours (pas encore branché) |
@@ -221,6 +226,7 @@ Variables du Space :
 |---|---|---|
 | `HF_HUB_OFFLINE=1` | Dockerfile | Aucun téléchargement au démarrage |
 | `VISION_RECONSTRUCTION=1` | Dockerfile | Active MapAnything |
+| `VISION_VERIFICATION` | Facultatif (par défaut `1`) | Fait vérifier chaque point par SigLIP ; `0` pour couper |
 | `VISION_API_KEY` | Secret du Space, facultatif | Clé attendue dans `X-Vision-Key` ; envoyée par `deployer_space.py` si elle est dans le `.env` |
 | `VISION_SORTIES` | Facultatif | Dossier des résultats (par défaut `/tmp/chez-soi-vision`) |
 

@@ -22,7 +22,7 @@ Drive de l'équipe (pour les humains) : https://drive.google.com/drive/folders/1
 
 | Couche | Rôle | Techno | Hébergement |
 |---|---|---|---|
-| Voir | Reconstruction 3D, cotes, détection des failles ; lecture du contrat | FastAPI, OpenCV, MoGe-2, Grounding DINO, SAM 2.1, MapAnything (variante Apache), trimesh, Docling, LLM + Pydantic | Space GPU Hugging Face (Docker) |
+| Voir | Reconstruction 3D, cotes, détection des failles ; lecture du contrat | FastAPI, OpenCV, MoGe-2, Grounding DINO, SAM 2.1, SigLIP (vérification des points), MapAnything (variante Apache), trimesh, Docling, LLM + Pydantic | Space GPU Hugging Face (Docker) |
 | Décider | Graphe de connaissances, profils, verdicts, contre-mesures | Postgres + pgvector (GraphRAG), TypeScript, LLM via HF Inference Providers, Vercel AI SDK, Zod | Vercel + Supabase |
 | Agir | 3 usages de l'agent | H Agents API (`h/web-surfer-flash`), custom tools, skill maison, webhooks signés, pilotage en cours de run | Cloud H |
 | Montrer | Parcours, plan 3D, validation, mode absence | Next.js 15 (App Router), TypeScript, Tailwind, shadcn/ui, three, @react-three/fiber, @react-three/drei | Vercel |

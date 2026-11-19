@@ -459,6 +459,13 @@ def charger_modeles(appareil: str):
     return Detecteur(appareil), ProfondeurMetrique(appareil)
 
 
+@functools.lru_cache(maxsize=1)
+def charger_verificateur(appareil: str):
+    from .verification import Verificateur
+
+    return Verificateur(appareil)
+
+
 def choisir_appareil() -> str:
     import torch
 
@@ -467,9 +474,27 @@ def choisir_appareil() -> str:
     return "mps" if torch.backends.mps.is_available() else "cpu"
 
 
+def verifier_avec_siglip(failles: list, mesures: list, vues: dict, appareil: str) -> tuple[list, list, str | None]:
+    """Vérification par SigLIP. Si le modèle ne se charge pas, tous les points sont gardés, avec un avertissement."""
+    from .verification import verifier_failles
+
+    try:
+        verificateur = charger_verificateur(appareil)
+    except Exception as erreur:
+        return failles, [], f"Vérification des points impossible ({type(erreur).__name__} : {erreur})."
+
+    @functools.lru_cache(maxsize=8)
+    def images_rvb(nom: str):
+        bgr = cv2.imread(str(vues[nom]["chemin"])) if nom in vues else None
+        return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) if bgr is not None else None
+
+    gardees, retirees = verifier_failles(failles, mesures, images_rvb, verificateur)
+    return gardees, retirees, None
+
+
 def analyser_images(
     images: list[Path], sortie: Path, logement_id: str, piece: str | None = None, calibrer_a4: bool = False,
-    reconstruction: bool = False, presence: bool = False,
+    reconstruction: bool = False, presence: bool = False, verification: bool = False,
 ) -> dict:
     """Analyse des images déjà extraites. Écrit failles.json, vues.json, modele.glb, image_annotee.jpg et annotations/."""
     durees: dict[str, float] = {}
@@ -539,6 +564,22 @@ def analyser_images(
     facteur = facteur_a4 if (calibrer_a4 and facteur_a4) else 1.0
     failles = construire_failles(mesures, piece, facteur)
     failles = ecarter_failles_tapis_jamais_entieres(failles)
+    nb_retires = 0
+    if verification and failles:
+        # Deuxième avis par un modèle image-texte : écarte la pomme de douche prise pour un détecteur de fumée, etc.
+        t = time.perf_counter()
+        failles, retirees, avertissement = verifier_avec_siglip(failles, mesures, vues, appareil)
+        durees["verification_s"] = time.perf_counter() - t
+        avertissements += [avertissement] if avertissement else []
+        noms = {(f.element, f.position_3d.get("instance")) for f in retirees}
+        mesures = [m for m in mesures if (m.element, m.instance) not in noms]
+        sortie.mkdir(parents=True, exist_ok=True)
+        # Trace des points retirés (ils n'arrivent pas dans l'app) pour régler les descriptions et le seuil.
+        (sortie / "verification.json").write_text(json.dumps(
+            [{"element": f.element, "instance": f.position_3d.get("instance"), "garde": f not in retirees,
+              **f.position_3d.get("verification", {})} for f in failles + retirees],
+            ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        nb_retires = len(retirees)
     finales = {(f.element, f.position_3d["instance"]): f for f in failles}
 
     sortie.mkdir(parents=True, exist_ok=True)
@@ -599,26 +640,29 @@ def analyser_images(
     return {
         "failles": failles, "appareil": appareil, "nb_images": len(images), "image_annotee": image_annotee,
         "facteur_a4": facteur_a4, "calibre_a4": facteur != 1.0, "reconstruction": reconstruit is not None,
-        "avertissements": avertissements, "durees": {k: round(v, 1) for k, v in durees.items()},
+        "avertissements": avertissements, "points_retires": nb_retires,
+        "durees": {k: round(v, 1) for k, v in durees.items()},
     }
 
 
 def analyser_video(video: Path, sortie: Path, logement_id: str, piece: str | None = None, nb_images: int = 30,
                    calibrer_a4: bool = False, reconstruction: bool = False, presence: bool = False,
-                   pieces: list[Piece] | None = None) -> dict:
+                   verification: bool = False, pieces: list[Piece] | None = None) -> dict:
     """Analyse la vidéo entière, ou pièce par pièce si `pieces` donne le découpage (une reconstruction par pièce)."""
     if pieces:
-        return _analyser_par_piece(video, sortie, logement_id, pieces, nb_images, calibrer_a4, reconstruction, presence)
+        return _analyser_par_piece(video, sortie, logement_id, pieces, nb_images, calibrer_a4, reconstruction, presence,
+                                   verification)
     debut = time.perf_counter()
     images = extraire_images(video, sortie / "images", nb=nb_images)
     extraction_s = round(time.perf_counter() - debut, 1)
-    resultat = analyser_images([i.chemin for i in images], sortie, logement_id, piece, calibrer_a4, reconstruction, presence)
+    resultat = analyser_images([i.chemin for i in images], sortie, logement_id, piece, calibrer_a4, reconstruction, presence,
+                               verification)
     resultat["durees"] = {"extraction_images_s": extraction_s, **resultat["durees"]}
     return resultat
 
 
 def _analyser_par_piece(video: Path, sortie: Path, logement_id: str, pieces: list[Piece], nb_images: int,
-                        calibrer_a4: bool, reconstruction: bool, presence: bool) -> dict:
+                        calibrer_a4: bool, reconstruction: bool, presence: bool, verification: bool = False) -> dict:
     """Une analyse et une reconstruction par pièce, dans sortie/pieces/<pièce>/, puis un failles.json commun."""
     debut = time.perf_counter()
     failles: list[Faille] = []
@@ -636,7 +680,7 @@ def _analyser_par_piece(video: Path, sortie: Path, logement_id: str, pieces: lis
             images += extraire_images(video, dossier / "images", nb=nb, pas_s=0.1, debut_s=debut_s, fin_s=fin_s,
                                       premier_numero=len(images))
         resultat = analyser_images([i.chemin for i in images], dossier, logement_id, nom, calibrer_a4,
-                                   reconstruction, presence)
+                                   reconstruction, presence, verification)
         for faille in resultat["failles"]:
             position = faille.position_3d
             position["repere"] = position["repere"].replace("camera:", f"camera:{relatif}/images/")
@@ -650,12 +694,14 @@ def _analyser_par_piece(video: Path, sortie: Path, logement_id: str, pieces: lis
             "nom": nom, "segments_s": [list(s) for s in segments], "nb_images": len(images),
             "modele_3d": f"{relatif}/modele.glb" if (dossier / "modele.glb").exists() else None,
             "image_annotee": f"{relatif}/image_annotee.jpg" if resultat["image_annotee"] else None,
-            "reconstruction": resultat["reconstruction"], "durees": resultat["durees"],
+            "reconstruction": resultat["reconstruction"], "points_retires": resultat["points_retires"],
+            "durees": resultat["durees"],
         })
     ecrire_failles(failles, sortie / "failles.json", logement_id, None, pieces=resume)
     return {
         "failles": failles, "appareil": appareil, "nb_images": nb_total, "image_annotee": None, "facteur_a4": None,
         "calibre_a4": False, "reconstruction": any(p["reconstruction"] for p in resume),
         "avertissements": avertissements, "pieces": resume,
+        "points_retires": sum(p["points_retires"] for p in resume),
         "durees": {"total_s": round(time.perf_counter() - debut, 1)},
     }

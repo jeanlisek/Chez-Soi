@@ -45,9 +45,9 @@ def _serie(calcul, images) -> dict:
 def lancer_autotest(nb_images: int = 4) -> dict:
     import torch
 
-    from modeles import GROUNDING_DINO, MAPANYTHING, MOGE, SAM
+    from modeles import GROUNDING_DINO, MAPANYTHING, MOGE, SAM, SIGLIP
 
-    from .analyse import charger_modeles, charger_reconstructeur, choisir_appareil
+    from .analyse import charger_modeles, charger_reconstructeur, charger_verificateur, choisir_appareil
     from .detection import SEUIL_COTES, TERMES_COTES, Detection
 
     debut = time.perf_counter()
@@ -55,6 +55,7 @@ def lancer_autotest(nb_images: int = 4) -> dict:
     deja_en_memoire = charger_modeles.cache_info().currsize > 0
     detecteur, profondeur = charger_modeles(appareil)
     reconstructeur = charger_reconstructeur(appareil)
+    verificateur = charger_verificateur(appareil)
     images = images_de_synthese(nb_images)
 
     def contours(image):
@@ -65,6 +66,10 @@ def lancer_autotest(nb_images: int = 4) -> dict:
     detection = _serie(lambda image: detecteur.detecter(image, TERMES_COTES, SEUIL_COTES), images)
     contour = _serie(contours, images)
     points = _serie(profondeur.points, images)
+    from .verification import DESCRIPTIONS, decouper
+
+    textes = sum(DESCRIPTIONS["tapis"], [])
+    verification = _serie(lambda image: verificateur.probabilites([decouper(image, (280, 470, 1000, 640))], textes), images)
     with tempfile.TemporaryDirectory() as dossier:
         chemins = []
         for i, image in enumerate(images):
@@ -90,6 +95,7 @@ def lancer_autotest(nb_images: int = 4) -> dict:
             fiche(MAPANYTHING, "reconstruction multi-vues", reconstructeur.duree_chargement_s,
                   {"premier_calcul_s": round(premiere, 2), "calcul_moyen_s": round(seconde, 2),
                    "unite": f"pour {nb_images} vues"}),
+            fiche(SIGLIP, "vérification des points", verificateur.duree_chargement_s, verification),
         ],
         "controles": {
             "masque_px": int(contours(images[0]).sum()),

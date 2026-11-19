@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Icon, Cursor, Octagon, Triangle, CircleCheck, CircleInfo, type IconName } from "./icons";
 import { LIBELLE_NIVEAU, type Niveau } from "@/lib/domaine";
 import { useParcours } from "@/lib/demo/etat";
@@ -75,12 +75,142 @@ export function Pill({ children, href, onClick, variant = "nuit", disabled, clas
 
 /* ---------- Puces ---------- */
 
-export function Chip({ children, active, onClick, dark }: { children: ReactNode; active?: boolean; onClick?: () => void; dark?: boolean }) {
+export function Chip({ children, active, onClick, dark, check }: { children: ReactNode; active?: boolean; onClick?: () => void; dark?: boolean; /** sélection multiple : une coche apparaît sur la puce active */ check?: boolean }) {
   const cls = dark
-    ? cx("h-10 flex-none rounded-full border-[1.5px] px-4 text-sm font-bold", active ? "border-white bg-white text-nuit" : "border-nuit-4 bg-transparent text-white")
-    : cx("h-10 flex-none rounded-full border px-4 text-sm font-bold", active ? "border-nuit bg-nuit text-white" : "border-line bg-white text-nuit");
+    ? cx("h-10 flex-none rounded-full border-[1.5px] px-4 text-sm font-bold transition-colors duration-200 active:scale-95", active ? "border-white bg-white text-nuit" : "border-nuit-4 bg-transparent text-white")
+    : cx("h-10 flex-none rounded-full border px-4 text-sm font-bold transition-colors duration-200 active:scale-95", active ? "border-nuit bg-nuit text-white" : "border-line bg-white text-nuit");
   if (!onClick) return <span className={cx(cls, "inline-flex items-center")}>{children}</span>;
-  return <button type="button" aria-pressed={!!active} onClick={onClick} className={cls}>{children}</button>;
+  return (
+    <button type="button" aria-pressed={!!active} onClick={onClick} className={cx(cls, check && "inline-flex items-center gap-1.5")}>
+      {check && active && <Icon name="check" size={15} strokeWidth={2.6} className="anim-pop" />}
+      {children}
+    </button>
+  );
+}
+
+/* ---------- Champs ---------- */
+
+export function Field({ label, value, onChange, placeholder, id, autoComplete, inputMode, invalid }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; id: string; autoComplete?: string; inputMode?: "text" | "numeric"; invalid?: boolean }) {
+  return (
+    <label htmlFor={id} className="flex min-w-0 flex-1 flex-col gap-1">
+      <span className="text-xs font-bold text-ink-muted">{label}</span>
+      <input id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} inputMode={inputMode} aria-invalid={invalid || undefined}
+        className={cx("h-12 w-full min-w-0 rounded-full border-[1.5px] bg-creme px-4 text-[15px] font-semibold outline-none transition-colors focus-visible:border-nuit", invalid ? "anim-shake border-attention-icon" : "border-line")} />
+    </label>
+  );
+}
+
+const CHAMP = "w-full min-w-0 rounded-[22px] border-[1.5px] border-line bg-creme px-4 text-[15px] font-semibold outline-none transition-colors focus-visible:border-nuit";
+
+export function Select({ label, value, onChange, options, id }: { label: string; value: string; onChange: (v: string) => void; options: string[]; id: string }) {
+  return (
+    <label htmlFor={id} className="flex min-w-0 flex-1 flex-col gap-1">
+      <span className="text-xs font-bold text-ink-muted">{label}</span>
+      <span className="relative">
+        <select id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-invalid={!value || undefined} className={cx(CHAMP, "h-12 appearance-none rounded-full pr-10", !value && "font-medium text-ink-muted")}>
+          {!value && <option value="" disabled>Choisir…</option>}
+          {options.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+        <Icon name="down" size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-muted" />
+      </span>
+    </label>
+  );
+}
+
+export function DateField({ label, value, onChange, id, aside }: { label: string; value: string; onChange: (v: string) => void; id: string; aside?: ReactNode }) {
+  return (
+    <label htmlFor={id} className="flex min-w-0 flex-1 flex-col gap-1">
+      <span className="flex items-center justify-between text-xs font-bold text-ink-muted">{label}{aside}</span>
+      <span className="relative">
+        <input id={id} type="date" value={value} max={new Date().toISOString().slice(0, 10)} min="1900-01-01" onChange={(e) => onChange(e.target.value)} aria-invalid={!value || undefined}
+          className={cx(CHAMP, "date-cobalt h-12 rounded-full pr-12", !value && "font-medium text-ink-muted")} />
+        <Icon name="cal" size={20} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-cobalt" />
+      </span>
+    </label>
+  );
+}
+
+export function TextArea({ label, value, onChange, placeholder, id }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; id: string }) {
+  return (
+    <label htmlFor={id} className="flex flex-col gap-1">
+      <span className="text-xs font-bold text-ink-muted">{label}</span>
+      <textarea id={id} rows={2} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className={cx(CHAMP, "resize-none py-3 font-medium leading-5")} />
+    </label>
+  );
+}
+
+/* ---------- Menu d'options (bouton ⋯ des en-têtes) ---------- */
+
+export function OptionsMenu({ items, label = "Options" }: { items: { label: string; icon: IconName; onClick: () => void; danger?: boolean }[]; label?: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", close); };
+  }, [open]);
+  return (
+    <div ref={ref} className="relative">
+      <RoundButton icon={open ? "close" : "menu"} label={label} onClick={() => setOpen(!open)} variant={open ? "nuit" : "blanc"} />
+      {open && (
+        <div role="menu" className="anim-in absolute right-0 top-[56px] z-30 flex w-[250px] flex-col overflow-hidden rounded-xl2 border border-line bg-white py-1.5 shadow-[0_18px_40px_-18px_rgba(18,27,54,0.45)]">
+          {items.map((it) => (
+            <button key={it.label} role="menuitem" type="button" onClick={() => { setOpen(false); it.onClick(); }}
+              className={cx("flex items-center gap-3 px-4 py-3 text-left text-sm font-bold active:bg-creme", it.danger ? "text-danger-text" : "text-nuit")}>
+              <Icon name={it.icon} size={18} className={it.danger ? "text-danger-text" : "text-cobalt"} />{it.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Feuille qui monte du bas de l'écran (infos complémentaires). */
+export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-nuit/40" onClick={onClose} role="dialog" aria-modal="true" aria-label={title}>
+      <div className="anim-in flex w-full max-w-[430px] flex-col gap-3 rounded-t-[32px] bg-creme px-5 pb-8 pt-5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between"><h2 className="text-lg font-bold">{title}</h2><RoundButton icon="close" label="Fermer" size={40} onClick={onClose} /></div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** Compteur − valeur + (âge, nombre…). La valeur rebondit à chaque changement. */
+export function Stepper({ value, onChange, min = 0, max = 120, unit, label }: { value: number; onChange: (v: number) => void; min?: number; max?: number; unit?: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2" role="group" aria-label={label}>
+      <RoundButton icon="minus" label={`${label} : moins`} size={44} onClick={() => onChange(Math.max(min, value - 1))} />
+      <span key={value} className="anim-bump min-w-[74px] text-center text-[22px] font-extrabold" aria-live="polite">{value}{unit && <span className="ml-1 text-sm font-bold text-ink-muted">{unit}</span>}</span>
+      <RoundButton icon="plus" label={`${label} : plus`} size={44} onClick={() => onChange(Math.min(max, value + 1))} />
+    </div>
+  );
+}
+
+/* ---------- Toast (retour discret qui apparaît puis disparaît) ---------- */
+
+export function useToast(sombre?: boolean) {
+  const [msg, setMsg] = useState<{ text: string; n: number }>();
+  const t = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const show = useCallback((text: string) => {
+    setMsg((m) => ({ text, n: (m?.n ?? 0) + 1 }));
+    clearTimeout(t.current);
+    t.current = setTimeout(() => setMsg(undefined), 2400);
+  }, []);
+  useEffect(() => () => clearTimeout(t.current), []);
+  const node = msg ? (
+    <div key={msg.n} role="status" className={cx("anim-toast fixed top-[78px] left-1/2 z-30 flex max-w-[360px] -translate-x-1/2 items-center gap-2.5 whitespace-nowrap rounded-full px-4 py-3 text-sm font-bold shadow-[0_12px_30px_-12px_rgba(18,27,54,0.6)]", sombre ? "bg-white text-nuit" : "bg-nuit text-white")}>
+      <CircleCheck size={20} />{msg.text}
+    </div>
+  ) : null;
+  return { show, node };
 }
 
 /* ---------- Jauge circulaire « 1/7 » ---------- */
@@ -147,8 +277,9 @@ export function Illus({ name, width, className, alt = "" }: { name: IllusName; w
 }
 
 export function Logo({ size = 48 }: { size?: number }) {
+  // Logo entier (maison et cheminée), fond transparent, jamais recadré dans un rond.
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/logo.png" alt="Chez Soi" width={size} height={size} className="flex-none rounded-full object-cover" style={{ width: size, height: size }} />;
+  return <img src="/logo-maison.png" alt="Chez Soi" width={size} height={size} className="flex-none object-contain" style={{ width: size, height: size }} />;
 }
 
 /* ---------- Badge agent ---------- */

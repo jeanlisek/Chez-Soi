@@ -291,7 +291,7 @@ export default function PageCapture() {
       <div>
         <p className="text-xs font-bold tracking-[0.06em] text-pervenche uppercase">Visite du logement</p>
         <h1 className="text-[28px] leading-9 font-extrabold">Une vidéo par pièce</h1>
-        <p className="mt-1 text-sm text-pervenche-soft">Choisissez la pièce, puis filmez-la environ 30 secondes ou importez une vidéo.</p>
+        <p className="mt-1 text-sm text-pervenche-soft">Choisissez la pièce, puis filmez-la environ 30 secondes ou importez une vidéo. Elle est supprimée un mois après l&apos;envoi.</p>
       </div>
 
       <section className="rounded-[22px] bg-nuit-2">

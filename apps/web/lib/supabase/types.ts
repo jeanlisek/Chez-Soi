@@ -1320,6 +1320,13 @@ export type Database = {
         }
         Returns: Json
       }
+      videos_a_purger: {
+        Args: { p_limite?: number }
+        Returns: {
+          chemin: string
+          envoyee_le: string
+        }[]
+      }
       valider_regle: {
         Args: { p_code: string; p_relu_par: string; p_version: number }
         Returns: {

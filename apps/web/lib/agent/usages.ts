@@ -110,13 +110,16 @@ const usage2: DefinitionUsage = {
     // La contre-mesure du plan dit QUOI chercher (« Sous-tapis antidérapant 50 × 80 cm ») : sans elle,
     // l'agent choisit un produit de la bonne taille mais pas forcément du bon type (run du 19/11).
     const { data } = action ? await admin.from("actions").select("contre_mesure").eq("id", action.id).maybeSingle() : { data: null };
-    const recherche = data?.contre_mesure?.trim();
+    // Le type seul, sans les dimensions du libellé (« … 38 × 59 cm ») : données telles quelles, l'agent
+    // les a prises pour le nom du produit et a écarté un sous-tapis plus grand à découper (run du 19/11).
+    // Les cotes viennent de get_mesures et la règle de dimension de la skill verifier-dimension.
+    const recherche = data?.contre_mesure?.replace(/\s+\d+(?:[.,]\d+)?\s*×\s*\d+(?:[.,]\d+)?\s*cm\s*$/i, "").trim();
     return {
       site: "www.ikea.com/fr/fr",
       urlDepart: "https://www.ikea.com/fr/fr",
       consigne: [
         recherche
-          ? `Trouve sur le site www.ikea.com/fr/fr ce type de produit, et pas un autre : « ${recherche} », pour corriger la faille ${action?.faille_id} du logement. Mets-le au panier, puis arrête-toi et demande la validation. Si le site ne vend pas ce type de produit, dis-le au lieu de proposer autre chose.`
+          ? `Trouve sur le site www.ikea.com/fr/fr un produit de ce type : « ${recherche} » (c'est une catégorie de produit, pas un nom exact), pour corriger la faille ${action?.faille_id} du logement. Mets-le au panier, puis arrête-toi et demande la validation. Ne propose pas un autre type de produit ; si le site n'en vend aucun de ce type, dis-le. Un produit plus grand que la cote convient s'il respecte ta règle de découpe.`
           : `Trouve sur le site www.ikea.com/fr/fr un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
         `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,
         "Applique tes règles permanentes : vérification de la dimension sur la fiche, panier comme dernière page, demander_validation avec action « panier », puis plus aucune action et la réponse finale au format demandé.",

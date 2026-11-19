@@ -7,7 +7,8 @@ import numpy as np
 # Terme anglais donné au détecteur → (élément, risque). La feuille A4 n'est pas une faille : c'est la référence d'échelle.
 ELEMENTS: dict[str, tuple[str, str]] = {
     "rug": ("tapis", "chute"),
-    "door": ("porte", "autre"),
+    # Une porte compte pour le risque de chute : son passage utile limite un fauteuil ou un déambulateur.
+    "door": ("porte", "chute"),
     "window": ("fenetre", "intrusion"),
     "door lock": ("serrure", "intrusion"),
     "staircase": ("escalier", "chute"),

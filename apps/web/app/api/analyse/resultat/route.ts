@@ -120,6 +120,40 @@ export async function POST(request: Request) {
         created_at: new Date().toISOString(),
       });
     }
+    // Un point dont l'utilisateur a confirmé la cote, retrouvé par la nouvelle analyse (même pièce, même
+    // élément, taille proche), garde son identifiant et sa cote : sinon le même tapis apparaît deux fois,
+    // l'ancien confirmé et le nouveau à confirmer. Les repères 3D changent d'une analyse à l'autre : on
+    // compare donc les tailles, pas les positions.
+    if (analyse.piece && retenues.length) {
+      const { data: confirmes } = await admin
+        .from("failles")
+        .select("id, element, largeur_cm, longueur_cm, hauteur_cm, cote_confirmee_cm")
+        .eq("logement_id", e.logement_id)
+        .eq("piece", analyse.piece)
+        .eq("source", "vision")
+        .not("cote_confirmee_cm", "is", null);
+      const pris = new Set<string>();
+      for (const c of confirmes ?? []) {
+        if (retenues.some((r) => r.id === c.id)) continue;
+        const ref = [c.largeur_cm, c.longueur_cm ?? c.cote_confirmee_cm].filter((x): x is number => x != null);
+        let meilleur: { r: Record<string, unknown>; ecart: number } | null = null;
+        for (const r of retenues) {
+          if (r.element !== c.element || pris.has(r.id as string)) continue;
+          const tailles = [r.largeur_cm, r.longueur_cm ?? r.cote_estimee_cm].filter((x): x is number => typeof x === "number");
+          if (tailles.length !== ref.length || !ref.length) continue;
+          const ecart = Math.max(...ref.map((v, i) => Math.abs(v - tailles[i]) / v));
+          if (ecart <= 0.3 && (!meilleur || ecart < meilleur.ecart)) meilleur = { r, ecart };
+        }
+        if (!meilleur) continue;
+        pris.add(meilleur.r.id as string);
+        Object.assign(meilleur.r, {
+          id: c.id,
+          largeur_cm: c.largeur_cm,
+          longueur_cm: c.longueur_cm,
+          hauteur_cm: c.hauteur_cm,
+        });
+      }
+    }
     if (retenues.length) {
       const { error } = await admin.from("failles").upsert(retenues as never, { onConflict: "id" });
       if (error) return NextResponse.json({ message: "Failles non écrites.", erreur: error.message }, { status: 500 });

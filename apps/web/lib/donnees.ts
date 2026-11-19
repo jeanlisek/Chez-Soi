@@ -163,7 +163,9 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     return c ? (imagesSignees.find((s) => s.path === c)?.signedUrl ?? null) : null;
   };
 
-  const pieces: Piece[] = (pcs.data ?? []).map((p) => {
+  // Une pièce sans aucune analyse n'a jamais été filmée (création d'un ancien parcours) : on ne l'affiche pas,
+  // sinon l'accueil la montre « rien à signaler » et l'avancement compte une pièce qui n'arrivera jamais.
+  const pieces: Piece[] = (pcs.data ?? []).filter((p) => (ana.data ?? []).some((x) => x.piece === p.nom)).map((p) => {
     const a = (ana.data ?? []).find((x) => x.piece === p.nom);
     const statut = a?.statut;
     return {

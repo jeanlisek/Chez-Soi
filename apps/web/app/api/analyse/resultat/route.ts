@@ -67,6 +67,8 @@ function idDeterministe(texte: string): string {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-8${h.slice(13, 16)}-${variante}${h.slice(17, 20)}-${h.slice(20, 32)}`;
 }
 
+const PRESENCE = new Set(["serrure", "escalier", "eclairage", "detecteur_fumee"]);
+
 export async function POST(request: Request) {
   if (!autorise(request)) return NextResponse.json({ message: "Non autorisé." }, { status: 401 });
   const corps = entreeSchema.safeParse(await request.json().catch(() => null));
@@ -119,6 +121,29 @@ export async function POST(request: Request) {
         // le prendrait pour un point d'une ancienne analyse et ne lui donnerait ni photo ni vue 3D.
         created_at: new Date().toISOString(),
       });
+    }
+    // Éléments repérés sans cote (serrure, plafonnier, détecteur, escalier) : c'est leur présence dans la pièce
+    // qui compte, pas leur nombre. Sur les vraies vidéos, le détecteur en trouve plusieurs par pièce, souvent
+    // sur une seule image. On n'en garde qu'un par pièce et par élément, vu sur au moins 2 images (3 pour un
+    // escalier, souvent confondu avec un meuble). L'interrupteur n'a aucune règle : il n'est pas gardé.
+    {
+      const nbVues = (r: Record<string, unknown>) => Number((r.position_3d as { nb_vues?: number } | null)?.nb_vues ?? 0);
+      const meilleurs = new Map<string, Record<string, unknown>>();
+      for (const r of retenues) {
+        const el = r.element as string;
+        if (!PRESENCE.has(el)) continue;
+        const cle = `${r.piece ?? ""}|${el}`;
+        const actuel = meilleurs.get(cle);
+        if (!actuel || nbVues(r) > nbVues(actuel)) meilleurs.set(cle, r);
+      }
+      const gardes = new Set([...meilleurs.values()].filter((r) => nbVues(r) >= (r.element === "escalier" ? 3 : 2)));
+      for (let i = retenues.length - 1; i >= 0; i--) {
+        const el = retenues[i].element as string;
+        if (el === "interrupteur" || (PRESENCE.has(el) && !gardes.has(retenues[i]))) {
+          retenues.splice(i, 1);
+          rejetees++;
+        }
+      }
     }
     // Un point dont l'utilisateur a confirmé la cote, retrouvé par la nouvelle analyse (même pièce, même
     // élément, taille proche), garde son identifiant et sa cote : sinon le même tapis apparaît deux fois,

@@ -785,7 +785,7 @@ export type Database = {
           naissance: string | null
           nom: string | null
           audition_reduite: boolean
-          consentement_art9_le: string
+          consentement_art9_le: string | null
           created_at: string
           deplacement: number
           id: string
@@ -800,7 +800,7 @@ export type Database = {
           naissance?: string | null
           nom?: string | null
           audition_reduite?: boolean
-          consentement_art9_le: string
+          consentement_art9_le?: string | null
           created_at?: string
           deplacement: number
           id?: string
@@ -815,7 +815,7 @@ export type Database = {
           naissance?: string | null
           nom?: string | null
           audition_reduite?: boolean
-          consentement_art9_le?: string
+          consentement_art9_le?: string | null
           created_at?: string
           deplacement?: number
           id?: string

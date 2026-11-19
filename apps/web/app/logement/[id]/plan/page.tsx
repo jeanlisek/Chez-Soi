@@ -79,6 +79,11 @@ export default function PagePlan() {
         </span>
       </div>
       {logement.exemple && <ExempleTag />}
+      {!logement.exemple && (logement.occupants ?? [logement.occupant]).every((o) => !o.consentement_art9_le) && (
+        <Link href={`${base}/compte`} className="rounded-[20px] bg-veille-bg px-4 py-3 text-[13px] leading-[18px] font-semibold text-veille-text">
+          Accord retiré : plan général, non adapté aux habitants. Redonner l&apos;accord dans le Profil.
+        </Link>
+      )}
 
       {sansDiagnostic ? (
         <div className="anim-in flex flex-1 flex-col gap-3.5">

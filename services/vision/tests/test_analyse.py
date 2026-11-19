@@ -1,6 +1,8 @@
 import pytest
 
-from pipeline.analyse import MesureVue, construire_failles, ecarter_vues_uniques, fusionner_instances_proches
+from pipeline.analyse import (
+    MesureVue, construire_failles, ecarter_tapis_jamais_entiers, ecarter_vues_uniques, fusionner_instances_proches,
+)
 
 
 def _vue(image: str, element: str = "tapis", risque: str = "chute", **cotes) -> MesureVue:
@@ -363,3 +365,26 @@ def test_deux_fenetres_visibles_dans_la_meme_image_restent_deux_fenetres():
     fusionner_instances_proches(mesures)
 
     assert [m.instance for m in mesures] == [0, 1, 0]
+
+
+def test_le_sol_pris_pour_un_tapis_disparait_a_cote_d_un_tapis_vu_en_entier():
+    mesures = [
+        _vue("image_000.jpg", largeur_cm=40.0, longueur_cm=61.0),                      # paillasson, vu en entier
+        MesureVue(element="tapis", risque="chute", image="image_021.jpg", score=0.4, boite_px=(0, 0, 10, 10),
+                  centre=None, instance=1, largeur_cm=38.0, longueur_cm=88.0, coupe=True),   # parquet en bord d'image
+        MesureVue(element="porte", risque="autre", image="image_021.jpg", score=0.5, boite_px=(0, 0, 10, 10),
+                  centre=None, instance=0, coupe=True),
+    ]
+
+    gardees = ecarter_tapis_jamais_entiers(mesures)
+
+    assert [(m.element, m.instance) for m in gardees] == [("tapis", 0), ("porte", 0)]
+
+
+def test_un_tapis_toujours_coupe_est_garde_s_il_est_le_seul_de_la_piece():
+    mesures = [
+        MesureVue(element="tapis", risque="chute", image="image_001.jpg", score=0.4, boite_px=(0, 0, 10, 10),
+                  centre=None, instance=0, largeur_cm=70.0, longueur_cm=85.0, coupe=True),
+    ]
+
+    assert ecarter_tapis_jamais_entiers(mesures) == mesures

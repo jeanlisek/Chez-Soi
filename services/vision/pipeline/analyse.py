@@ -197,6 +197,19 @@ def ecarter_vues_uniques(mesures: list[MesureVue], nb_images: int) -> list[Mesur
     ]
 
 
+def ecarter_tapis_jamais_entiers(mesures: list[MesureVue]) -> list[MesureVue]:
+    """Quand un tapis de la pièce a été vu en entier, retire les « tapis » toujours coupés par le cadre.
+
+    Sur les vidéos réelles, le sol (parquet, carrelage) pris en bord d'image ressort comme un tapis jamais vu
+    en entier, à côté du vrai tapis mesuré : chacun devenait un point et une action à part. Sans tapis vu en
+    entier dans la pièce, on garde tout : la cote reste alors à confirmer par l'utilisateur.
+    """
+    entiers = {m.instance for m in mesures if m.element == "tapis" and not m.coupe}
+    if not entiers:
+        return mesures
+    return [m for m in mesures if m.element != "tapis" or m.instance in entiers]
+
+
 def _masquees(entieres: list[MesureVue], coupees: list[MesureVue]) -> list[MesureVue]:
     """Vues « entières » en réalité masquées par un obstacle : une vue coupée du même objet en montre davantage."""
     return [
@@ -508,6 +521,8 @@ def analyser_images(
         fusionner_instances_proches(mesures)
     # Un tapis, une porte ou une fenêtre vus dans une seule image d'une vidéo : presque toujours une erreur.
     mesures = ecarter_vues_uniques(mesures, len(images))
+    # Le sol pris pour un tapis en bord d'image, à côté d'un vrai tapis mesuré.
+    mesures = ecarter_tapis_jamais_entiers(mesures)
 
     facteur_a4 = facteur_echelle_a4(mesures)
     facteur = facteur_a4 if (calibrer_a4 and facteur_a4) else 1.0

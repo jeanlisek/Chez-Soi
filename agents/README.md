@@ -98,7 +98,7 @@ Le schéma expérimental `bench/schema_u2.ts` est utilisé uniquement par le lan
 local. `apps/web/lib/schemas.ts` reste identique à `main` : l’app garde son format
 et les deux outils de l’agent publié. La #32 ne branche pas un nouvel outil serveur.
 Le banc séquentiel et les preuves indépendantes sont décrits dans `bench/README.md`.
-Référence équipe actuelle : `chez-soi-acheteur:1` avec `verifier-dimension:1`,
+Référence équipe actuelle après #60 : `chez-soi-acheteur:2` avec `verifier-dimension:2`,
 dans Default, organisation de Jean-Li. Les mesures historiques du 18/11 utilisaient
 une copie personnelle, ressource distincte malgré le même nom ; elles l’indiquent.
 

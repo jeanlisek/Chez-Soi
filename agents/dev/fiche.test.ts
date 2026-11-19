@@ -18,3 +18,9 @@ test('une citation approchée reste un écart, une négation ne prouve pas la d�
 test('la relecture refuse une URL arbitraire avant toute requête', async () => {
   assert.equal((await verifierCitationSurFiche('https://127.0.0.1/private','facile à couper')).statut,'non_verifiable');
 });
+
+test('coupe-vent et sur mesure ne prouvent pas une découpe par l’utilisateur', () => {
+  assert.match(ecartDecoupe('Traitement coupe-vent pour ce tissu') ?? '', /REFUSER/);
+  assert.match(ecartDecoupe('Produit fabriqué sur mesure') ?? '', /REFUSER/);
+  assert.equal(ecartDecoupe('Facile à couper aux ciseaux'), null);
+});

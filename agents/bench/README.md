@@ -1,6 +1,6 @@
 # Banc U2 — préparation et mesures
 
-Le prompt définitif concerne tous les objets du logement. Le banc reproductible utilise
+Le prompt du banc concerne tous les objets du logement. Le banc reproductible utilise
 le cas fictif du sous-tapis 60 × 160 cm ; les contrôles de couverture ne sont pas des
 règles universelles pour les meubles ou les équipements électriques.
 
@@ -8,7 +8,7 @@ règles universelles pour les meubles ou les équipements électriques.
 
 Le lanceur local utilise `schema_u2.ts` (`sortieUsage2BancSchema`) et trois outils,
 dont `lire_fiche_produit`. L’app continue à utiliser `sortieUsage2Schema` de `main`
-et les deux outils de `chez-soi-acheteur:1` : `get_mesures`, `demander_validation`.
+et les deux outils de l’agent publié : `get_mesures`, `demander_validation`.
 La #32 ne modifie plus le format de réponse de l’app et ne lui ajoute aucun handler.
 
 Les runs 38/39 ne sont pas des essais depuis l’app. Les trois citations du banc ne
@@ -21,8 +21,9 @@ nécessaire pour vérifier cette séparation de code.
 
 ## Agent et skill
 
-Référence équipe confirmée par Aurélie et accessible le 19/11 :
-`chez-soi-acheteur:1`, skill `verifier-dimension:1`, projet **Default** de
+Référence courante de l’app après #60 : `chez-soi-acheteur:2`,
+skill `verifier-dimension:2`. Les runs 38/39 et la lecture API 200 du matin
+portaient sur la révision 1 avec la skill 1. Projet **Default** de
 l’organisation de Jean-Li. La nouvelle clé personnelle de Bastian reste dans son
 `.env` local ignoré, permissions `600`, et expire le 21/11. Le stockage est limité
 à son compte sur son Mac ; la clé elle-même n’est pas liée à un appareil par H.
@@ -40,13 +41,15 @@ Depuis la racine, avec Node accessible et `apps/web` installé par `npm ci` :
 python3 agents/bench/run_bench.py
 python3 agents/bench/run_bench.py --a-blanc --limite 1
 python3 agents/bench/run_bench.py --executer --canal-annonce \
-  --agent chez-soi-acheteur:1 --skill-ref verifier-dimension:1
+  --agent chez-soi-acheteur:2 --skill-ref verifier-dimension:2
 ```
 
 Les essais réels chargent `H_API_KEY` depuis l’environnement (la conserver dans le
 `.env` local ignoré). Une session à la fois pour toute l’organisation, annoncée dans
 le canal de l’équipe ; quota relu avant chaque création, `queue:false`, verrou local.
 Le drapeau `--canal-annonce` atteste une annonce réelle, il ne l’envoie pas.
+Coordination du 19/11 : prochain essai Flash révision 2 après le signal de
+Jean-Li ; aucun nouveau Pro avant la démo. Un quota nul seul ne vaut pas ce signal.
 Aucun achat, connexion, paiement ni formulaire envoyé. Validation toujours refusée.
 Le coupe-circuit observe les actions après coup ; il ne garantit pas l’absence de clic.
 

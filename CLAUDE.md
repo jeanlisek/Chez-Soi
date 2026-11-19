@@ -311,3 +311,9 @@ dans `agents/bench/schema_u2.ts`, importé seulement par le lanceur et ses tests
 `lire_fiche_produit` reste un outil local de banc, absent de l’agent et des routes
 de production. Aucun gain du nouveau schéma sans lecteur n’est mesuré. Un essai
 depuis l’app est requis avant de modifier son contrat ou publier un nouvel agent.
+
+Après #60 : l’app utilise `chez-soi-acheteur:2` avec `verifier-dimension:2`.
+Les runs 38/39 restent des mesures de la révision 1. Prochain essai Flash sur la
+révision 2 seulement après le signal de Jean-Li ; aucun nouveau Pro avant vendredi.
+Le test vidéo/GLB en production a été effectué par Jean-Li (message du 19/11 à 11h04),
+pas par Bastian : ne pas téléverser une autre vidéo pour le refaire sans nécessité.

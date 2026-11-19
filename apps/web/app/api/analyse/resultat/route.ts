@@ -36,6 +36,8 @@ const entreeSchema = z.object({
   modele_3d_url: z.string().nullish(),
   /** Chemin du .glb copié par n8n dans le bucket `modeles3d` (voir /api/analyse/modele-url). */
   modele_3d_path: z.string().nullish(),
+  /** Chemin de l'image annotée copiée par n8n dans le bucket `exports` (même route). */
+  image_annotee_path: z.string().nullish(),
   erreur: z.string().nullish(),
 });
 
@@ -125,12 +127,15 @@ export async function POST(request: Request) {
   const attendu = proprio ? `${proprio.user_id}/${e.logement_id}/${e.analyse_id}.glb` : null;
   const modelePath = e.etat === "termine" && e.modele_3d_path && e.modele_3d_path === attendu ? attendu : null;
   if (modelePath) await admin.from("logements").update({ modele_3d_path: modelePath }).eq("id", e.logement_id);
+  const imageAttendue = proprio ? `${proprio.user_id}/${e.logement_id}/${e.analyse_id}.jpg` : null;
+  const imagePath = e.etat === "termine" && e.image_annotee_path && e.image_annotee_path === imageAttendue ? imageAttendue : null;
 
   const resultat = {
     origine: e.resultat ?? null,
     service_analyse_id: e.service_analyse_id ?? null,
     modele_3d_url: e.modele_3d_url ?? null,
     modele_3d_path: modelePath,
+    image_annotee_path: imagePath,
     failles_retenues: retenues.length,
     failles_rejetees: rejetees,
   };

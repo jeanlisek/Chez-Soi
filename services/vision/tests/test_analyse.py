@@ -1,7 +1,7 @@
 import pytest
 
 from pipeline.analyse import (
-    MesureVue, construire_failles, ecarter_tapis_jamais_entiers, ecarter_vues_uniques, fusionner_instances_proches,
+    MesureVue, construire_failles, ecarter_failles_tapis_jamais_entieres, ecarter_tapis_jamais_entiers, ecarter_vues_uniques, fusionner_instances_proches,
 )
 
 
@@ -388,3 +388,14 @@ def test_un_tapis_toujours_coupe_est_garde_s_il_est_le_seul_de_la_piece():
     ]
 
     assert ecarter_tapis_jamais_entiers(mesures) == mesures
+
+
+def test_un_tapis_dont_les_vues_entieres_sont_masquees_est_retire_des_failles():
+    from types import SimpleNamespace
+
+    paillasson = SimpleNamespace(element="tapis", position_3d={"nb_vues_entieres": 1})
+    parquet = SimpleNamespace(element="tapis", position_3d={"nb_vues_entieres": 0})
+    porte = SimpleNamespace(element="porte", position_3d={"nb_vues_entieres": 0})
+
+    assert ecarter_failles_tapis_jamais_entieres([paillasson, parquet, porte]) == [paillasson, porte]
+    assert ecarter_failles_tapis_jamais_entieres([parquet]) == [parquet]

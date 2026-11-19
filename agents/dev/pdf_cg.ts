@@ -19,6 +19,26 @@ import { surDomaineOfficiel } from "./controle";
 
 const TAILLE_MAX_OCTETS = 30 * 1024 * 1024;
 const DELAI_MS = 30_000;
+const REDIRECTIONS_MAX = 5;
+
+/** Corps de la réponse, ou `null` dès qu'il dépasse `plafond` octets (le flux est alors annulé). */
+async function lireAvecPlafond(reponse: Response, plafond: number): Promise<Buffer | null> {
+  if (!reponse.body) return Buffer.alloc(0);
+  const lecteur = reponse.body.getReader();
+  const morceaux: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await lecteur.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > plafond) {
+      await lecteur.cancel().catch(() => undefined);
+      return null;
+    }
+    morceaux.push(value);
+  }
+  return Buffer.concat(morceaux);
+}
 
 /** Lettres et chiffres seulement, en majuscules : « M2442 - 01/2023 » → « M2442012023 ». */
 export function normaliser(texte: string): string {
@@ -59,10 +79,21 @@ export function textesDuPdf(pdf: Buffer): { textes: string[]; litterales: number
   return { textes: [...textes, ...avecLitterales], litterales };
 }
 
+/**
+ * Motif de la référence : ses lettres et chiffres dans l'ordre, séparés ou non par d'autres
+ * caractères (espace, tiret, coupure de l'extraction), et bornés : ni lettre ni chiffre juste
+ * avant ou juste après. « M2442 » est trouvé dans « réf. M2442 - 01/2023 », pas dans « M24420 ».
+ */
+export function motifReference(reference: string): RegExp | null {
+  const caracteres = normaliser(reference).split("");
+  if (!caracteres.length) return null;
+  return new RegExp(`(?<![0-9A-Z])${caracteres.join("[^0-9A-Z]{0,3}")}(?![0-9A-Z])`);
+}
+
 export function chercherReference(pdf: Buffer, reference: string): "trouvee" | "absente" | "non_verifiable" {
-  const cible = normaliser(reference);
+  const motif = motifReference(reference);
   const { textes, litterales } = textesDuPdf(pdf);
-  if (textes.some((texte) => normaliser(texte).includes(cible))) return "trouvee";
+  if (motif && textes.some((texte) => motif.test(texte.normalize("NFKD").toUpperCase()))) return "trouvee";
   // Trop peu de texte lisible : on ne peut pas conclure que la référence est absente.
   return litterales < 200 ? "non_verifiable" : "absente";
 }
@@ -100,15 +131,27 @@ export async function controlerDocument(options: {
     return resultat;
   }
   try {
-    const reponse = await fetch(options.url, {
-      redirect: "follow",
-      signal: AbortSignal.timeout(DELAI_MS),
-      headers: { Accept: "application/pdf,*/*;q=0.5" },
-    });
-    resultat.url_finale = reponse.url;
-    if (!surDomaineOfficiel(reponse.url, options.domaines)) {
-      resultat.domaine_officiel = false;
-      resultat.erreur = `Redirigé hors du site de l'assureur : ${reponse.url}`;
+    // Redirections suivies à la main : chaque saut doit rester sur le site de l'assureur.
+    const signal = AbortSignal.timeout(DELAI_MS);
+    let url = options.url;
+    let reponse: Response | null = null;
+    for (let saut = 0; saut <= REDIRECTIONS_MAX; saut++) {
+      if (!surDomaineOfficiel(url, options.domaines)) {
+        resultat.url_finale = url;
+        resultat.domaine_officiel = false;
+        resultat.erreur = `Redirigé hors du site de l'assureur : ${url}`;
+        return resultat;
+      }
+      reponse = await fetch(url, { redirect: "manual", signal, headers: { Accept: "application/pdf,*/*;q=0.5" } });
+      const cible = reponse.status >= 300 && reponse.status < 400 ? reponse.headers.get("location") : null;
+      if (!cible) break;
+      await reponse.body?.cancel().catch(() => undefined);
+      url = new URL(cible, url).toString();
+      reponse = null;
+    }
+    resultat.url_finale = url;
+    if (!reponse) {
+      resultat.erreur = `Plus de ${REDIRECTIONS_MAX} redirections.`;
       return resultat;
     }
     if (!reponse.ok) {
@@ -120,7 +163,12 @@ export async function controlerDocument(options: {
       resultat.erreur = `Document trop lourd (${longueur} octets).`;
       return resultat;
     }
-    const pdf = Buffer.from(await reponse.arrayBuffer());
+    // Plafond aussi sans content-length (transfert chunked) : lecture du flux, arrêt au-delà.
+    const pdf = await lireAvecPlafond(reponse, TAILLE_MAX_OCTETS);
+    if (!pdf) {
+      resultat.erreur = `Document trop lourd (plus de ${TAILLE_MAX_OCTETS} octets).`;
+      return resultat;
+    }
     resultat.telecharge = true;
     resultat.octets = pdf.length;
     resultat.est_pdf = pdf.subarray(0, 1024).toString("latin1").includes("%PDF-");

@@ -5,10 +5,13 @@
  * Depuis apps/web/ :
  *   npm run agent:skill -- ../../agents/skills/verifier_dimension.md            (à blanc : affiche le corps, n'envoie rien)
  *   npm run agent:skill -- ../../agents/skills/verifier_dimension.md --publier  (crée la skill sur le compte de l'équipe)
+ *   npm run agent:skill -- ../../agents/skills/verifier_dimension.md --publier --mettre-a-jour
+ *     (nouvelle révision, PUT /skills/{nom} : https://hub.hcompany.ai/agents-api/skills/update.md ;
+ *      les agents figés sur nom:N gardent l'ancienne)
  *
  * Le fichier porte un bloc `---` avec `name` et `description` ; le reste est le `body`.
- * Les commentaires HTML sont retirés. Une skill existante (409) n'est pas écrasée : une
- * nouvelle révision se fait depuis la console H, puis on fige la démo sur `nom:N`.
+ * Les commentaires HTML sont retirés. Sans `--mettre-a-jour`, une skill existante (409) n'est
+ * pas écrasée. On fige ensuite la démo sur `nom:N`.
  * Ne lance aucune session et ne consomme aucun token d'agent.
  */
 import { readFile } from "node:fs/promises";
@@ -49,18 +52,26 @@ async function main(): Promise<void> {
   const cle = process.env.H_API_KEY;
   if (!cle) throw new Error("H_API_KEY absente : mets-la dans le .env de la racine du dépôt.");
   const message = encodeURIComponent(`Publiée depuis ${path.basename(fichier)}`);
-  const reponse = await fetch(`${HAI_API_URL}/skills?message=${message}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${cle}`, "Content-Type": "application/json" },
-    body: JSON.stringify(skill),
-  });
-  const texte = await reponse.text();
-  if (reponse.status === 409) {
-    throw new Error(`La skill ${skill.name} existe déjà : nouvelle révision depuis la console H, puis --skill ${skill.name}:N.`);
+  const entetes = { Authorization: `Bearer ${cle}`, "Content-Type": "application/json" };
+  const miseAJour = process.argv.includes("--mettre-a-jour");
+  let reponse: Response;
+  if (miseAJour) {
+    const actuelle = await fetch(`${HAI_API_URL}/skills/${skill.name}`, { headers: entetes });
+    if (!actuelle.ok) throw new Error(`GET /skills/${skill.name} : HTTP ${actuelle.status}`);
+    reponse = await fetch(`${HAI_API_URL}/skills/${skill.name}?message=${message}`, {
+      method: "PUT",
+      headers: { ...entetes, "If-Match": actuelle.headers.get("etag") ?? "*" },
+      body: JSON.stringify(skill),
+    });
+  } else {
+    reponse = await fetch(`${HAI_API_URL}/skills?message=${message}`, { method: "POST", headers: entetes, body: JSON.stringify(skill) });
   }
-  if (!reponse.ok) throw new Error(`POST /skills : HTTP ${reponse.status}. ${texte.slice(0, 500)}`);
-  console.log(`Skill ${skill.name} créée (révision ${(reponse.headers.get("etag") ?? "1").replaceAll('"', "")}).`);
-  console.log(`À utiliser figée : npm run agent:u2 -- --site <domaine> --skill ${skill.name}:1`);
+  const texte = await reponse.text();
+  if (reponse.status === 409) throw new Error(`La skill ${skill.name} existe déjà : relance avec --mettre-a-jour.`);
+  if (!reponse.ok) throw new Error(`${miseAJour ? "PUT" : "POST"} /skills : HTTP ${reponse.status}. ${texte.slice(0, 500)}`);
+  const revision = (reponse.headers.get("etag") ?? "1").replaceAll('"', "");
+  console.log(`Skill ${skill.name} ${miseAJour ? "mise à jour" : "créée"} (révision ${revision}).`);
+  console.log(`À utiliser figée : ${skill.name}:${revision}`);
 }
 
 if (require.main === module) {

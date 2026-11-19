@@ -99,7 +99,7 @@ const usage1: DefinitionUsage = {
 
 const usage2: DefinitionUsage = {
   usage: 2,
-  agent: "chez-soi-acheteur:1",
+  agent: "chez-soi-acheteur:2",
   formatReponse: versJsonSchema(sortieUsage2Schema),
   action: "faille",
   // IKEA France : accueil, recherche, catégories, fiche produit et panier. Rien d'autre.

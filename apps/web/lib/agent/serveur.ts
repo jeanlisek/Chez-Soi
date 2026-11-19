@@ -381,3 +381,17 @@ export async function lireRun(utilisateur: Utilisateur, sessionId: string, admin
     .order("created_at", { ascending: false });
   return { run, validation_en_attente: validations?.find((v) => !v.decision) ?? null };
 }
+
+/**
+ * « Arrêter l'agent » : annule réellement la session H (sinon elle continue et occupe l'une des
+ * 3 places de l'offre gratuite). Le run doit appartenir à l'utilisateur (lecture sous RLS).
+ */
+export async function arreterSession(params: { utilisateur: Utilisateur; admin: Admin; hai: ClientHai; sessionId: string }): Promise<{ arretee: boolean }> {
+  const { utilisateur, admin, hai, sessionId } = params;
+  const { data: run } = await utilisateur.from("runs_agent").select("session_id, statut_final").eq("session_id", sessionId).maybeSingle();
+  if (!run) throw new ErreurRoute(404, "Session introuvable.");
+  if (run.statut_final && estEtatTerminal(run.statut_final)) return { arretee: false };
+  await hai.annulerSession(sessionId);
+  await admin.from("runs_agent").update({ annulee_par_script: true, motif_fin: "interruption" }).eq("session_id", sessionId);
+  return { arretee: true };
+}

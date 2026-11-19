@@ -92,7 +92,8 @@ export function evaluerSortie<S>(
 /* ---------- Usage 2 ---------- */
 
 /** Mots qui disent qu'un produit se découpe (comparés sans accents ni majuscules). */
-const MOTS_DECOUPE = ["decoup", "recoup", "couper", "coupe", "ciseau", "cutter", "sur mesure"];
+/** Après `sansAccents`. « coupe » garde « coupé » mais pas « coupe-vent » ; « sur mesure » ne dit pas que l'utilisateur peut découper. */
+const MOTS_DECOUPE = [/decoup/, /recoup/, /couper/, /coupe(?!-?vent)/, /ciseau/, /cutter/];
 
 function sansAccents(texte: string): string {
   return texte.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
@@ -110,7 +111,7 @@ export function ecartDecoupe(citation: string | undefined): string | null {
     return "aucune citation_decoupe de la fiche : produit à REFUSER";
   }
   const texte = sansAccents(citation);
-  if (!MOTS_DECOUPE.some((mot) => texte.includes(mot))) {
+  if (!MOTS_DECOUPE.some((motif) => motif.test(texte))) {
     return `citation_decoupe « ${citation} » ne dit pas que le produit se découpe : produit à REFUSER`;
   }
   if (citation.trim().split(/\s+/).length < 3) {

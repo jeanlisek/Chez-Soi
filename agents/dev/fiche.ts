@@ -1,7 +1,7 @@
 /**
  * Vérifie par le code qu'une citation de l'agent figure sur la fiche produit (issue #15).
  * La skill `verifier-dimension` exige une phrase recopiée mot pour mot ; au run du 18/11
- * (chez-soi-acheteur:2), l'agent a rendu la bonne phrase avec « tissus » au lieu de
+ * (chez-soi-acheteur:2 de l'organisation H personnelle d'Aurélie), l'agent a rendu la bonne phrase avec « tissus » au lieu de
  * « tapis », comme aux deux runs précédents pour le nom du produit : on ne croit pas la
  * citation, on la cherche sur la page publique (simple GET, sans session H).
  */

@@ -12,7 +12,7 @@ description: À utiliser quand tu dois choisir un produit qui doit tenir dans un
 
 # Vérifier qu'un produit respecte la cote
 
-Tu as reçu des cotes en centimètres (par exemple par l'outil `get_mesures` : `cote_confirmee_cm`, `largeur_cm`, `hauteur_cm`). Avant de retenir un produit, applique ces règles **dans l'ordre**. Elles priment sur ton intuition.
+Tu as reçu des cotes en centimètres par l'outil `get_mesures`. Les deux côtés au sol de la cote sont `largeur_cm` et `longueur_cm` (pour un tapis : sa largeur et sa longueur). Si `longueur_cm` est absent, prends `cote_confirmee_cm` comme deuxième côté et dis-le dans `remarque`. `hauteur_cm`, quand il est donné, n'est **pas** une cote au sol : pour un tapis, c'est son épaisseur. Ne compare jamais la longueur ou la largeur d'un produit à `hauteur_cm`. Avant de retenir un produit, applique ces règles **dans l'ordre**. Elles priment sur ton intuition.
 
 ## 1. Lire les dimensions sur la fiche
 
@@ -22,7 +22,7 @@ Tu as reçu des cotes en centimètres (par exemple par l'outil `get_mesures` : `
 
 ## 2. Comparer à la cote
 
-- Compare le plus petit côté du produit au plus petit côté de la cote, et le plus grand côté au plus grand.
+- Compare le plus petit côté du produit au plus petit côté de la cote (`largeur_cm` ou `longueur_cm`), et le plus grand côté au plus grand.
 - Si les deux côtés du produit sont inférieurs ou égaux à ceux de la cote : le produit **convient**. Passe à l'étape 4.
 - Si au moins un côté dépasse : passe à l'étape 3.
 

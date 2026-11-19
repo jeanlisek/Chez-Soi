@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/cs/icons";
 import { AgentTag, BackButton, Header, Illus, Note, Pill, RoundButton, Ring, Screen, Signal } from "@/components/cs/ui";
+import { runTermine, useRunAgent } from "@/lib/agent/client";
 import { useParcours } from "@/lib/demo/etat";
 import { envoyerFichier } from "@/lib/envoi";
 import { reveillerVision } from "@/lib/reveil";
@@ -27,6 +28,28 @@ export default function PageContrat() {
   const [message, setMessage] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const depose = etat.contratDepose;
+
+  // Usage 1 (vrai logement) : la recherche des conditions générales est une vraie session H, lancée
+  // par l'utilisateur. L'écran n'annonce « l'agent cherche » que pendant qu'elle tourne.
+  const [sessionCg, setSessionCg] = useState<string | null>(null);
+  const [lancementCg, setLancementCg] = useState(false);
+  const [alerteCg, setAlerteCg] = useState<string | null>(null);
+  const suiviCg = useRunAgent(sessionCg);
+  const finCg = runTermine(suiviCg.etat);
+  const sortieCg = suiviCg.etat?.run.sortie_finale as { trouve?: boolean; titre?: string; reference_trouvee?: string; raison?: string } | null | undefined;
+  const chercherCg = async () => {
+    setLancementCg(true);
+    setAlerteCg(null);
+    const r = await fetch("/api/agent/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ logement_id: logement.id, usage: 1 }),
+    }).catch(() => null);
+    const corps = r ? ((await r.json().catch(() => null)) as { session_id?: string; message?: string } | null) : null;
+    setLancementCg(false);
+    if (!r || !r.ok || !corps?.session_id) setAlerteCg(corps?.message ?? "La recherche n'a pas pu démarrer.");
+    else setSessionCg(corps.session_id);
+  };
   const contrat = logement.contrat;
   const prenom = etat.occupant.libelle === "l'occupant" ? "l'occupant" : etat.occupant.libelle;
 
@@ -126,8 +149,35 @@ export default function PageContrat() {
           </section>
           <section className="relative flex min-h-[120px] flex-col justify-center gap-1.5 rounded-[28px] bg-pervenche py-4 pr-4 pl-[132px]">
             <Illus name="navigateur" width={104} className="absolute top-[22px] left-3.5" />
-            <b className="text-[15px] leading-5">L&apos;agent cherche les conditions générales</b>
-            <span className="text-[13px] leading-[18px] text-ink-soft">Sur le site de l&apos;assureur, sans connexion. Il travaille pendant que vous filmez.</span>
+            {logement.exemple ? (
+              <>
+                <b className="text-[15px] leading-5">L&apos;agent cherche les conditions générales</b>
+                <span className="text-[13px] leading-[18px] text-ink-soft">Sur le site de l&apos;assureur, sans connexion. Il travaille pendant que vous filmez.</span>
+              </>
+            ) : sessionCg && !finCg ? (
+              <>
+                <b className="text-[15px] leading-5" aria-live="polite">L&apos;agent cherche les conditions générales…</b>
+                <span className="text-[13px] leading-[18px] text-ink-soft">Sur le site de l&apos;assureur, sans connexion. Vous pouvez continuer et filmer pendant ce temps.</span>
+              </>
+            ) : sessionCg && finCg ? (
+              <>
+                <b className="text-[15px] leading-5" aria-live="polite">{sortieCg?.trouve ? "Conditions générales retrouvées" : "Conditions générales non retrouvées"}</b>
+                <span className="text-[13px] leading-[18px] text-ink-soft">
+                  {sortieCg?.trouve
+                    ? [sortieCg.titre, sortieCg.reference_trouvee ? `référence lue : ${sortieCg.reference_trouvee}` : null].filter(Boolean).join(" · ") || "Le document est vérifié par Chez Soi avant d'être utilisé."
+                    : sortieCg?.raison || "L'agent n'a pas trouvé le document sur le site de l'assureur."}
+                </span>
+              </>
+            ) : (
+              <>
+                <b className="text-[15px] leading-5">Retrouver les conditions générales</b>
+                <span className="text-[13px] leading-[18px] text-ink-soft">L&apos;agent les cherche sur le site de l&apos;assureur, sans connexion et sans rien envoyer.</span>
+                <button type="button" onClick={() => void chercherCg()} disabled={lancementCg} className="mt-1 h-10 self-start rounded-full bg-nuit px-4 text-sm font-bold text-white disabled:opacity-50">
+                  {lancementCg ? "Lancement…" : "Lancer la recherche"}
+                </button>
+              </>
+            )}
+            {(alerteCg ?? suiviCg.erreur) && <span role="alert" className="text-[13px] font-semibold leading-[18px]">{alerteCg ?? suiviCg.erreur}</span>}
             <AgentTag>Usage 1 · lecture seule</AgentTag>
           </section>
         </>

@@ -22,6 +22,23 @@ function slug(nom: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+/** Libellés affichés des éléments (table `elements`), accents compris ; un code inconnu est affiché tel quel. */
+const LIBELLES_ELEMENT: Record<string, string> = {
+  fenetre: "Fenêtre",
+  porte: "Porte",
+  porte_entree: "Porte d'entrée",
+  porte_interieure: "Porte intérieure",
+  ressaut: "Ressaut ou seuil",
+  eclairage: "Éclairage",
+  garde_corps: "Garde-corps",
+  barriere_securite: "Barrière de sécurité",
+  barre_appui: "Barre d'appui",
+  detecteur_fumee: "Détecteur de fumée",
+  detecteur_co: "Détecteur de monoxyde de carbone",
+  main_courante: "Main courante",
+  marche: "Marche d'escalier",
+};
+
 /**
  * Charge un logement pour l'interface. « exemple » sert le logement fictif de Marc et Jeanne,
  * visible sans compte. Les autres sont lus dans Supabase au nom de l'utilisateur connecté :
@@ -127,7 +144,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     return {
       id: f.id,
       piece_id: piece?.id ?? slug(f.piece ?? "logement"),
-      titre: f.element.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()),
+      titre: LIBELLES_ELEMENT[f.element] ?? f.element.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()),
       element: f.element,
       risque: f.risque,
       niveau: niveau(f.gravite, f.priorite),
@@ -137,8 +154,9 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
         f.largeur_cm != null && f.longueur_cm != null
           ? {
               libelle: "Dimensions",
-              largeur_cm: Number(f.largeur_cm),
-              longueur_cm: Number(f.longueur_cm),
+              // La vision estime au millimètre ; l'écran et l'agent travaillent au centimètre.
+              largeur_cm: Math.round(Number(f.largeur_cm)),
+              longueur_cm: Math.round(Number(f.longueur_cm)),
               statut: f.cotes_confirmees_le ? "confirmee" : "a_confirmer",
             }
           : undefined,

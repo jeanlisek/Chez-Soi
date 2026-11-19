@@ -11,6 +11,7 @@ import { clientAdmin } from "@/lib/supabase/server";
  * une fois l'analyse terminée. Appel serveur à serveur, authentifié par l'en-tête `X-Chez-Soi-Secret`
  * (même secret que les webhooks n8n). L'app écrit `failles`, `analyses` et `pieces` avec la clé
  * service_role. Idempotent : rejouer l'appel réécrit les mêmes lignes (identifiants déterministes).
+ * Les points d'une analyse remplacent ceux des analyses précédentes de la même pièce.
  * Les cotes sont des estimations : `cote_confirmee_cm` n'est jamais écrite ici.
  */
 
@@ -120,6 +121,22 @@ export async function POST(request: Request) {
       const { error } = await admin.from("failles").upsert(retenues as never, { onConflict: "id" });
       if (error) return NextResponse.json({ message: "Failles non écrites.", erreur: error.message }, { status: 500 });
     }
+    // Une pièce refilmée remplace ses anciens points : sans cela, chaque nouvelle analyse en ajoute
+    // et le même tapis apparaît deux fois. On garde les points dont l'utilisateur a confirmé la cote.
+    // Leurs actions et diagnostics partent avec eux (clés étrangères en cascade) ; le plan est recalculé plus bas.
+    if (analyse.piece) {
+      const gardees = retenues.map((r) => r.id as string);
+      let suppression = admin
+        .from("failles")
+        .delete()
+        .eq("logement_id", e.logement_id)
+        .eq("piece", analyse.piece)
+        .eq("source", "vision")
+        .is("cote_confirmee_cm", null);
+      if (gardees.length) suppression = suppression.not("id", "in", `(${gardees.join(",")})`);
+      const { error: errSuppr } = await suppression;
+      if (errSuppr) console.error("[analyse/resultat] anciens points non retirés", errSuppr.message);
+    }
   }
 
   // On ne garde que le chemin prévu pour ce logement et cette analyse : rien d'autre ne s'écrit.
@@ -159,7 +176,7 @@ export async function POST(request: Request) {
   // Plan d'action recalculé dès que de nouvelles failles arrivent (issue #13). Un échec ici
   // n'annule pas l'analyse : le plan peut être relancé par POST /api/plan.
   let plan: Awaited<ReturnType<typeof calculerPlan>> | { erreur: string } | null = null;
-  if (e.etat === "termine" && retenues.length) {
+  if (e.etat === "termine") {
     try {
       plan = await calculerPlan(admin, e.logement_id);
     } catch (err) {

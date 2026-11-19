@@ -90,10 +90,12 @@ Les variables d'environnement sont listées dans [`.env.example`](.env.example) 
 En production :
 
 - connexion par Google ou lien e-mail, création du logement et du profil ;
-- dépôt de la vidéo, analyse sur le Space (réveil automatique, nouveaux essais), failles et cotes en base, modèle 3D de chaque pièce conservé et affiché ;
+- capture guidée (cinq conseils pour bien filmer, import d'une vidéo déjà tournée, relecture avant l'envoi), puis dépôt de la vidéo, analyse sur le Space (réveil automatique, nouveaux essais), failles et cotes en base, modèle 3D et image annotée de chaque pièce conservés dans le stockage privé ;
+- une pièce refilmée remplace ses anciens points au lieu de s'y ajouter ; les points dont l'utilisateur a confirmé la cote sont gardés ;
+- écran du point : photo cadrée sur l'élément, et « photo en relief » (la surface filmée, vue depuis la caméra, avec un repère sur l'élément) à la place du nuage de points, illisible sur un vrai logement. Côté vision, les objets revus dans plusieurs images sont réunis et les détections vues une seule fois écartées. Ces deux affichages ne s'appliquent qu'aux analyses faites après le redéploiement du Space ; les analyses plus anciennes gardent l'affichage précédent ;
 - plan d'action calculé sur les règles, avec le graphe pour reconnaître les éléments et une explication rédigée par un LLM puis contrôlée par du code ;
 - lecture du contrat de bout en bout, testée avec des conditions particulières fictives ;
-- agent H dans l'application, usage 2 (achat d'objets, depuis le plan d'action) et usage 1 (conditions générales de l'assureur, depuis l'écran Contrat, PDF vérifié par le code) : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Les routes ont été prouvées par un run réel le 19/11 ; le parcours complet à l'écran reste à rejouer en production.
+- agent H dans l'application, usage 2 (achat d'objets, depuis le plan d'action) et usage 1 (conditions générales de l'assureur, depuis l'écran Contrat, PDF vérifié par le code) : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Les deux usages ont été lancés depuis l'application en production le 19/11. Usage 2 sur l'agent figé `chez-soi-acheteur:2` : run réussi de bout en bout (130 s, 9 étapes, `get_mesures` répondu, pilotage envoyé, arrêt sur `demander_validation` au panier, refus transmis, réponse conforme au schéma).
 
 Prêt dans le code, pas encore lancé depuis un écran : usage 3 (préparer l'OTV et l'information de l'assureur avant une absence).
 

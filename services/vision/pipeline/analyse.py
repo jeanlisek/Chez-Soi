@@ -16,7 +16,7 @@ import numpy as np
 from .cotes import agreger_cotes, dimensions_frontales, dimensions_sur_le_mur, rectangle_au_sol
 from .detection import SEUIL_COTES, SEUIL_PRESENCE, TERME_REFERENCE, TERMES_COTES, TERMES_PRESENCE, touche_le_bord
 from .export import (
-    Faille, annoter_image, ecrire_failles, exporter_glb, libelle_cote, libelle_partiel, vers_repere_glb,
+    Faille, annoter_image, ecrire_failles, exporter_glb, libelle_cote, libelle_partiel, relief_texture, vers_repere_glb,
 )
 from .frames import extraire_images
 from .reconstruction import centre_dans_la_vue, nuage_fusionne
@@ -37,6 +37,7 @@ _MIN_POINTS = 400
 LARGEUR_IMAGE_ANNOTEE = 1080
 LARGEUR_VIGNETTE = 720  # une vignette par point dans la planche `image_annotee.jpg`
 NB_VIGNETTES_MAX = 24
+NB_RELIEFS_MAX = 12  # surfaces texturées dans modele.glb (environ 1,5 Mo chacune)
 
 
 MESSAGES_A_CONFIRMER = {
@@ -298,6 +299,41 @@ def planche_par_point(failles: list, vues: dict[str, dict], libelle) -> np.ndarr
     return np.vstack(vignettes)
 
 
+def reliefs_par_vue_cle(failles: list, vues: dict[str, dict], reconstruit, indices: dict[str, int], facteur: float) -> dict:
+    """Une « photo en relief » par image clé (voir `relief_texture`), dans le repère commun du modèle.
+
+    Chaque faille reçoit `position_3d["relief"]` : le nœud du .glb à afficher, la position de la caméra qui a filmé
+    et le point à regarder. L'app ouvre la 3D depuis cette caméra, là où la vue ressemble à la photo.
+    """
+    reliefs: dict = {}
+    for faille in failles:
+        nom = faille.position_3d.get("image_cle")
+        if nom not in indices or nom not in vues or faille.position_3d.get("repere") != "modele.glb":
+            continue
+        i = indices[nom]
+        noeud = f"vue_{i:03d}"
+        if noeud not in reliefs:
+            if len(reliefs) >= NB_RELIEFS_MAX:
+                continue
+            image = cv2.imread(str(vues[nom]["chemin"]))
+            texture = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) if image is not None else reconstruit.couleurs[i]
+            # La photo d'origine n'est la bonne texture que si elle a les proportions de la carte de points.
+            h, w = reconstruit.points[i].shape[:2]
+            if abs(texture.shape[0] / texture.shape[1] - h / w) > 0.02 * h / w:
+                texture = reconstruit.couleurs[i]
+            relief = relief_texture(vers_repere_glb(reconstruit.points[i] * facteur), np.ascontiguousarray(texture))
+            if relief is None:
+                continue
+            reliefs[noeud] = relief
+        camera = vers_repere_glb(reconstruit.poses[i][:3, 3] * facteur)
+        faille.position_3d["relief"] = {
+            "noeud": noeud,
+            "camera": [round(float(c), 3) for c in camera],
+            "cible": faille.position_3d["centre"],
+        }
+    return reliefs
+
+
 def choisir_vue_de_reference(vues: dict[str, list[tuple[str, bool, int]]]) -> str:
     """Vue montrée dans l'image annotée : le tapis avec une cote, le plus de types d'éléments, puis les plus grands.
 
@@ -495,13 +531,17 @@ def analyser_images(
             for faille in failles:
                 if faille.position_3d["image_cle"] == nom:
                     faille.position_3d["repere"] = "modele.glb"
+    reliefs: dict[str, object] = {}
     if reconstruit is not None:
+        reliefs = reliefs_par_vue_cle(failles, vues, reconstruit, indices, facteur)
         # Modèle montré à l'utilisateur : densité régulière (1 point par cube de 1 cm), points isolés retirés.
+        # Avec des reliefs, le nuage n'est plus que la vue de repli : il est allégé pour tenir dans 50 Mo.
         nuage, couleurs = nuage_fusionne(
-            reconstruit.points * facteur, reconstruit.couleurs, max_points=900_000, voxel_m=0.01, nettoyer=True
+            reconstruit.points * facteur, reconstruit.couleurs, max_points=400_000 if reliefs else 900_000,
+            voxel_m=0.01, nettoyer=True,
         )
     if nuage is not None:
-        exporter_glb(vers_repere_glb(nuage), couleurs, sortie / "modele.glb")
+        exporter_glb(vers_repere_glb(nuage), couleurs, sortie / "modele.glb", reliefs)
         modele_3d = "modele.glb"
 
     ecrire_failles(failles, sortie / "failles.json", logement_id, modele_3d)

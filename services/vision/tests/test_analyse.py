@@ -269,3 +269,70 @@ def test_la_planche_montre_une_vignette_par_point_sur_son_image_cle(tmp_path):
     assert failles[1].position_3d["vignette"]["index"] == 1
     assert "vignette" not in failles[2].position_3d
     assert planche_par_point([], vues, lambda f: f.element) is None
+
+
+def _carte_de_points(h=40, w=30, z=2.0):
+    import numpy as np
+
+    ys, xs = np.mgrid[0:h, 0:w]
+    return np.stack([(xs - w / 2) * 0.01, -(ys - h / 2) * 0.01, np.full((h, w), -z)], -1).astype(float)
+
+
+def test_la_photo_en_relief_coupe_les_ruptures_de_profondeur_et_les_points_invalides():
+    import numpy as np
+
+    from pipeline.export import relief_texture
+
+    points = _carte_de_points()
+    image = np.full((400, 300, 3), 180, np.uint8)
+    plein = relief_texture(points, image)
+    assert len(plein.faces) == 2 * 39 * 29 and plein.visual.uv.shape == (40 * 30, 2)
+
+    points[:, 15:, 2] = -4.0          # un mur deux mètres derrière : pas de voile entre les deux plans
+    points[0, 0] = np.nan             # point sans profondeur
+    coupe = relief_texture(points, image)
+    assert len(coupe.faces) == 2 * 39 * 29 - 2 * 39 - 1
+    assert relief_texture(np.full((40, 30, 3), np.nan), image) is None
+    assert len(relief_texture(_carte_de_points(400, 300), image, sommets_max=5_000).vertices) <= 5_000
+
+
+def test_le_glb_porte_le_nuage_et_un_noeud_par_vue_cle(tmp_path):
+    import numpy as np
+    import trimesh
+
+    from pipeline.export import exporter_glb, relief_texture
+
+    relief = relief_texture(_carte_de_points(), np.full((400, 300, 3), 180, np.uint8))
+    chemin = exporter_glb(np.zeros((5, 3)), np.zeros((5, 3), np.uint8), tmp_path / "modele.glb", {"vue_003": relief})
+
+    scene = trimesh.load(chemin)
+    assert set(scene.graph.nodes_geometry) == {"nuage", "vue_003"}
+    assert chemin.stat().st_size < 200_000  # texture en JPEG
+
+
+def test_chaque_faille_recoit_son_relief_et_la_camera_de_son_image_cle(tmp_path):
+    import cv2
+    import numpy as np
+    from types import SimpleNamespace
+
+    from pipeline.analyse import reliefs_par_vue_cle
+
+    chemin = tmp_path / "image_002.jpg"
+    cv2.imwrite(str(chemin), np.full((400, 300, 3), 180, np.uint8))
+    pose = np.eye(4)
+    pose[:3, 3] = [0.5, 0.2, 1.0]
+    reconstruit = SimpleNamespace(
+        points=np.stack([_carte_de_points()] * 3) * [1, -1, -1], couleurs=np.zeros((3, 40, 30, 3), np.uint8), poses=np.stack([pose] * 3)
+    )
+    failles = [
+        SimpleNamespace(position_3d={"image_cle": "image_002.jpg", "repere": "modele.glb", "centre": [0.1, 0.0, -2.0]}),
+        SimpleNamespace(position_3d={"image_cle": "image_002.jpg", "repere": "modele.glb", "centre": [0.3, 0.0, -2.0]}),
+        SimpleNamespace(position_3d={"image_cle": "image_002.jpg", "repere": "camera:image_002.jpg", "centre": None}),
+    ]
+
+    reliefs = reliefs_par_vue_cle(failles, {"image_002.jpg": {"chemin": chemin}}, reconstruit, {"image_002.jpg": 2}, facteur=1.0)
+
+    assert list(reliefs) == ["vue_002"]  # deux points sur la même image : une seule surface
+    assert failles[0].position_3d["relief"] == {"noeud": "vue_002", "camera": [0.5, -0.2, -1.0], "cible": [0.1, 0.0, -2.0]}
+    assert failles[1].position_3d["relief"]["noeud"] == "vue_002"
+    assert "relief" not in failles[2].position_3d

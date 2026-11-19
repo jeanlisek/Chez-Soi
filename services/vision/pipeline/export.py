@@ -1,5 +1,6 @@
 """Export des résultats : failles.json, image annotée et nuage de points .glb."""
 
+import io
 import json
 from pathlib import Path
 from typing import Literal
@@ -131,10 +132,56 @@ def vers_repere_glb(points: np.ndarray) -> np.ndarray:
     return np.asarray(points, float) * np.array([1.0, -1.0, -1.0])
 
 
-def exporter_glb(points: np.ndarray, couleurs_rvb: np.ndarray, chemin: Path) -> Path:
-    """Écrit un nuage de points coloré au format .glb (points déjà dans le repère glTF, en mètres)."""
+def relief_texture(
+    points: np.ndarray, image_rvb: np.ndarray, sommets_max: int = 40_000, saut: float = 0.08, cote_texture: int = 1024
+) -> trimesh.Trimesh | None:
+    """« Photo en relief » d'une vue : sa carte de points (H, W, 3, repère glTF) devient une surface, sa photo la texture.
+
+    Un nuage de points n'est lisible que de très près ; une surface texturée, regardée depuis la caméra qui a
+    filmé, ressemble à la photo et supporte une petite rotation. Les triangles qui enjambent une rupture de
+    profondeur (bord d'un objet devant un mur) ou un point invalide sont retirés : pas de voile entre les objets.
+    """
+    hauteur, largeur = points.shape[:2]
+    pas = max(1, int(np.ceil(np.sqrt(hauteur * largeur / sommets_max))))
+    ys, xs = np.mgrid[0:hauteur:pas, 0:largeur:pas]
+    grille = points[ys, xs].astype(np.float64)
+    lignes, colonnes = ys.shape
+    if lignes < 2 or colonnes < 2:
+        return None
+    numeros = np.arange(lignes * colonnes).reshape(lignes, colonnes)
+    a, b, c, d = numeros[:-1, :-1], numeros[:-1, 1:], numeros[1:, :-1], numeros[1:, 1:]
+    triangles = np.concatenate([np.stack([a, c, b], -1).reshape(-1, 3), np.stack([b, c, d], -1).reshape(-1, 3)])
+    sommets = grille.reshape(-1, 3)
+    valides = np.isfinite(sommets).all(axis=1)
+    distances = np.linalg.norm(np.nan_to_num(sommets), axis=1)[triangles]
+    proches = (distances.max(axis=1) - distances.min(axis=1)) < saut * np.maximum(distances.min(axis=1), 1e-6)
+    triangles = triangles[valides[triangles].all(axis=1) & proches]
+    if len(triangles) == 0:
+        return None
+    uv = np.stack([xs / max(largeur - 1, 1), 1 - ys / max(hauteur - 1, 1)], -1).reshape(-1, 2)
+    echelle = cote_texture / max(image_rvb.shape[:2])
+    if echelle < 1:
+        image_rvb = cv2.resize(image_rvb, None, fx=echelle, fy=echelle, interpolation=cv2.INTER_AREA)
+    # Texture en JPEG : en PNG, le .glb dépasserait vite la limite de 50 Mo du stockage.
+    ok, jpeg = cv2.imencode(".jpg", cv2.cvtColor(image_rvb, cv2.COLOR_RGB2BGR), [cv2.IMWRITE_JPEG_QUALITY, 85])
+    texture = Image.open(io.BytesIO(jpeg.tobytes())) if ok else Image.fromarray(image_rvb)
+    matiere = trimesh.visual.material.PBRMaterial(baseColorTexture=texture, metallicFactor=0.0, roughnessFactor=1.0, doubleSided=True)
+    return trimesh.Trimesh(
+        np.nan_to_num(sommets), triangles, visual=trimesh.visual.TextureVisuals(uv=uv, material=matiere), process=False
+    )
+
+
+def exporter_glb(
+    points: np.ndarray, couleurs_rvb: np.ndarray, chemin: Path, reliefs: dict[str, trimesh.Trimesh] | None = None
+) -> Path:
+    """Écrit le modèle .glb (repère glTF, en mètres) : le nuage de points coloré (nœud « nuage ») et, s'il y en a,
+    une surface texturée par vue clé (nœuds « vue_… », voir `relief_texture`). L'app n'affiche qu'un nœud à la fois."""
     opaque = np.full((len(points), 1), 255, np.uint8)
     nuage = trimesh.PointCloud(np.asarray(points, float), colors=np.hstack([couleurs_rvb.astype(np.uint8), opaque]))
     chemin.parent.mkdir(parents=True, exist_ok=True)
-    trimesh.Scene(nuage).export(chemin)
+    scene = trimesh.Scene()
+    scene.add_geometry(nuage, node_name="nuage", geom_name="nuage")
+    for nom, relief in (reliefs or {}).items():
+        scene.add_geometry(relief, node_name=nom, geom_name=nom)
+    scene.export(chemin)
     return chemin

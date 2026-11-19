@@ -6,14 +6,13 @@ import { clientAdmin, clientServeur } from "@/lib/supabase/server";
 
 /**
  * Compare les dates d'absence au seuil d'inoccupation du contrat et à la fenêtre OTV, et
- * prépare l'usage 3 (issue #14). Calcul seul : rien n'est envoyé, aucune session H n'est
- * créée ici.
+ * prépare l'usage 3 (issue #14). Rien n'est envoyé, aucune session H n'est créée ici.
  *
  * Connexion requise. Le logement est vérifié sous RLS (un utilisateur ne voit que le sien),
  * puis les clauses `inoccupation` et `absence` sont lues par `get_contrat_champs` (RPC
  * réservée au serveur). Le client n'envoie que le logement et les dates.
  *
- * Reste à faire : écrire la ligne `absences` (`depasse_seuil`, `delai_otv_ok`, `protections`).
+ * Écrit aussi la ligne `absences` (dates, `depasse_seuil`, `protections`) que l'usage 3 relit.
  */
 export async function POST(requete: Request) {
   let corps: unknown;
@@ -59,7 +58,13 @@ export async function POST(requete: Request) {
 
   const aujourdhui = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date());
   try {
-    return NextResponse.json(evaluerAbsence({ depart_le, retour_le, ...clauses.data }, aujourdhui));
+    const resultat = evaluerAbsence({ depart_le, retour_le, ...clauses.data }, aujourdhui);
+    // L'usage 3 de l'agent lit les dates ici : une ligne par calcul, la plus récente fait foi.
+    const { error: ecriture } = await admin
+      .from("absences")
+      .insert({ logement_id, depart_le, retour_le, depasse_seuil: resultat.depasse_seuil, protections: resultat.protections });
+    if (ecriture) return NextResponse.json({ erreur: "Absence non enregistrée." }, { status: 500 });
+    return NextResponse.json(resultat);
   } catch (erreur) {
     return NextResponse.json({ erreur: erreur instanceof Error ? erreur.message : "Erreur." }, { status: 400 });
   }

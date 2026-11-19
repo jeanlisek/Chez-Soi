@@ -109,6 +109,20 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     return c ? (signees.find((s) => s.path === c)?.signedUrl ?? null) : null;
   };
 
+  // Image annotée de chaque pièce : même analyse, bucket `exports`.
+  const cheminImage = (nom: string) =>
+    ((ana.data ?? []).find(
+      (x) => x.piece === nom && x.statut === "termine" && (x.resultat as { image_annotee_path?: string } | null)?.image_annotee_path,
+    )?.resultat as { image_annotee_path: string } | undefined)?.image_annotee_path;
+  const cheminsImages = [...new Set((pcs.data ?? []).map((p) => cheminImage(p.nom)).filter(Boolean))] as string[];
+  const imagesSignees = cheminsImages.length
+    ? (await supabase.storage.from("exports").createSignedUrls(cheminsImages, 3600)).data ?? []
+    : [];
+  const urlImage = (nom: string) => {
+    const c = cheminImage(nom);
+    return c ? (imagesSignees.find((s) => s.path === c)?.signedUrl ?? null) : null;
+  };
+
   const pieces: Piece[] = (pcs.data ?? []).map((p) => {
     const a = (ana.data ?? []).find((x) => x.piece === p.nom);
     const statut = a?.statut;
@@ -116,6 +130,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
       id: p.id,
       nom: p.nom,
       modele_url: urlModele(p.nom),
+      image_url: urlImage(p.nom),
       analyse:
         statut === "termine" || statut === "terminee"
           ? "terminee"

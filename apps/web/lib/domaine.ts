@@ -37,6 +37,8 @@ export type Piece = {
   progression?: number;
   /** Modèle 3D de la pièce (bucket privé `modeles3d`), en URL signée de courte durée. */
   modele_url?: string | null;
+  /** Image de la vidéo où les éléments repérés sont encadrés avec leur cote (bucket privé `exports`), en URL signée. */
+  image_url?: string | null;
 };
 
 export type Cote = {

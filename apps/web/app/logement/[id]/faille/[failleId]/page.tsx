@@ -33,10 +33,13 @@ export default function PageFaille() {
   const [apres, setApres] = useState(false);
   const [ar, setAr] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
+  // La photo annotée (vue de la vidéo, objet encadré) est ce qu'on reconnaît tout de suite ; la 3D reste à un geste.
+  const [vue, setVue] = useState<"photo" | "3d">("photo");
   const [erreur, setErreur] = useState<string | null>(null);
 
   if (!f) return null;
   const piece = logement.pieces.find((p) => p.id === f.piece_id);
+  const photo = piece?.image_url ?? null;
   // Vrai logement : un tapis reste mesurable même si la vision n'a pas estimé sa cote.
   const cote = etat.cotes[f.id] ?? (!logement.exemple && f.element === "tapis" ? COTE_PAR_DEFAUT : undefined);
   const setCote = (k: "largeur_cm" | "longueur_cm", v: number) =>
@@ -71,6 +74,10 @@ export default function PageFaille() {
       <Header left={<BackButton href={`${base}/plan`} />} title={piece?.nom ?? "Faille"} right={<RoundButton icon="menu" label="Plan d'action" href={`${base}/actions`} />} />
 
       <section className="relative h-[300px] flex-none overflow-hidden rounded-card bg-pervenche">
+        {photo && vue === "photo" ? (
+          // eslint-disable-next-line @next/next/no-img-element -- URL signée de courte durée, hors du loader d'images
+          <img src={photo} alt={`Votre ${piece?.nom?.toLowerCase() ?? "pièce"} filmée : les éléments repérés sont encadrés`} className="h-full w-full bg-nuit object-contain" />
+        ) : (
         <Viewer3D
           modeleUrl={logement.pieces.find((p) => p.id === f.piece_id)?.modele_url ?? null}
           className="h-full w-full"
@@ -78,6 +85,16 @@ export default function PageFaille() {
           apres={apres}
           objet={cote && f.element === "tapis" ? { largeur_cm: cote.largeur_cm, longueur_cm: cote.longueur_cm, libelle: f.titre } : null}
         />
+        )}
+        {photo && (
+          <div className="absolute bottom-3 right-4 flex rounded-full bg-white/90 p-1" role="radiogroup" aria-label="Type de vue">
+            {(["photo", "3d"] as const).map((v) => (
+              <button key={v} type="button" role="radio" aria-checked={vue === v} onClick={() => setVue(v)} className={cx("h-8 rounded-full px-3 text-xs font-bold", vue === v ? "bg-nuit text-white" : "text-ink-muted")}>
+                {v === "photo" ? "Photo" : "3D"}
+              </button>
+            ))}
+          </div>
+        )}
         <span className="pointer-events-none absolute top-4 left-4 rounded-full bg-white px-3 py-[7px] text-xs font-bold">Vous êtes ici</span>
         <span className="pointer-events-none absolute top-4 right-4">{apres ? <Signal kind="succes">Après</Signal> : <Signal kind={f.niveau} />}</span>
         <span className="pointer-events-none absolute bottom-3 left-4 rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-ink-muted">

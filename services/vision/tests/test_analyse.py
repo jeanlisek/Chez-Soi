@@ -220,12 +220,17 @@ def test_sans_position_3d_les_instances_ne_bougent_pas():
     assert [m.instance for m in mesures] == [0, 1]
 
 
-def test_un_element_mesurable_vu_une_seule_fois_dans_une_video_est_ecarte():
+def test_un_element_mesurable_vu_une_seule_fois_et_coupe_par_le_cadre_est_ecarte():
+    coupe = _vue_3d("image_009.jpg", 1, None)
+    coupe.coupe = True
+    fenetre = _vue_3d("image_016.jpg", 0, None, element="fenetre")  # vue une seule fois, mais en entier
     mesures = [
         _vue_3d("image_001.jpg", 0, None), _vue_3d("image_002.jpg", 0, None),
-        _vue_3d("image_009.jpg", 1, None),                      # tapis vu une seule fois
+        coupe,                                                  # tapis vu une seule fois, coupé par le cadre
         _vue_3d("image_009.jpg", 0, None, element="serrure"),   # petit élément : une vue suffit
+        fenetre,
     ]
 
-    assert [(m.element, m.instance) for m in ecarter_vues_uniques(mesures, nb_images=30)] == [("tapis", 0), ("tapis", 0), ("serrure", 0)]
-    assert len(ecarter_vues_uniques(mesures, nb_images=3)) == 4  # quelques photos : on garde tout
+    gardees = [(m.element, m.instance) for m in ecarter_vues_uniques(mesures, nb_images=30)]
+    assert gardees == [("tapis", 0), ("tapis", 0), ("serrure", 0), ("fenetre", 0)]
+    assert len(ecarter_vues_uniques(mesures, nb_images=3)) == 5  # quelques photos : on garde tout

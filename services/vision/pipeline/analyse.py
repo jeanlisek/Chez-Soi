@@ -150,15 +150,24 @@ def fusionner_instances_proches(mesures: list[MesureVue]) -> None:
 
 
 def ecarter_vues_uniques(mesures: list[MesureVue], nb_images: int) -> list[MesureVue]:
-    """Sur une vidéo, retire les éléments mesurables vus dans une seule image (fausses détections)."""
+    """Sur une vidéo, retire les éléments mesurables vus dans une seule image ET coupés par le cadre.
+
+    Un élément vu une seule fois mais en entier est gardé : sur les vidéos réelles, le regroupement entre
+    images échoue souvent et de vrais éléments (une fenêtre filmée de face) n'ont qu'une vue.
+    """
     if nb_images < NB_IMAGES_MIN_POUR_EXIGER_DEUX_VUES:
         return mesures
     vues: dict[tuple[str, int], set[str]] = defaultdict(set)
+    entieres: set[tuple[str, int]] = set()
     for mesure in mesures:
         vues[(mesure.element, mesure.instance)].add(mesure.image)
+        if not mesure.coupe:
+            entieres.add((mesure.element, mesure.instance))
     return [
         m for m in mesures
-        if m.element not in ELEMENTS_A_CONFIRMER_PAR_DEUX_VUES or len(vues[(m.element, m.instance)]) >= 2
+        if m.element not in ELEMENTS_A_CONFIRMER_PAR_DEUX_VUES
+        or len(vues[(m.element, m.instance)]) >= 2
+        or (m.element, m.instance) in entieres
     ]
 
 

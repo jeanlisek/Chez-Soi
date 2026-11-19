@@ -35,6 +35,8 @@ BORNES_CM = {
 _DIMENSIONS = ("largeur_cm", "longueur_cm", "hauteur_cm")
 _MIN_POINTS = 400
 LARGEUR_IMAGE_ANNOTEE = 1080
+LARGEUR_VIGNETTE = 720  # une vignette par point dans la planche `image_annotee.jpg`
+NB_VIGNETTES_MAX = 24
 
 
 MESSAGES_A_CONFIRMER = {
@@ -251,6 +253,44 @@ def construire_failles(mesures: list[MesureVue], piece: str | None, facteur: flo
     return failles
 
 
+def planche_par_point(failles: list, vues: dict[str, dict], libelle) -> np.ndarray | None:
+    """Une vignette par point, empilées de haut en bas : l'image clé du point, avec ce seul élément encadré.
+
+    L'image annotée unique montrait une seule vue de la pièce : la page d'un tapis pouvait afficher la fenêtre.
+    Chaque faille reçoit `position_3d["vignette"]` (index, total, largeur, hauteur) : l'app affiche sa tranche.
+    Un seul fichier, pour que la copie vers le stockage (n8n) ne change pas. None s'il n'y a rien à montrer.
+    """
+    vignettes: list[np.ndarray] = []
+    servies: list = []
+    taille: tuple[int, int] | None = None
+    for faille in failles:
+        vue = vues.get(faille.position_3d.get("image_cle"))
+        if vue is None:
+            continue
+        instance = faille.position_3d.get("instance")
+        detection = next(
+            (d for d, m in zip(vue["detections"], vue["mesures"]) if m.element == faille.element and m.instance == instance),
+            None,
+        )
+        image = cv2.imread(str(vue["chemin"]))
+        if detection is None or image is None:
+            continue
+        annotee = annoter_image(
+            image, [{"libelle": libelle(faille), "boite_px": detection.boite_px, "masque": detection.masque}], LARGEUR_IMAGE_ANNOTEE
+        )
+        if taille is None:
+            taille = (LARGEUR_VIGNETTE, round(annotee.shape[0] * LARGEUR_VIGNETTE / annotee.shape[1]))
+        vignettes.append(cv2.resize(annotee, taille, interpolation=cv2.INTER_AREA))
+        servies.append(faille)
+        if len(vignettes) == NB_VIGNETTES_MAX:
+            break
+    if not vignettes or taille is None:
+        return None
+    for index, faille in enumerate(servies):
+        faille.position_3d["vignette"] = {"index": index, "total": len(servies), "largeur": taille[0], "hauteur": taille[1]}
+    return np.vstack(vignettes)
+
+
 def choisir_vue_de_reference(vues: dict[str, list[tuple[str, bool, int]]]) -> str:
     """Vue montrée dans l'image annotée : le tapis avec une cote, le plus de types d'éléments, puis les plus grands.
 
@@ -436,7 +476,11 @@ def analyser_images(
         nom = choisir_vue_de_reference({n: resume(v) for n, v in vues.items()})
         vue = vues[nom]
         bgr = cv2.imread(str(vue["chemin"]))
-        cv2.imwrite(str(sortie / "image_annotee.jpg"), annoter_image(bgr, annotations_de(vue), LARGEUR_IMAGE_ANNOTEE))
+        planche = planche_par_point(failles, vues, _libelle)
+        cv2.imwrite(
+            str(sortie / "image_annotee.jpg"),
+            planche if planche is not None else annoter_image(bgr, annotations_de(vue), LARGEUR_IMAGE_ANNOTEE),
+        )
         image_annotee = "image_annotee.jpg"
         if reconstruit is None:
             # Sans reconstruction, le modèle 3D est la seule vue de référence.

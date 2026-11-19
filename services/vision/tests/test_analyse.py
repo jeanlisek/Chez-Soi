@@ -234,3 +234,36 @@ def test_un_element_mesurable_vu_une_seule_fois_et_coupe_par_le_cadre_est_ecarte
     gardees = [(m.element, m.instance) for m in ecarter_vues_uniques(mesures, nb_images=30)]
     assert gardees == [("tapis", 0), ("tapis", 0), ("serrure", 0), ("fenetre", 0)]
     assert len(ecarter_vues_uniques(mesures, nb_images=3)) == 5  # quelques photos : on garde tout
+
+
+def test_la_planche_montre_une_vignette_par_point_sur_son_image_cle(tmp_path):
+    import cv2
+    import numpy as np
+    from types import SimpleNamespace
+
+    from pipeline.analyse import LARGEUR_VIGNETTE, planche_par_point
+
+    def vue(nom, element, instance):
+        chemin = tmp_path / nom
+        cv2.imwrite(str(chemin), np.full((192, 108, 3), 200, np.uint8))
+        return {
+            "chemin": chemin,
+            "detections": [SimpleNamespace(boite_px=(10, 20, 60, 90), masque=None)],
+            "mesures": [SimpleNamespace(element=element, instance=instance)],
+        }
+
+    vues = {"image_000.jpg": vue("image_000.jpg", "tapis", 0), "image_016.jpg": vue("image_016.jpg", "fenetre", 0)}
+    failles = [
+        SimpleNamespace(element="tapis", position_3d={"image_cle": "image_000.jpg", "instance": 0}),
+        SimpleNamespace(element="fenetre", position_3d={"image_cle": "image_016.jpg", "instance": 0}),
+        SimpleNamespace(element="porte", position_3d={"image_cle": "image_099.jpg", "instance": 0}),  # image absente
+    ]
+
+    planche = planche_par_point(failles, vues, lambda f: f.element)
+
+    hauteur = round(1920 * LARGEUR_VIGNETTE / 1080)
+    assert planche.shape == (2 * hauteur, LARGEUR_VIGNETTE, 3)
+    assert failles[0].position_3d["vignette"] == {"index": 0, "total": 2, "largeur": LARGEUR_VIGNETTE, "hauteur": hauteur}
+    assert failles[1].position_3d["vignette"]["index"] == 1
+    assert "vignette" not in failles[2].position_3d
+    assert planche_par_point([], vues, lambda f: f.element) is None

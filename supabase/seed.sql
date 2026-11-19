@@ -335,3 +335,29 @@ where c.assureur_id is null
   and lower(btrim(c.assureur)) = lower(btrim(a.nom));
 
 commit;
+
+-- Articles de loi (19/11) : un nœud Article par texte publié sur Légifrance qui fonde une règle validée,
+-- puis Article IMPOSE Regle. Le lien Légifrance ne vit plus seulement dans la règle : le GraphRAG remonte
+-- jusqu'au texte. Embedding laissé vide : l'app le calcule au prochain plan (completerEmbeddings).
+-- Rejouable : la clé est l'URL du texte.
+insert into public.graphe_noeuds (type, libelle, proprietes)
+select distinct on (r.source_url)
+       'Article',
+       split_part(r.source_ref, ',', 1),
+       jsonb_build_object('source_url', r.source_url, 'source_ref', split_part(r.source_ref, ',', 1), 'origine', 'seed')
+from public.regles_en_vigueur r
+where r.source_url like 'https://www.legifrance.gouv.fr/%'
+  and not exists (
+    select 1 from public.graphe_noeuds n
+    where n.type = 'Article' and n.contrat_id is null and n.proprietes ->> 'source_url' = r.source_url
+  )
+order by r.source_url, r.code;
+
+insert into public.graphe_aretes (source_id, cible_id, relation)
+select na.id, nr.id, 'IMPOSE'
+from public.graphe_noeuds na
+join public.regles_en_vigueur r on r.source_url = na.proprietes ->> 'source_url'
+join public.graphe_noeuds nr
+  on nr.type = 'Regle' and nr.contrat_id is null and nr.proprietes ->> 'code' = r.code
+where na.type = 'Article' and na.contrat_id is null
+on conflict (source_id, cible_id, relation) do nothing;

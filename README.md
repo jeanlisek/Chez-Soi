@@ -62,6 +62,11 @@ flowchart LR
 
 Détail des circuits : [`docs/architecture.md`](docs/architecture.md). Contexte complet et règles de travail : [`CLAUDE.md`](CLAUDE.md).
 
+Démo : [fiche de déroulé](docs/deroule-demo.md), [PDF d’une page](output/pdf/chez-soi-deroule-demo.pdf)
+et [protocole du replay depuis l’app](docs/protocole-replay-app.md). Jean-Li enregistre
+et parle, Hoang-Kim prépare la trame ; Bastian fournit le protocole et la fiche.
+La fiche distingue les secours vérifiés du clip app, dont la disponibilité reste à contrôler.
+
 ## Comment tester
 
 **1. Sans compte (2 minutes).** Ouvrir https://chezsoi.vercel.app puis « Voir d'abord un logement exemple ». Le logement de Jeanne est fictif : plan d'action, vue 3D, fiche d'un point de risque, mode absence, et le replay d'un vrai run de l'agent H sur IKEA France, arrêté au panier.

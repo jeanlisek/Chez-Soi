@@ -4,14 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { Icon } from "@/components/cs/icons";
+import { Icon, Triangle } from "@/components/cs/icons";
 import { InfosDeBase, LogementEditor, OccupantsEditor } from "@/components/cs/profil";
-import { ActionBar, ExempleTag, Header, Illus, Pill, Screen, SectionTitle, cx, useToast } from "@/components/cs/ui";
+import { ActionBar, ExempleTag, Field, Header, Illus, Pill, Screen, SectionTitle, Sheet, cx, useToast } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { basesCompletes, brouillonDepuis, logementComplet, occupantComplet, versEnregistrement, type Brouillon } from "@/lib/profil";
 import { clientNavigateur } from "@/lib/supabase/client";
 
-import { enregistrerProfilComplet } from "../actions-serveur";
+import { demenager, enregistrerProfilComplet, retirerAccord } from "../actions-serveur";
 
 const ETAT_PIECE: Record<string, string> = { terminee: "", en_cours: "analyse en cours", echec: "à refilmer", en_attente: "en attente" };
 
@@ -30,7 +30,7 @@ export default function PageCompte() {
   useEffect(() => setB(initial), [initial]);
   const maj = (p: Partial<Brouillon>) => setB((x) => ({ ...x, ...p }));
   const modifie = JSON.stringify(b) !== JSON.stringify(initial);
-  const complet = basesCompletes(b) && b.occupants.every(occupantComplet) && logementComplet(b);
+  const complet = basesCompletes(b) && b.occupants.every(occupantComplet) && logementComplet(b) && Boolean(b.accordLe);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -59,6 +59,42 @@ export default function PageCompte() {
     setEnvoi(false);
     if (!r.ok) return setErreur(r.message ?? "Profil non enregistré.");
     toast.show("Profil enregistré, plan recalculé");
+    router.refresh();
+  };
+
+  // Déménagement : un compte = un logement. Les habitants restent, l'ancien logement est effacé.
+  const [demenagement, setDemenagement] = useState(false);
+  const [nouvelleAdresse, setNouvelleAdresse] = useState("");
+  const confirmerDemenagement = async () => {
+    if (logement.exemple) {
+      setDemenagement(false);
+      return toast.show("Logement exemple : rien n'est effacé");
+    }
+    setEnvoi(true);
+    setErreur(null);
+    const r = await demenager({ logement_id: logement.id, adresse: nouvelleAdresse });
+    if (!r.ok) {
+      setEnvoi(false);
+      return setErreur(r.message ?? "Déménagement non enregistré.");
+    }
+    // Type, étage et statut du nouveau logement sont redemandés, puis la visite reprend.
+    router.push(`${base}/profil`);
+    router.refresh();
+  };
+
+  // Retrait de l'accord : les capacités des habitants sont effacées, le plan n'est plus adapté.
+  const [retrait, setRetrait] = useState(false);
+  const confirmerRetrait = async () => {
+    if (logement.exemple) {
+      setRetrait(false);
+      return toast.show("Logement exemple : l'accord reste donné");
+    }
+    setEnvoi(true);
+    const r = await retirerAccord(logement.id);
+    setEnvoi(false);
+    setRetrait(false);
+    if (!r.ok) return setErreur(r.message ?? "Accord non retiré.");
+    toast.show("Accord retiré, capacités effacées");
     router.refresh();
   };
 
@@ -124,13 +160,46 @@ export default function PageCompte() {
         <Pill href={`${base}/capture`} variant="contour"><Icon name="camera" size={18} />Changer les vidéos</Pill>
       </section>
 
+      {demenagement ? (
+        <section className="anim-in flex flex-col gap-3 rounded-xl2 bg-white p-4">
+          <b className="text-[15px]">Nouvelle adresse</b>
+          <Field id="demenagement" label="Adresse" value={nouvelleAdresse} onChange={setNouvelleAdresse} placeholder="8 chemin des Vignes, 26000 Valence" autoComplete="street-address" />
+          <p className="flex items-start gap-2.5 rounded-[18px] bg-attention-bg px-3.5 py-3 text-[13px] leading-[18px] font-semibold text-attention-text">
+            <Triangle size={18} />Les vidéos, la 3D et les points de l&apos;ancien logement seront effacés. Les habitants et le contrat restent : vérifiez que le contrat couvre la nouvelle adresse. La visite et le diagnostic sont à refaire.
+          </p>
+          <Pill onClick={() => void confirmerDemenagement()} disabled={nouvelleAdresse.trim().length < 5 || envoi}>{envoi ? "Effacement…" : "Confirmer le déménagement"}</Pill>
+          <button type="button" onClick={() => setDemenagement(false)} className="h-9 text-sm font-bold">Annuler</button>
+        </section>
+      ) : (
+        <button type="button" onClick={() => setDemenagement(true)} className="flex h-[52px] items-center justify-center gap-2 rounded-[22px] border-2 border-dashed border-ciel text-[15px] font-bold text-cobalt transition active:scale-[0.98]">
+          <Icon name="home" size={18} />{prenom || "La personne"} déménage
+        </button>
+      )}
+
       <section className="flex items-center gap-3 rounded-xl2 bg-white px-4 py-3.5">
         <span className="flex flex-1 flex-col gap-0.5">
           <b className="text-sm">Accord des habitants</b>
-          <span className="text-xs leading-[17px] text-ink-muted">{accordLe ? `Donné le ${accordLe}. Données de santé, article 9 du RGPD.` : "À donner à la fin du profil."}</span>
+          <span className="text-xs leading-[17px] text-ink-muted">
+            {accordLe ? `Donné le ${accordLe}. Retirable à tout moment.` : "Retiré : le plan n'est plus adapté aux habitants."}
+          </span>
         </span>
-        <Icon name={accordLe ? "check" : "lock"} size={20} className="text-cobalt" />
+        <button
+          type="button"
+          onClick={() => (accordLe ? setRetrait(true) : maj({ accordLe: new Date().toISOString().slice(0, 10) }))}
+          disabled={!accordLe && Boolean(b.accordLe)}
+          className="h-9 flex-none rounded-full border-[1.5px] border-nuit px-3.5 text-xs font-bold transition active:scale-95 disabled:opacity-40"
+        >
+          {accordLe ? "Retirer" : b.accordLe ? "À enregistrer" : "Redonner"}
+        </button>
       </section>
+
+      <Sheet open={retrait} onClose={() => setRetrait(false)} title="Retirer l'accord ?">
+        <p className="text-sm leading-5 text-ink-soft">
+          Les capacités des habitants (déplacement, vue, audition, vigilance) sont effacées. Le logement, les vidéos et les points restent ; le plan n&apos;est plus adapté aux habitants. Vous pourrez redonner l&apos;accord et les renseigner à nouveau.
+        </p>
+        <Pill onClick={() => void confirmerRetrait()} disabled={envoi}>{envoi ? "Retrait…" : "Retirer l'accord"}</Pill>
+        <button type="button" onClick={() => setRetrait(false)} className="h-10 text-sm font-bold">Annuler</button>
+      </Sheet>
 
       {!logement.exemple && (
         <button type="button" onClick={() => void deconnecter()} className="flex h-10 items-center justify-center gap-1.5 text-sm font-bold text-ink-muted">
@@ -142,7 +211,7 @@ export default function PageCompte() {
         <ActionBar withNav>
           {erreur && <p role="alert" className="rounded-[20px] bg-danger-bg px-4 py-3 text-sm font-semibold text-danger-text">{erreur}</p>}
           <Pill onClick={() => void enregistrer()} disabled={!complet || envoi}>
-            {envoi ? "Enregistrement…" : complet ? "Enregistrer les modifications" : "Profil à compléter"}
+            {envoi ? "Enregistrement…" : complet ? "Enregistrer les modifications" : b.accordLe ? "Profil à compléter" : "Redonnez l'accord pour enregistrer"}
           </Pill>
         </ActionBar>
       )}

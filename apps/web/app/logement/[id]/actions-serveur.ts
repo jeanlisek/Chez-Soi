@@ -228,3 +228,82 @@ export async function retirerPoint(logementId: string, failleId: string): Promis
   await calculerPlan(admin, logementId).catch(() => undefined);
   return { ok: true };
 }
+
+/**
+ * Retrait de l'accord des habitants (RGPD art. 9 et 7.3) : leurs capacités, données de santé, sont
+ * effacées ; prénom, nom, date de naissance, logement, vidéos et points restent. Le plan est recalculé
+ * sans adaptation aux habitants. La base refuse de garder une capacité sans accord (migration 0012).
+ */
+export async function retirerAccord(logementId: string): Promise<{ ok: boolean; message?: string }> {
+  if (!z.uuid().safeParse(logementId).success) return { ok: false, message: "Demande invalide." };
+  const supabase = await clientServeur();
+  if (!supabase) return { ok: false, message: "Service non configuré." };
+  const { data, error } = await supabase
+    .from("occupants")
+    .update({ consentement_art9_le: null, deplacement: 0, vue_reduite: false, audition_reduite: false, vigilance: "adulte", contraintes: [], autre: null })
+    .eq("logement_id", logementId)
+    .select("id");
+  if (error || !data?.length) return { ok: false, message: "Accord non retiré." };
+  const admin = clientAdmin();
+  if (admin) await calculerPlan(admin, logementId).catch(() => undefined);
+  return { ok: true };
+}
+
+const BUCKETS_DU_LOGEMENT = ["videos", "modeles3d", "exports"] as const;
+
+/** Tous les fichiers sous un préfixe (le listage du stockage n'est pas récursif). */
+async function fichiersSous(admin: NonNullable<ReturnType<typeof clientAdmin>>, bucket: string, prefixe: string): Promise<string[]> {
+  const chemins: string[] = [];
+  for (let page = 0; page < 20; page++) {
+    const { data } = await admin.storage.from(bucket).list(prefixe, { limit: 100, offset: page * 100 });
+    if (!data?.length) break;
+    for (const x of data) {
+      const chemin = `${prefixe}/${x.name}`;
+      // Un dossier n'a pas d'identifiant : on descend dedans.
+      if (x.id) chemins.push(chemin);
+      else chemins.push(...(await fichiersSous(admin, bucket, chemin)));
+    }
+    if (data.length < 100) break;
+  }
+  return chemins;
+}
+
+const demenagementSchema = z.object({ logement_id: z.uuid(), adresse: z.string().trim().min(5).max(200) });
+
+/**
+ * « X déménage » : un compte = un logement. Les habitants et le contrat restent ; tout ce qui
+ * décrit l'ancien logement est effacé (vidéos, modèles 3D, images, pièces, points, plan, absences,
+ * éléments déclarés), car ces données personnelles n'ont plus d'usage. Type, étage et statut sont
+ * redemandés. Le logement est vérifié sous RLS avant tout effacement.
+ */
+export async function demenager(entree: z.input<typeof demenagementSchema>): Promise<{ ok: boolean; message?: string }> {
+  const p = demenagementSchema.safeParse(entree);
+  if (!p.success) return { ok: false, message: "Indiquez la nouvelle adresse." };
+  const supabase = await clientServeur();
+  const admin = clientAdmin();
+  if (!supabase || !admin) return { ok: false, message: "Service non configuré." };
+  const { logement_id: id, adresse } = p.data;
+  const { data: logement } = await supabase.from("logements").select("id, user_id").eq("id", id).maybeSingle();
+  if (!logement) return { ok: false, message: "Logement introuvable." };
+
+  for (const bucket of BUCKETS_DU_LOGEMENT) {
+    const chemins = await fichiersSous(admin, bucket, `${logement.user_id}/${id}`);
+    for (let i = 0; i < chemins.length; i += 100) {
+      const { error } = await admin.storage.from(bucket).remove(chemins.slice(i, i + 100));
+      if (error) return { ok: false, message: "Vidéos de l'ancien logement non effacées, réessayez." };
+    }
+  }
+  // Les actions, validations, runs de l'agent liés et les diagnostics partent avec les points (cascade).
+  for (const table of ["failles", "pieces", "absences", "declarations"] as const) {
+    const { error } = await admin.from(table).delete().eq("logement_id", id);
+    if (error) return { ok: false, message: "Ancien logement non effacé, réessayez." };
+  }
+  await admin.from("analyses").delete().eq("logement_id", id).eq("type", "video");
+  const { error } = await admin
+    .from("logements")
+    .update({ adresse, type: null, etage: null, statut_occupation: null, ascenseur: null, modele_3d_path: null, video_path: null })
+    .eq("id", id);
+  if (error) return { ok: false, message: "Nouvelle adresse non enregistrée." };
+  await calculerPlan(admin, id).catch(() => undefined);
+  return { ok: true };
+}

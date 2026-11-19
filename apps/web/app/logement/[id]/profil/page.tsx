@@ -20,7 +20,13 @@ const STATUTS: [string, "proprietaire" | "locataire" | "heberge"][] = [["Propri�
 export default function PageProfil() {
   const router = useRouter();
   const { logement, etat, maj } = useParcours();
-  const o = etat.occupant;
+  // Depuis l'écran Compte : « occupant=<id> » modifie cet occupant, « occupant=nouveau » en ajoute un.
+  // Sans paramètre : le premier occupant, celui du parcours d'inscription.
+  const cible = useSearchParams().get("occupant");
+  const [local, setLocal] = useState<Occupant>(
+    () => logement.occupants?.find((x) => x.id === cible) ?? { libelle: "", deplacement: 0, vue_reduite: false, audition_reduite: false, troubles_memoire: false, consentement_art9_le: null },
+  );
+  const o = cible ? local : etat.occupant;
   const [type, setType] = useState(logement.type);
   const [etage, setEtage] = useState(logement.etage);
   const [statut, setStatut] = useState(logement.statut);
@@ -29,7 +35,7 @@ export default function PageProfil() {
   // Ouvert depuis « Compte et profil » : on y revient après l'enregistrement, au lieu de reprendre le parcours.
   const depuisCompte = useSearchParams().get("depuis") === "compte";
   const suivant = depuisCompte ? `/logement/${logement.id}/compte` : `/logement/${logement.id}/contrat`;
-  const setO = (p: Partial<Occupant>) => maj({ occupant: { ...o, ...p } });
+  const setO = (p: Partial<Occupant>) => (cible ? setLocal({ ...o, ...p }) : maj({ occupant: { ...o, ...p } }));
   const accord = Boolean(o.consentement_art9_le);
   const prenomManquant = !logement.exemple && (!o.libelle.trim() || o.libelle === "l'occupant");
   const prenom = prenomManquant ? "La personne" : o.libelle;
@@ -49,9 +55,14 @@ export default function PageProfil() {
       type: TYPES.includes(type) ? type : undefined,
       etage: ETAGES.find(([l]) => l === etage)?.[1],
       statut_occupation: STATUTS.find(([l]) => l === statut)?.[1],
+      occupant_id: cible && cible !== "nouveau" ? cible : undefined,
+      nouveau: cible === "nouveau",
     });
     setEnvoi(false);
-    if (r.ok) router.push(suivant);
+    if (r.ok) {
+      router.push(suivant);
+      router.refresh();
+    }
     else setErreur(r.message ?? "Profil non enregistré.");
   };
 

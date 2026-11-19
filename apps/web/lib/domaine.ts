@@ -18,6 +18,8 @@ export type Source =
   | { force: "recommande"; reference: string };
 
 export type Occupant = {
+  /** Identifiant en base (absent pour le logement exemple ou un occupant pas encore enregistré). */
+  id?: string;
   libelle: string;
   age?: number;
   /** Capacité de déplacement, de 0 (aucune gêne) à 4 (fauteuil). */
@@ -111,7 +113,10 @@ export type Logement = {
   id: string;
   exemple: boolean;
   aidant: string;
+  /** Premier occupant : celui du parcours d'inscription. */
   occupant: Occupant;
+  /** Tous les occupants du logement (la règle qui protège le plus vulnérable s'applique). */
+  occupants?: Occupant[];
   type: string;
   etage: string;
   statut: string;

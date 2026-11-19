@@ -94,7 +94,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
   if (!l) return null;
 
   const [occ, pcs, ana, fls, acts, ctr, abs] = await Promise.all([
-    supabase.from("occupants").select("*").eq("logement_id", id).order("created_at").limit(1),
+    supabase.from("occupants").select("*").eq("logement_id", id).order("created_at"),
     supabase.from("pieces").select("*").eq("logement_id", id).order("created_at"),
     supabase.from("analyses").select("*").eq("logement_id", id).eq("type", "video").order("created_at", { ascending: false }),
     supabase.from("failles").select("*").eq("logement_id", id),
@@ -111,16 +111,17 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     supabase.from("absences").select("*").eq("logement_id", id).order("created_at", { ascending: false }).limit(1),
   ]);
 
-  const o = occ.data?.[0];
-  const occupant: Occupant = o
-    ? {
-        libelle: o.libelle,
-        deplacement: Math.max(0, Math.min(4, o.deplacement)) as Occupant["deplacement"],
-        vue_reduite: o.vue_reduite,
-        audition_reduite: o.audition_reduite,
-        troubles_memoire: o.vigilance === "troubles_cognitifs",
-        consentement_art9_le: o.consentement_art9_le,
-      }
+  const occupants: Occupant[] = (occ.data ?? []).map((o) => ({
+    id: o.id,
+    libelle: o.libelle,
+    deplacement: Math.max(0, Math.min(4, o.deplacement)) as Occupant["deplacement"],
+    vue_reduite: o.vue_reduite,
+    audition_reduite: o.audition_reduite,
+    troubles_memoire: o.vigilance === "troubles_cognitifs",
+    consentement_art9_le: o.consentement_art9_le,
+  }));
+  const occupant: Occupant = occupants[0]
+    ? occupants[0]
     : {
         libelle: "l'occupant",
         deplacement: 0,
@@ -280,6 +281,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     exemple: false,
     aidant: nomAidant,
     occupant,
+    occupants,
     type: l.type ?? "Logement",
     etage: l.etage == null ? "—" : l.etage === 0 ? "RDC" : `${l.etage}e`,
     statut:

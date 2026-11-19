@@ -46,9 +46,27 @@ Vu au premier run (18/11) : l'agent peut émettre un custom tool et une action d
 
 Limite du coupe-circuit : il réagit **après coup**, quelques secondes au plus après la page vue. Il n'empêche pas le clic. Il ne voit pas non plus un tunnel de commande qui s'ouvrirait sans changer d'URL (fenêtre modale). Depuis la relecture de Briac (PR #9), il n'y a plus d'exception « panier » : un mot du tunnel de commande (`checkout`, `commande`, `order`, `buy`, `caisse`, `validation`…) dans le chemin coupe la session, même sous `/checkout/cart` ou `/panier/validation`. Les mots stricts (paiement, connexion, compte…) sont aussi cherchés dans les paramètres, mais un paramètre de tri (`?order=prix`) ou une recherche ne déclenchent rien. Dans l'application, l'usage 2 a en plus une **liste blanche** de pages IKEA (accueil, recherche, catégories, fiche produit, panier : `horsCheminsAutorises`) ; toute autre page coupe la session. Pendant l'attente du clic sur `demander_validation`, chaque lecture de l'écran (`GET /api/agent/run`) et la réponse elle-même relisent la session, coupe-circuit compris.
 
-## Dimension : ce que le contrôle ne prouve pas
+## Dimension : la skill `verifier_dimension` (issue #15)
 
-Aux deux premiers runs, l'agent a retenu un produit plus grand que le tapis (67,5 × 200 cm pour 60 × 160 cm) en le disant découpable. C'est vrai sur la fiche, mais **rien dans sa réponse ne prouve qu'il l'a lu** : le contrôle signale seulement l'écart. La skill `verifier_dimension` (issue #6) devra exiger une citation de la fiche, par exemple un champ `citation_decoupe`, pour accepter un produit plus grand que la cote.
+Aux deux premiers runs, l'agent a retenu un produit plus grand que le tapis (67,5 × 200 cm pour 60 × 160 cm) en le disant découpable. C'était vrai sur la fiche, mais **rien dans sa réponse ne le prouvait**.
+
+- `skills/verifier_dimension.md` : skill maison (`name: verifier-dimension`). Dimensions lues sur la fiche ; dimension absente, produit refusé ; produit plus grand que la cote accepté **seulement** avec une phrase de la fiche, recopiée mot pour mot, qui dit qu'il se découpe (`citation_decoupe`).
+- `citation_decoupe` est dans `sortieUsage2Schema` et dans le prompt provisoire de l'usage 2.
+- Le code applique la même règle (`ecartDecoupe` dans `dev/controle.ts`) : produit plus grand sans citation, ou avec une citation qui ne parle pas de découpe, signalé « à REFUSER » dans `ecarts_metier`. Le code ne relit pas la fiche : que la citation figure bien sur la page se vérifie dans le replay.
+- **Publiée sur H** le 18/11 : `verifier-dimension`, révision 1 (`npm run agent:skill -- ../../agents/skills/verifier_dimension.md`, à blanc, puis `--publier`).
+- **Agent maison `chez-soi-acheteur`**, révision 1, créé sur H le 18/11 à partir de `definitions/chez-soi-acheteur.json` (`npm run agent:creer -- ../../agents/definitions/chez-soi-acheteur.json`, à blanc, puis `--publier` ou `--publier --mettre-a-jour`). Même base que `h/web-surfer-flash` révision 2 (`h/browser`, `holo4-35b-a3b`, skills `h/company`, `h/user-collaboration`, `h/answering`, `h/planning`), plus `verifier-dimension:1` et les outils `get_mesures` et `demander_validation`. La création ne lance aucune session.
+- Run avec la skill : `npm run agent:u2 -- --site <domaine> --agent chez-soi-acheteur:1`. Pas de surcharge `agent.skills` : `h/web-surfer-flash` porte quatre skills H, et une surcharge les aurait remplacées.
+- **Citation vérifiée sur la page** (`dev/fiche.ts`, après chaque run et dans `recontroler.ts`) : GET de la fiche publique, recherche mot à mot de `citation_decoupe` (tolérance d'un mot sur dix). `exacte` ne donne aucun écart. Règle stricte (Bastian, PR #32) : `approchee` (avec les mots changés), `non_verifiable` (fiche illisible) et `absente` donnent tous « produit à REFUSER ».
+- **Premier run réel avec la skill** (18/11, `chez-soi-acheteur:2`, IKEA France, `2026-11-18_u2_462b0477-….json`) : 47 s, 9 étapes, 0,022 USD, arrêt au panier, validation refusée, aucune page interdite. STOPP 67,5 × 200 cm retenu **avec** une citation de découpe. La citation est juste à un mot près : l'agent écrit « tissus » là où la fiche dit « tapis », comme pour le nom du produit aux deux runs précédents. Le modèle lit ce mot de travers ; d'où le contrôle sur la page plutôt qu'une consigne de plus.
+- **Comparaison avec et sans la skill** (18/11, même prompt, même schéma, IKEA France ; seul l'agent change) :
+
+  | Agent | Durée | Étapes | Coût | Produit | `citation_decoupe` | Verdict du code |
+  |---|---|---|---|---|---|---|
+  | `chez-soi-acheteur:2` (skill + instructions) | 47 s | 9 | 0,022 USD | STOPP 67,5 × 200 cm | donnée (« tissus » au lieu de « tapis ») | retrouvée à 1 mot près |
+  | `h/web-surfer-flash` (sans) | 70 s | 12 | 0,031 USD | STOPP 67,5 × 200 cm | **absente**, alors que le prompt la demande | **à REFUSER** |
+
+  Avec la skill, l'agent prouve la découpe ; sans elle, il l'affirme seulement dans `remarque`. Un run de chaque côté : à confirmer sur d'autres runs.
+- Ancienne note : mesurer avec et sans la skill (`h/web-surfer-flash` contre `chez-soi-acheteur:1`), et noter les runs dans l'onglet Mesures agent.
 
 ## Ce que l'usage 1 réutilisera (issue #7)
 

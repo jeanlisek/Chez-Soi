@@ -3,11 +3,12 @@
  * persona fictive Jeanne. Arrêt au panier : aucune connexion, aucun paiement, aucune commande.
  *
  * Depuis apps/web/ :  npm run agent:u2 -- --site <domaine>
- * Options : --a-blanc (n'envoie rien), --agent <nom[:N]>, --malgre-sessions-actives
+ * Options : --a-blanc (n'envoie rien), --agent <nom[:N]> (chez-soi-acheteur:N pour la skill
+ *           verifier-dimension), --malgre-sessions-actives
  *
  * UNE session par lancement, jamais de relance automatique.
  */
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
 
@@ -26,6 +27,7 @@ import {
 } from "../../apps/web/lib/schemas";
 import { executerRun, type ContexteOutil, type OutilLocal } from "./boucle";
 import { controlerSortieUsage2 } from "./controle";
+import { ecartsCitationFiche } from "./fiche";
 
 const RACINE = path.resolve(__dirname, "../..");
 const FAILLE_ID = "faille-demo-tapis-01";
@@ -129,6 +131,9 @@ async function main(): Promise<void> {
     { declaration: await chargerOutil("demander_validation"), executer: demanderValidation, validation: true },
   ];
 
+  // La skill verifier-dimension (issue #15) passe par l'agent maison chez-soi-acheteur
+  // (agents/definitions/), pas par une surcharge : `overrides["agent.skills"]` remplacerait
+  // les quatre skills H de l'agent. Lancer avec --agent chez-soi-acheteur:N.
   console.log(`Usage 2 · sous-tapis 60 × 160 cm · site : ${site} · agent : ${option("agent") ?? HAI_AGENT}`);
   const resultat = await executerRun<SortieUsage2>({
     usage: "u2",
@@ -146,7 +151,16 @@ async function main(): Promise<void> {
   });
   if (!resultat) return;
 
-  const { run, sortie } = resultat;
+  const { run, sortie, fichier } = resultat;
+
+  // La citation de découpe est cherchée sur la fiche par le code (fiche.ts) : l'agent la
+  // recopie parfois mal. L'écart s'ajoute au run, qui est réécrit (champ dérivé seulement).
+  const ecartsFiche = await ecartsCitationFiche(sortie);
+  if (ecartsFiche.length) {
+    run.ecarts_metier.push(...ecartsFiche);
+    await writeFile(fichier, `${JSON.stringify(run, null, 2)}\n`, "utf8");
+  }
+
   console.log("\n──────── Résultat ────────");
   console.log(`État final : ${run.etat_final} · outcome : ${run.outcome ?? "aucun"} · error_code : ${run.error_code ?? "aucun"}`);
   console.log(`Fin : ${run.motif_fin} · durée : ${run.duree_s} s · étapes : ${run.nb_etapes} · validation : ${run.decision_validation ?? "non demandée"}`);

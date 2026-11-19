@@ -49,6 +49,7 @@ Rends un objet JSON conforme au format demandé :
 - `largeur_cm` et `longueur_cm` : dimensions du produit lues sur la fiche, deux nombres en centimètres ;
 - `lien` : URL de la fiche produit ;
 - `delai_livraison` : délai affiché, tel quel ; si le site n'en affiche pas sans adresse ni code postal, laisse ce champ vide et dis-le dans `remarque` ;
+- `citation_decoupe` : seulement si le produit dépasse le tapis ; la phrase de la fiche qui dit qu'il se découpe, recopiée mot pour mot. Sans cette phrase, un produit plus grand que le tapis est refusé ;
 - `remarque` : tout écart, doute, ou la raison d'un échec.
 
 Ne mets dans la réponse que ce que tu as lu sur le site. Recopie le nom du produit lettre pour lettre.

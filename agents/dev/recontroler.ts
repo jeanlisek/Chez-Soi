@@ -15,6 +15,7 @@ import path from "node:path";
 
 import { runAgentSchema, sortieUsage2Schema } from "../../apps/web/lib/schemas";
 import { controlerSortieUsage2, evaluerSortie } from "./controle";
+import { ecartsCitationFiche } from "./fiche";
 
 const DOSSIER = path.resolve(__dirname, "../bench/runs");
 const DERIVES = ["sortie_valide", "erreurs_sortie", "schema_valide", "erreurs_schema", "ecarts_metier"];
@@ -43,7 +44,8 @@ async function main(): Promise<void> {
     const derives = {
       schema_valide: evaluation.schema_valide,
       erreurs_schema: evaluation.erreurs_schema,
-      ecarts_metier: evaluation.ecarts_metier,
+      // + citation_decoupe cherchée sur la fiche (GET de la page publique, voir fiche.ts).
+      ecarts_metier: [...evaluation.ecarts_metier, ...(await ecartsCitationFiche(evaluation.sortie))],
     };
 
     // Même ordre de clés : les champs dérivés prennent la place des anciens.

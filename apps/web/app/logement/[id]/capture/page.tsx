@@ -139,7 +139,7 @@ export default function PageCapture() {
     <Screen bg="nuit" className="gap-4">
       <div className="flex items-center justify-between">
         <RoundButton icon="close" label="Quitter la visite" href={`${base}/contrat`} variant="sombre" />
-        {etat.parcours === "A" && (
+        {etat.parcours === "A" && logement.exemple && (
           <span className="flex items-center gap-2 rounded-full bg-nuit-3 px-3.5 py-2.5 text-xs font-semibold text-pervenche-soft">
             <Cursor size={12} className="text-pervenche" />
             L&apos;agent cherche les CG

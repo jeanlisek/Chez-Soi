@@ -79,7 +79,7 @@ export default function PagePlan() {
         <h1 className="text-[23px] leading-7 font-extrabold">
           {toutes.length - reglees} point{toutes.length - reglees > 1 ? "s" : ""} à traiter
         </h1>
-        <p className="text-sm text-ink-soft">{resume || (logement.pieces.length ? "Analyse en cours" : "Filmez une pièce pour commencer")}</p>
+        <p className="text-sm text-ink-soft">{resume || (toutes.length ? "Repérés sur vos vidéos" : logement.pieces.length ? "Analyse en cours" : "Filmez une pièce pour commencer")}</p>
         <Link href={toutes.length ? `${base}/actions` : `${base}/capture`} className="absolute bottom-[18px] left-5 flex h-[46px] items-center rounded-full bg-nuit px-5 text-sm font-bold text-white">
           {toutes.length ? "VOIR LE PLAN" : "FILMER UNE PIÈCE"}
         </Link>

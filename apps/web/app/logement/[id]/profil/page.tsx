@@ -5,11 +5,12 @@ import { useState } from "react";
 
 import { BackButton, Chip, DateField, Field, Header, Illus, Pill, Ring, Screen, TextArea, cx } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
-import { LIBELLE_DEPLACEMENT, type Occupant } from "@/lib/domaine";
+import type { Occupant } from "@/lib/domaine";
+import { AUDITION, ECHELLE_DEPLACEMENT, SEUIL_REDUIT, TRANCHE_LABEL, VUE, ageDe, avecNiveau, niveau, trancheDe, vigilance } from "@/lib/profil";
 
 import { enregistrerProfil } from "../actions-serveur";
 
-const CONTRAINTES = ["Se lève la nuit", "Vit seul", "Peur de tomber", "Se fatigue vite", "Difficulté à se baisser", "Utilise une aide technique", "Reçoit de l'aide à domicile"];
+const TITRES = ["L'adresse du logement", "Les habitants", "Logement et accord"];
 const TYPES = ["Studio", "T1", "T2", "T3", "T4", "T5+"];
 const ETAGES: [string, number][] = [["RDC", 0], ["1er", 1], ["2e", 2], ["3e+", 3]];
 const STATUTS: [string, "proprietaire" | "locataire" | "heberge"][] = [["Propriétaire", "proprietaire"], ["Locataire", "locataire"], ["Hébergé", "heberge"]];
@@ -40,6 +41,11 @@ export default function PageProfil() {
   const suivant = depuisCompte ? `/logement/${logement.id}/compte` : `/logement/${logement.id}/contrat`;
   const setO = (p: Partial<Occupant>) => (cible ? setLocal({ ...o, ...p }) : maj({ occupant: { ...o, ...p } }));
   const accord = Boolean(o.consentement_art9_le);
+  // Les échelles et les points de vigilance se lisent selon l'âge (date de naissance facultative).
+  const age = ageDe(o.naissance) ?? o.age;
+  const tranche = trancheDe(age);
+  const echelle = ECHELLE_DEPLACEMENT[tranche];
+  const vig = vigilance(tranche, age);
   const prenomManquant = !logement.exemple && (!o.libelle.trim() || o.libelle === "l'occupant");
   const prenom = prenomManquant ? "La personne" : o.libelle;
 
@@ -76,7 +82,7 @@ export default function PageProfil() {
 
   return (
     <Screen className="gap-3.5">
-      <Header left={<BackButton href={depuisCompte ? suivant : "/"} />} title="Profil" right={<Ring value={etape} total={3} size={48} track="#E3E5EE" />} />
+      <Header left={<BackButton href={depuisCompte ? suivant : "/"} />} title={TITRES[etape - 1]} right={<Ring value={etape} total={3} size={48} track="#E3E5EE" />} />
 
       {etape === 2 && (<>
       <section className="relative min-h-[150px] overflow-hidden rounded-card bg-pervenche p-5">
@@ -107,7 +113,7 @@ export default function PageProfil() {
         <legend className="mb-2.5 flex w-full justify-between">
           <b className="text-[15px]">Se déplacer</b>
           <span className="text-[13px] font-semibold text-cobalt">
-            {o.deplacement} · {LIBELLE_DEPLACEMENT[o.deplacement]}
+            {o.deplacement} · {echelle[o.deplacement]}
           </span>
         </legend>
         <div className="flex justify-between rounded-full bg-white p-1.5" role="radiogroup" aria-label="Niveau de déplacement">
@@ -119,7 +125,7 @@ export default function PageProfil() {
                 type="button"
                 role="radio"
                 aria-checked={on}
-                aria-label={`${v}, ${LIBELLE_DEPLACEMENT[v]}`}
+                aria-label={`${v}, ${echelle[v]}`}
                 onClick={() => setO({ deplacement: v })}
                 className={cx("h-[52px] w-[52px] rounded-full border-[1.5px] text-[17px] font-extrabold", on ? "border-nuit bg-nuit text-white" : "border-line bg-white")}
               >
@@ -130,12 +136,29 @@ export default function PageProfil() {
         </div>
       </fieldset>
 
-      <div className="flex flex-col gap-2.5">
-        <b className="text-[15px]">Voir, entendre, vigilance</b>
+      {([["vue", "Voir", VUE] as const, ["audition", "Entendre", AUDITION] as const]).map(([cle, titre, echelle]) => {
+        const n = niveau(o.contraintes, cle, cle === "vue" ? o.vue_reduite : o.audition_reduite);
+        return (
+          <div key={cle} className="flex flex-col gap-2">
+            <span className="flex w-full justify-between"><b className="text-[15px]">{titre}</b><span className="text-[13px] font-semibold text-cobalt">{echelle[n]}</span></span>
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={titre}>
+              {echelle.map((libelle, v) => (
+                <Chip key={libelle} active={v === n} onClick={() => setO({ contraintes: avecNiveau(o.contraintes, cle, v), ...(cle === "vue" ? { vue_reduite: v >= SEUIL_REDUIT } : { audition_reduite: v >= SEUIL_REDUIT }) })}>{libelle}</Chip>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+      <div className="flex flex-col gap-2">
+        <b className="text-[15px]">Points de vigilance{age !== undefined ? ` · ${TRANCHE_LABEL[tranche]}` : ""}</b>
+        <p className="text-[13px] text-ink-muted">{vig.aide}</p>
         <div className="flex flex-wrap gap-2">
-          <Chip active={o.vue_reduite} onClick={() => setO({ vue_reduite: !o.vue_reduite })}>Vue réduite</Chip>
-          <Chip active={o.audition_reduite} onClick={() => setO({ audition_reduite: !o.audition_reduite })}>Audition réduite</Chip>
-          <Chip active={o.troubles_memoire} onClick={() => setO({ troubles_memoire: !o.troubles_memoire })}>Troubles de mémoire</Chip>
+          {vig.options.map((x) => {
+            const on = (o.contraintes ?? []).includes(x.id);
+            return (
+              <Chip key={x.id} active={on} onClick={() => setO({ contraintes: on ? (o.contraintes ?? []).filter((c) => c !== x.id) : [...(o.contraintes ?? []), x.id], ...(x.id === "memoire" ? { troubles_memoire: !on } : {}) })}>{x.label}</Chip>
+            );
+          })}
         </div>
       </div>
       {!logement.exemple && (
@@ -148,10 +171,13 @@ export default function PageProfil() {
 
       {etape === 1 && (<>
       <section className="flex flex-col gap-1.5 rounded-card bg-pervenche p-5">
-        <h2 className="text-[22px] leading-[27px] font-extrabold">Le logement</h2>
-        <p className="text-sm leading-[19px] text-ink-soft">Son type et son étage changent les règles qui s&apos;appliquent.</p>
+        <h2 className="text-[22px] leading-[27px] font-extrabold">{TITRES[0]}</h2>
+        <p className="text-sm leading-[19px] text-ink-soft">D&apos;abord l&apos;adresse. Un compte, un logement.</p>
       </section>
       {!logement.exemple && <Field id="adresse" label="Adresse (facultative)" value={adresse} onChange={setAdresse} autoComplete="street-address" placeholder="12 rue des Lilas, Angers" />}
+      </>)}
+
+      {etape === 3 && (<>
       {logement.exemple ? (
         <div className="flex gap-2">
           {[[logement.type, "logement"], [logement.etage, "étage"], [logement.statut, "statut"]].map(([v, l]) => (
@@ -185,20 +211,7 @@ export default function PageProfil() {
           ))}
         </section>
       )}
-      </>)}
-
-      {etape === 3 && (<>
-      <div className="flex flex-col gap-2.5">
-        <b className="text-[15px]">Au quotidien</b>
-        <p className="text-[13px] text-ink-muted">Ce qui compte pour adapter le logement. Des situations, jamais des diagnostics.</p>
-        <div className="flex flex-wrap gap-2">
-          {CONTRAINTES.map((c) => {
-            const on = (o.contraintes ?? []).includes(c);
-            return <Chip key={c} active={on} onClick={() => setO({ contraintes: on ? (o.contraintes ?? []).filter((x) => x !== c) : [...(o.contraintes ?? []), c] })}>{c}</Chip>;
-          })}
-        </div>
         {!logement.exemple && <TextArea id="autre" label="Autre chose à savoir (facultatif)" value={o.autre ?? ""} onChange={(v) => setO({ autre: v })} />}
-      </div>
       <button
         type="button"
         role="checkbox"

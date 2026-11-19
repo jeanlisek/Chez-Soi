@@ -152,6 +152,7 @@ In production:
 - sign-in with Google or e-mail link, home creation; Account screen to edit the profile, manage several occupants (the rule protecting the most vulnerable applies) and re-film a room;
 - guided capture (filming tips, import of an existing video, review before sending), analysis on the Space (automatic wake-up, retries), risk points and sizes stored, 3D model and annotated image of each room in private storage; a re-filmed room replaces its old points, except those whose size was confirmed;
 - risk point screen: photo cropped on the element and a "relief photo" of the filmed surface; on the vision side, an object seen in several frames is counted once;
+- three-step profile, occupants' consent revocable at any time (abilities erased without consent); detection extended to locks, stairs, lights and smoke detectors, spotted without a size;
 - action plan computed from the rules, with the graph to recognise elements and an LLM-written explanation checked by code;
 - end-to-end contract reading, tested with fictitious special conditions;
 - H agent inside the app for all three uses: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker. On 19 Nov in production: use 2 end to end on `chez-soi-acheteur:2` (130 s, 9 steps, steering sent, stop at the cart on `demander_validation`), use 1 from the Contract screen, and a first real use 3 run after it was wired (#86).
@@ -181,7 +182,7 @@ Next steps considered: departure date entry, a session prompt that names the pla
 | `apps/web/` | Next.js app: screens, API routes, plan computation (`lib/plan.ts`), graph (`lib/graphe`), explanation (`lib/llm.ts`), H agent (`lib/agent`) |
 | `services/vision/` | FastAPI service of the Space: video pipeline (`/analyse`) and contract reading (`/contrat`) |
 | `agents/` | Custom agent definitions, `verifier_dimension` skill, tools, recorded real runs (`bench/runs/`) |
-| `supabase/` | Migrations 0001 to 0010, 24 sources and 12 rules, graph, SQL tests |
+| `supabase/` | Migrations 0001 to 0012, 24 sources and 13 rules, graph with 3 legal texts, SQL tests |
 | `n8n/` | Exported workflows: video analysis, contract reading, Space wake-up, regulatory watch |
 | `docs/` | [Agent results](docs/resultats.md), [architecture](docs/architecture.md), [vision measurements](docs/mesures.md), [rules](docs/regles.md) |
 | `scripts/` | n8n sync, agent results recomputation |

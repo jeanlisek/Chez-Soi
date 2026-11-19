@@ -55,7 +55,11 @@ def lancer_autotest(nb_images: int = 4) -> dict:
     deja_en_memoire = charger_modeles.cache_info().currsize > 0
     detecteur, profondeur = charger_modeles(appareil)
     reconstructeur = charger_reconstructeur(appareil)
-    verificateur = charger_verificateur(appareil)
+    # SigLIP n'est qu'un deuxième avis : s'il ne se charge pas, l'auto-test mesure quand même les autres modèles.
+    try:
+        verificateur, erreur_siglip = charger_verificateur(appareil), None
+    except Exception as erreur:
+        verificateur, erreur_siglip = None, f"{type(erreur).__name__} : {erreur}"
     images = images_de_synthese(nb_images)
 
     def contours(image):
@@ -69,7 +73,8 @@ def lancer_autotest(nb_images: int = 4) -> dict:
     from .verification import DESCRIPTIONS, decouper
 
     textes = sum(DESCRIPTIONS["tapis"], [])
-    verification = _serie(lambda image: verificateur.probabilites([decouper(image, (280, 470, 1000, 640))], textes), images)
+    verification = _serie(lambda image: verificateur.probabilites([decouper(image, (280, 470, 1000, 640))], textes),
+                          images) if verificateur else {"erreur": erreur_siglip}
     with tempfile.TemporaryDirectory() as dossier:
         chemins = []
         for i, image in enumerate(images):
@@ -95,7 +100,8 @@ def lancer_autotest(nb_images: int = 4) -> dict:
             fiche(MAPANYTHING, "reconstruction multi-vues", reconstructeur.duree_chargement_s,
                   {"premier_calcul_s": round(premiere, 2), "calcul_moyen_s": round(seconde, 2),
                    "unite": f"pour {nb_images} vues"}),
-            fiche(SIGLIP, "vérification des points", verificateur.duree_chargement_s, verification),
+            fiche(SIGLIP, "vérification des points", verificateur.duree_chargement_s if verificateur else 0.0,
+                  verification),
         ],
         "controles": {
             "masque_px": int(contours(images[0]).sum()),

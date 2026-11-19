@@ -152,6 +152,7 @@ En production :
 - connexion par Google ou lien e-mail, création du logement ; écran Compte pour modifier le profil, gérer plusieurs occupants (la règle du plus vulnérable s'applique) et refilmer une pièce ;
 - capture guidée (conseils pour bien filmer, import d'une vidéo déjà tournée, relecture avant l'envoi), analyse sur le Space (réveil automatique, nouveaux essais), points de risque et cotes en base, modèle 3D et image annotée de chaque pièce dans le stockage privé ; une pièce refilmée remplace ses anciens points, sauf ceux dont la cote a été confirmée ;
 - écran du point : photo cadrée sur l'élément et « photo en relief » de la surface filmée ; côté vision, un objet revu dans plusieurs images n'est compté qu'une fois ;
+- profil en trois étapes, accord des habitants retirable à tout moment (capacités effacées sans accord) ; détection étendue aux serrures, escaliers, éclairages et détecteurs de fumée, repérés sans cote ;
 - plan d'action calculé sur les règles, avec le graphe pour reconnaître les éléments et une explication rédigée par un LLM puis contrôlée par du code ;
 - lecture du contrat de bout en bout, testée avec des conditions particulières fictives ;
 - agent H dans l'application pour les trois usages : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Le 19/11 en production : usage 2 de bout en bout sur `chez-soi-acheteur:2` (130 s, 9 étapes, pilotage envoyé, arrêt au panier sur `demander_validation`), usage 1 depuis l'écran Contrat, et un premier run réel de l'usage 3 après son branchement (#86).
@@ -181,7 +182,7 @@ Suite envisagée : la saisie de la date de départ, une consigne de session qui 
 | `apps/web/` | Application Next.js : écrans, routes API, calcul du plan (`lib/plan.ts`), graphe (`lib/graphe`), explication (`lib/llm.ts`), agent H (`lib/agent`) |
 | `services/vision/` | Service FastAPI du Space : pipeline vidéo (`/analyse`) et lecture du contrat (`/contrat`) |
 | `agents/` | Définitions des agents maison, skill `verifier_dimension`, outils, runs réels enregistrés (`bench/runs/`) |
-| `supabase/` | Migrations 0001 à 0010, 24 sources et 12 règles, graphe, tests SQL |
+| `supabase/` | Migrations 0001 à 0012, 24 sources et 13 règles, graphe avec 3 textes de loi, tests SQL |
 | `n8n/` | Workflows exportés : analyse vidéo, lecture du contrat, réveil du Space, veille réglementaire |
 | `docs/` | [Résultats de l'agent](docs/resultats.md), [architecture](docs/architecture.md), [mesures de la vision](docs/mesures.md), [règles](docs/regles.md) |
 | `scripts/` | Synchronisation n8n, recalcul des résultats de l'agent |

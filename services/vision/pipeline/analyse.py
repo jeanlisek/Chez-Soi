@@ -197,6 +197,17 @@ def ecarter_vues_uniques(mesures: list[MesureVue], nb_images: int) -> list[Mesur
     ]
 
 
+def ecarter_failles_tapis_jamais_entieres(failles: list) -> list:
+    """Même règle, sur les failles : `nb_vues_entieres` compte les vues entières après le retrait des vues
+    masquées, ce que la règle sur les mesures ne voit pas. Sur l'Entrée de test, le parquet (10 vues) gardait
+    une vue « entière » masquée par ses vues coupées et passait la première règle.
+    """
+    entieres = [f for f in failles if f.element == "tapis" and f.position_3d.get("nb_vues_entieres", 0) > 0]
+    if not entieres:
+        return failles
+    return [f for f in failles if f.element != "tapis" or f.position_3d.get("nb_vues_entieres", 0) > 0]
+
+
 def ecarter_tapis_jamais_entiers(mesures: list[MesureVue]) -> list[MesureVue]:
     """Quand un tapis de la pièce a été vu en entier, retire les « tapis » toujours coupés par le cadre.
 
@@ -527,6 +538,7 @@ def analyser_images(
     facteur_a4 = facteur_echelle_a4(mesures)
     facteur = facteur_a4 if (calibrer_a4 and facteur_a4) else 1.0
     failles = construire_failles(mesures, piece, facteur)
+    failles = ecarter_failles_tapis_jamais_entieres(failles)
     finales = {(f.element, f.position_3d["instance"]): f for f in failles}
 
     sortie.mkdir(parents=True, exist_ok=True)

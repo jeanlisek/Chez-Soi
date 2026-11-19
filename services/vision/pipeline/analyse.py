@@ -167,7 +167,9 @@ def fusionner_instances_proches(mesures: list[MesureVue]) -> None:
         for a in instances:
             for b in instances:
                 proches = np.linalg.norm(centres[(element, a)] - centres[(element, b)]) <= rayon
-                if a < b and cible[(element, b)] == b and proches and _tailles_compatibles(vues[(element, a)], vues[(element, b)]):
+                # Deux objets visibles dans la même image sont forcément distincts (deux fenêtres côte à côte).
+                ensemble = {v.image for v in vues[(element, a)]} & {v.image for v in vues[(element, b)]}
+                if a < b and cible[(element, b)] == b and proches and not ensemble and _tailles_compatibles(vues[(element, a)], vues[(element, b)]):
                     cible[(element, b)] = cible[(element, a)]
     for mesure in mesures:
         mesure.instance = cible.get((mesure.element, mesure.instance), mesure.instance)

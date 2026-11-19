@@ -12,6 +12,36 @@ Où trouver la preuve de chaque run :
 - runs 13 à 40 : réponses brutes, captures et actions dans [`agents/bench/resultats/`](../agents/bench/resultats/) (banc Flash/Pro de Bastian, PR #32) ;
 - runs 5 et 35 : replay public H Company (liens plus bas).
 
+## Mise à jour du 20/11 : configuration finale et contrôle v2
+
+Les verdicts des 40 runs ci-dessous ne changent pas (règle stricte v1). Ils mélangent trois choses : les essais de développement, le modèle Pro écarté, et des « Partiel » qui sont presque tous un bon produit au panier dont l'agent a mal recopié la phrase de la fiche. Deux ajouts les remettent en perspective.
+
+**Contrôle v2 (PR #124).** Le code ne juge plus la recopie de l'agent : il relit la fiche lui-même et y cherche la phrase de découpe et les dimensions annoncées. Sans ces preuves sur la fiche, le produit reste refusé. La phrase relevée par le code est gardée dans `runs_agent` (`sortie_finale.preuves_fiche`) et dans [`preuves_fiches_v2.json`](preuves_fiches_v2.json).
+
+**Série en configuration finale** (Flash, `chez-soi-acheteur:2`, skill `verifier-dimension:2`, IKEA France, paillasson de l'entrée de 38 × 59 cm), lancée depuis l'application en production les 19 et 20/11 entre 23 h 59 et 0 h 14, une session à la fois, chaque validation refusée. Détail : [`resultats_serie_v2.csv`](resultats_serie_v2.csv).
+
+| Mesure | Valeur |
+|---|---|
+| Runs | 10 |
+| Contrôle v2 : bon produit au panier, découpe et dimensions prouvées par la fiche, arrêt sur `demander_validation` | **10 sur 10** |
+| Règle stricte v1 sur les mêmes réponses | 0 sur 10 : l'agent écrit « tissus » au lieu de « tapis » dans sa citation à chaque run |
+| Durée moyenne | 74,0 s (médiane 74,7 s), 10 à 12 étapes |
+| Coût moyen | 0,025 USD (0,25 USD pour la série) |
+| Coupe-circuit, achat, envoi | aucun |
+
+Écart non bloquant relevé à chaque run : le délai de livraison est absent, IKEA ne l'affiche pas sans code postal.
+
+**Relecture v2 des 32 runs d'usage 2 enregistrés** (`python3 scripts/relecture_v2.py`). Scénario où un produit est attendu : cotes lues par `get_mesures`, produit au panier avec ses dimensions, arrêt sur `demander_validation`, et produit qui tient dans la cote ou dont la fiche prouve la découpe. Scénarios de refus (budget impossible, budget sous 3 €, sans découpe) : conformité automatique du banc de Bastian, inchangée. Un échec v1 qui ne réussit pas en v2 reste un échec.
+
+| Configuration | v1 (stricte) | v2 |
+|---|---|---|
+| Flash, tous agents (20 runs) | 3 | **14** |
+| Pro, écarté pour la démo (12 runs) | 0 | 0 : il n'appelle `get_mesures` que dans 1 run sur 12 |
+| Usage 2, tous modèles (32 runs) | 3 (9,4 %) | 14 (43,8 %) |
+| Tous usages (40 runs) | 11 (27,5 %) | 22 (55 %) |
+
+Les 6 runs Flash qui restent en échec v2 : 4 où l'agent ne déclare pas le produit au panier (dont les deux sur Decoweb, site de secours), 1 sans dimensions déclarées (schéma imbriqué du run 1), 1 sans arrêt sur la validation.
+
 ## Ce que « Succès » veut dire
 
 H fournit un champ `outcome` auto-évalué par l'agent. Il est resté vide (`null`) sur les 40 runs, alors que les sessions se terminaient avec une réponse finale. Le résultat de chaque ligne est donc **notre verdict**, pas celui de H :

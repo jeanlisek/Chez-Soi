@@ -47,6 +47,23 @@ function repere3d(position: unknown): [number, number, number] | null {
   return [c[0], c[1], c[2]];
 }
 
+/** Tranche de la planche d'images qui montre ce point (`position_3d.vignette`, écrite par le service vision). */
+function vignette(position: unknown): { index: number; total: number; largeur: number; hauteur: number; boite: [number, number, number, number] | null } | null {
+  const v = (position as { vignette?: Record<string, unknown> } | null)?.vignette;
+  if (!v) return null;
+  const { index, total, largeur, hauteur } = v;
+  const entiers = [index, total, largeur, hauteur].every((n) => typeof n === "number" && Number.isInteger(n));
+  if (!entiers) return null;
+  const [i, t, l, h] = [index, total, largeur, hauteur] as number[];
+  if (!(i >= 0 && t > 0 && i < t && l > 0 && h > 0)) return null;
+  const b = v.boite;
+  const boite =
+    Array.isArray(b) && b.length === 4 && b.every((n) => typeof n === "number" && n >= 0 && n <= 1)
+      ? (b as [number, number, number, number])
+      : null;
+  return { index: i, total: t, largeur: l, hauteur: h, boite };
+}
+
 /**
  * Charge un logement pour l'interface. « exemple » sert le logement fictif de Marc et Jeanne,
  * visible sans compte. Les autres sont lus dans Supabase au nom de l'utilisateur connecté :
@@ -161,13 +178,25 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     return { force: "recommande", reference: rg?.intitule ? `Recommandé · ${rg.intitule}` : "Recommandé" };
   };
 
+  // Le modèle 3D et l'image d'une pièce viennent de sa dernière analyse terminée. Un point gardé d'une analyse
+  // plus ancienne (cote confirmée) n'a ni le même repère ni la même image : on ne lui en attribue pas.
+  const debutDerniereAnalyse = (nom: string | null) => {
+    const a = (ana.data ?? []).find((x) => x.piece === nom && x.statut === "termine");
+    return a ? Date.parse(a.debut ?? a.created_at) : null;
+  };
+  const deLaDerniereAnalyse = (f: { piece: string | null; created_at: string }) => {
+    const debut = debutDerniereAnalyse(f.piece);
+    return debut != null && Date.parse(f.created_at) >= debut;
+  };
+
   const failles: Faille[] = (fls.data ?? []).map((f) => {
     const a = actionsLogement.find((x) => x.faille_id === f.id);
     const piece = pieces.find((p) => p.id === f.piece_id) ?? pieces.find((p) => p.nom === f.piece);
     return {
       id: f.id,
       piece_id: piece?.id ?? slug(f.piece ?? "logement"),
-      repere_3d: repere3d(f.position_3d),
+      repere_3d: deLaDerniereAnalyse(f) ? repere3d(f.position_3d) : null,
+      vignette: deLaDerniereAnalyse(f) ? vignette(f.position_3d) : null,
       titre: LIBELLES_ELEMENT[f.element] ?? f.element.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()),
       element: f.element,
       risque: f.risque,

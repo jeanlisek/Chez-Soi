@@ -63,6 +63,8 @@ export type Faille = {
   statut: "a_traiter" | "en_traitement" | "regle" | "a_surveiller";
   /** Position de l'élément dans le modèle 3D de sa pièce (repère du .glb, en mètres), quand la vision la donne. */
   repere_3d?: [number, number, number] | null;
+  /** Tranche de l'image de la pièce qui montre ce point (planche de vignettes empilées), quand la vision la donne. */
+  vignette?: { index: number; total: number; largeur: number; hauteur: number; boite: [number, number, number, number] | null } | null;
 };
 
 export type Action = {

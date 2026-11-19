@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Cursor, Icon } from "@/components/cs/icons";
 import { BackButton, Header, Pill, RoundButton, Screen, Signal, cx } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
-import { libelleSource } from "@/lib/domaine";
+import { libelleSource, type Faille } from "@/lib/domaine";
 
 import { confirmerCote } from "../../actions-serveur";
 
@@ -75,8 +75,12 @@ export default function PageFaille() {
 
       <section className="relative h-[300px] flex-none overflow-hidden rounded-card bg-pervenche">
         {photo && vue === "photo" ? (
-          // eslint-disable-next-line @next/next/no-img-element -- URL signée de courte durée, hors du loader d'images
-          <img src={photo} alt={`Votre ${piece?.nom?.toLowerCase() ?? "pièce"} filmée : les éléments repérés sont encadrés`} className="h-full w-full bg-nuit object-contain" />
+          f.vignette ? (
+            <PhotoDuPoint src={photo} vignette={f.vignette} alt={`${f.titre} sur votre vidéo, encadré avec sa cote`} />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- URL signée de courte durée, hors du loader d'images
+            <img src={photo} alt={`Votre ${piece?.nom?.toLowerCase() ?? "pièce"} filmée : les éléments repérés sont encadrés`} className="h-full w-full bg-nuit object-contain" />
+          )
         ) : (
         <Viewer3D
           modeleUrl={logement.pieces.find((p) => p.id === f.piece_id)?.modele_url ?? null}
@@ -173,5 +177,26 @@ export default function PageFaille() {
         )}
       </div>
     </Screen>
+  );
+}
+
+/**
+ * Photo d'un point : sa tranche dans la planche de vignettes empilées (une par point), en pleine largeur
+ * et cadrée sur l'élément. Les unités `cqw`/`cqh` sont celles du cadre : la tranche garde ses proportions.
+ */
+function PhotoDuPoint({ src, vignette, alt }: { src: string; vignette: NonNullable<Faille["vignette"]>; alt: string }) {
+  const r = vignette.hauteur / vignette.largeur;
+  const tranche = `calc(100cqw * ${r})`;
+  const [, y1, , y2] = vignette.boite ?? [0, 0.25, 1, 0.75];
+  // Élément plus haut que le cadre : on montre son sommet et son libellé ; sinon on le centre.
+  const haut = (y2 - y1) * r > 0.8 ? Math.max(0, y1 - 0.06) : null;
+  const decalage = haut != null ? `calc(100cqw * ${-(haut * r).toFixed(4)})` : `calc(50cqh - 100cqw * ${(((y1 + y2) / 2) * r).toFixed(4)})`;
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-nuit" style={{ containerType: "size" }}>
+      <div className="absolute left-0 w-full overflow-hidden" style={{ height: tranche, top: `clamp(min(0px, calc(100cqh - ${tranche})), ${decalage}, 0px)` }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- URL signée de courte durée, hors du loader d'images */}
+        <img src={src} alt={alt} className="absolute top-0 left-0 w-full max-w-none" style={{ transform: `translateY(-${(vignette.index * 100) / vignette.total}%)` }} />
+      </div>
+    </div>
   );
 }

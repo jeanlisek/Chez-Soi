@@ -240,6 +240,48 @@ export const sortieUsage3Schema = z.object({
 });
 export type SortieUsage3 = z.infer<typeof sortieUsage3Schema>;
 
+/**
+ * Réponse finale de l'usage 4 (artisans, lecture seule). Schéma plat, trois emplacements :
+ * l'API H suit mal un schéma imbriqué (docs/resultats.md). Le code relit chaque lien.
+ */
+const champsArtisan = (n: 1 | 2 | 3) => ({
+  [`artisan${n}_nom`]: z.string().optional().describe(`Artisan ${n} : nom de l'entreprise, recopié tel qu'affiché. Vide s'il n'y en a pas.`),
+  [`artisan${n}_ville`]: z.string().optional().describe(`Artisan ${n} : ville affichée.`),
+  [`artisan${n}_telephone`]: z.string().optional().describe(`Artisan ${n} : téléphone affiché, tel quel.`),
+  [`artisan${n}_labels`]: z.string().optional().describe(`Artisan ${n} : labels ou qualifications affichés (Handibat, Qualibat, RGE…), séparés par des virgules.`),
+  [`artisan${n}_lien`]: z.string().optional().describe(`Artisan ${n} : adresse de la page où tu as lu ces informations.`),
+  [`artisan${n}_pourquoi`]: z.string().optional().describe(`Artisan ${n} : en une phrase, pourquoi il convient aux travaux et aux contraintes.`),
+});
+export const sortieUsage4Schema = z.object({
+  trouve: z.boolean().describe("Vrai si au moins un artisan a été trouvé."),
+  metier: z.string().optional().describe("Corps de métier recherché, par exemple « serrurier »."),
+  ...champsArtisan(1),
+  ...champsArtisan(2),
+  ...champsArtisan(3),
+  message_devis: z.string().optional().describe("Message de demande de devis prêt à envoyer par l'utilisateur, sans nom, adresse, téléphone ni e-mail."),
+  remarque: z.string().optional().describe("Écart, doute ou raison d'un échec."),
+});
+export type SortieUsage4 = z.infer<typeof sortieUsage4Schema>;
+
+/** Artisans de la réponse de l'usage 4, emplacements vides retirés. */
+export type Artisan = { nom: string; ville?: string; telephone?: string; labels?: string; lien?: string; pourquoi?: string };
+export function artisansDe(sortie: Record<string, unknown> | null | undefined): Artisan[] {
+  if (!sortie) return [];
+  const texte = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+  return ([1, 2, 3] as const).flatMap((n) => {
+    const nom = texte(sortie[`artisan${n}_nom`]);
+    if (!nom) return [];
+    return [{
+      nom,
+      ville: texte(sortie[`artisan${n}_ville`]),
+      telephone: texte(sortie[`artisan${n}_telephone`]),
+      labels: texte(sortie[`artisan${n}_labels`]),
+      lien: texte(sortie[`artisan${n}_lien`]),
+      pourquoi: texte(sortie[`artisan${n}_pourquoi`]),
+    }];
+  });
+}
+
 /** JSON Schema à passer à H, dérivé du schéma Zod (une seule source de vérité). */
 export function versJsonSchema(schema: z.ZodType): Record<string, unknown> {
   const json: Record<string, unknown> = { ...z.toJSONSchema(schema) };

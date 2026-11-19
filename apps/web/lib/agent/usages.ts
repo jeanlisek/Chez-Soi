@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CheminsAutorises } from "../../../../agents/dev/boucle";
 import { controlerSortieUsage1, controlerSortieUsage2, evaluerSortie, type Evaluation } from "../../../../agents/dev/controle";
 import { ecartNom, ecartsCitationFiche, estFicheAutorisee, lireNomSurFiche } from "../../../../agents/dev/fiche";
-import { sortieUsage1Schema, sortieUsage2Schema, sortieUsage3Schema, versJsonSchema, type SortieUsage3 } from "@/lib/schemas";
+import { artisansDe, sortieUsage1Schema, sortieUsage2Schema, sortieUsage3Schema, sortieUsage4Schema, versJsonSchema, type SortieUsage3, type SortieUsage4 } from "@/lib/schemas";
 import type { Database } from "@/lib/supabase/types";
 
 import { verifierCgUsage1 } from "./contrat_cg";
@@ -26,7 +26,7 @@ export type ActionRun = { id: string; faille_id: string | null; absence_id: stri
 export type Preparation = { site: string; urlDepart: string; consigne: string };
 
 export type DefinitionUsage = {
-  usage: 1 | 2 | 3;
+  usage: 1 | 2 | 3 | 4;
   /** Agent maison sur H, révision figée. */
   agent: string;
   formatReponse: Record<string, unknown>;
@@ -211,8 +211,106 @@ const usage3: DefinitionUsage = {
   evaluer: async (_admin, _run, reponse) => evaluerSortie(reponse, sortieUsage3Schema, controlerSortieUsage3) as Evaluation<unknown>,
 };
 
-export const USAGES: Partial<Record<1 | 2 | 3, DefinitionUsage>> = { 1: usage1, 2: usage2, 3: usage3 };
+/* ---------- Usage 4 : artisans pour les travaux (lecture seule, aucun contact) ---------- */
+
+/** Code postal et commune tirés de l'adresse saisie. Jamais la rue : seule la commune part chez l'agent. */
+export function communeDe(adresse: string | null | undefined): string | null {
+  // Le dernier code postal de l'adresse, puis la ville qui le suit jusqu'à la virgule (« 75011 Paris, France »).
+  const m = [...(adresse ?? "").matchAll(/\b(\d{5})\b([^,;\n]{0,60})/gu)].at(-1);
+  if (!m) return null;
+  const ville = m[2].trim().replace(/[.,;]+$/, "");
+  return ville ? `${m[1]} ${ville}` : m[1];
+}
+
+/** Corps de métier à chercher pour un élément du logement. */
+export function metierPour(element: string | null | undefined): string {
+  switch (element) {
+    case "serrure":
+      return "serrurier (pose de serrure multipoints, porte blindée)";
+    case "porte":
+      return "menuisier ou entreprise d'adaptation du logement (élargissement de porte)";
+    case "fenetre":
+      return "menuisier ou serrurier (fermetures et volets)";
+    case "escalier":
+      return "menuisier ou serrurier-métallier (main courante, garde-corps)";
+    default:
+      return "artisan du bâtiment";
+  }
+}
+
+/**
+ * Ce que les travaux doivent permettre, tiré des capacités des occupants. Rien qui décrive une
+ * personne : seulement des contraintes sur le chantier (même principe que get_mesures).
+ */
+export function contraintesTravaux(occupants: { deplacement: number }[], locataire: boolean): string[] {
+  const max = Math.max(0, ...occupants.map((o) => o.deplacement));
+  const c: string[] = [];
+  if (max >= 4) c.push("Les travaux doivent permettre le passage d'un fauteuil roulant : privilégie un artisan qui affiche le label Handibat ou une expérience de l'adaptation du logement.");
+  else if (max === 3) c.push("Les travaux doivent permettre le passage d'un déambulateur : privilégie un artisan qui affiche le label Handibat ou une expérience de l'adaptation du logement.");
+  else if (max >= 1) c.push("Une personne qui marche avec difficulté vit dans le logement : le chantier doit laisser un passage dégagé.");
+  if (locataire) c.push("Le logement est loué : signale dans le message de devis que l'accord du propriétaire sera demandé avant les travaux.");
+  return c;
+}
+
+/** Écarts de la réponse de l'usage 4 : au moins un artisan, chacun avec un lien web lisible. */
+export function controlerSortieUsage4(sortie: SortieUsage4): string[] {
+  const ecarts: string[] = [];
+  const artisans = artisansDe(sortie as Record<string, unknown>);
+  if (sortie.trouve && artisans.length === 0) ecarts.push("trouve = true sans aucun artisan");
+  for (const a of artisans) {
+    let ok = false;
+    try {
+      ok = ["http:", "https:"].includes(new URL(a.lien ?? "").protocol);
+    } catch {
+      ok = false;
+    }
+    if (!ok) ecarts.push(`${a.nom} : page source absente ou illisible`);
+  }
+  if (artisans.length && !sortie.message_devis?.trim()) ecarts.push("message de devis absent");
+  if (sortie.message_devis && /@|\b0[1-9](?:[ .]?\d{2}){4}\b/.test(sortie.message_devis)) ecarts.push("message de devis avec une coordonnée");
+  return ecarts;
+}
+
+const usage4: DefinitionUsage = {
+  usage: 4,
+  agent: "chez-soi-artisans:1",
+  formatReponse: versJsonSchema(sortieUsage4Schema),
+  action: "faille",
+  // Lecture seule : en plus des motifs par défaut, aucune page de demande de devis ou de rendez-vous.
+  motifsEnPlus: ["rendez", "rdv"],
+  preparer: async (admin, logementId, action) => {
+    const [{ data: logement }, { data: occupants }, { data: detail }] = await Promise.all([
+      admin.from("logements").select("adresse, statut_occupation").eq("id", logementId).maybeSingle(),
+      admin.from("occupants").select("deplacement").eq("logement_id", logementId),
+      action
+        ? admin.from("actions").select("contre_mesure, failles(element, piece, cote_confirmee_cm, largeur_cm, hauteur_cm)").eq("id", action.id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+    const commune = communeDe(logement?.adresse);
+    if (!commune) throw new ErreurRoute(409, "Indiquez l'adresse du logement avec son code postal dans le profil : l'agent cherche des artisans près de la commune.");
+    const f = detail?.failles as { element: string; piece: string | null; cote_confirmee_cm: number | null; largeur_cm: number | null; hauteur_cm: number | null } | null;
+    const travaux = detail?.contre_mesure ?? "Travaux de sécurité du logement";
+    const dimensions =
+      f?.cote_confirmee_cm != null
+        ? `Dimension confirmée : ${f.largeur_cm ?? f.cote_confirmee_cm} cm de large${f.hauteur_cm ? ` sur ${f.hauteur_cm} cm de haut` : ""}.`
+        : "Aucune dimension confirmée : l'artisan mesurera sur place.";
+    const contraintes = contraintesTravaux(occupants ?? [], logement?.statut_occupation === "locataire");
+    return {
+      site: "recherche web",
+      urlDepart: `https://duckduckgo.com/?q=${encodeURIComponent(`${metierPour(f?.element).split(" (")[0]} ${commune}`)}`,
+      consigne: [
+        `Trouve jusqu'à trois artisans qui peuvent réaliser ces travaux près de ${commune} : « ${travaux} »${f?.piece ? ` (pièce : ${f.piece})` : ""}.`,
+        `Corps de métier : ${metierPour(f?.element)}. ${dimensions}`,
+        ...contraintes,
+        "Tu ne contactes personne et tu n'envoies aucun formulaire. Rédige le message de demande de devis que l'utilisateur enverra lui-même, puis rends ta réponse finale au format demandé.",
+      ].join("\n"),
+    };
+  },
+  evaluer: async (_admin, _run, reponse) => evaluerSortie(reponse, sortieUsage4Schema, controlerSortieUsage4) as Evaluation<unknown>,
+};
+
+export const USAGES: Partial<Record<1 | 2 | 3 | 4, DefinitionUsage>> = { 1: usage1, 2: usage2, 3: usage3, 4: usage4 };
 
 export function definitionUsage(usage: number): DefinitionUsage | null {
-  return USAGES[usage as 1 | 2 | 3] ?? null;
+  return USAGES[usage as 1 | 2 | 3 | 4] ?? null;
 }

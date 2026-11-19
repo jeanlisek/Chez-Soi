@@ -1,0 +1,10 @@
+{
+  "_note": "Agent maison de l'usage 4 (artisans), créé sur H par `npm run agent:creer -- ../../agents/definitions/chez-soi-artisans.json --publier`. Même base que les autres agents Chez Soi. Aucun outil : la consigne de la session donne les travaux, la commune et les contraintes, jamais l'adresse. Le prompt et le format de réponse restent passés à chaque session.",
+  "name": "chez-soi-artisans",
+  "description": "Agent web de Chez Soi en lecture seule : pour des travaux de sécurité du logement, trouve des artisans proches de la commune indiquée, avec leurs labels et coordonnées affichés, et rédige un message de demande de devis que l'utilisateur enverra lui-même. Ne contacte personne et ne remplit aucun formulaire.",
+  "environments": ["h/browser"],
+  "model": "holo4-35b-a3b",
+  "skills": ["h/company", "h/answering", "h/planning"],
+  "instructions_fichier": "chez-soi-artisans.instructions.md",
+  "outils": []
+}

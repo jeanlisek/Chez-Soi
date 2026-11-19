@@ -9,7 +9,7 @@
 | **Prototype** | https://chezsoi.vercel.app (un logement exemple s'ouvre sans compte) |
 | **Dépôt** | https://github.com/jeanlisek/Chez-Soi |
 | **Tester** | [Comment tester](#comment-tester), en 2 minutes sans compte |
-| **Résultats de l'agent** | [40 runs réels mesurés](docs/resultats.md) |
+| **Résultats de l'agent** | [50 runs réels mesurés, 10 sur 10 en configuration finale](docs/resultats.md) |
 | **Architecture détaillée** | [Schéma Miro, état du code au 19/11](https://miro.com/app/board/uXjVEMi8KjI=/) |
 | **Maquettes** | [Figma : parcours utilisateurs et écrans](https://www.figma.com/design/Qrx8XsJiiFWFeY98FX4dJ9/Chez-soi---Parcours-utilisateurs-et-%C3%A9crans?node-id=0-1) |
 | **Replays publics** | [Usage 1, MAIF](https://agp.eu.hcompany.ai/share/api/v1/trajectories/6737e71f-59a5-4dc5-ab92-20c49a33d469) · [Usage 2, IKEA, plan B de la démo](https://agp.eu.hcompany.ai/share/api/v1/trajectories/dfb8e4d2-8a96-448b-9a87-c5e8b3740cab) |
@@ -50,19 +50,33 @@ Les sites marchands, les espaces des assureurs et les démarches publiques n'off
 
 ## Résultats mesurés
 
-40 runs réels de l'agent H, les 18 et 19 novembre, sur IKEA France, Decoweb, maif.fr, acheel.com et service-public.gouv.fr. Aucun achat, aucun envoi. Détail, méthode et cas d'échec : [`docs/resultats.md`](docs/resultats.md).
+50 runs réels de l'agent H du 18 au 20 novembre, sur IKEA France, Decoweb, maif.fr, acheel.com et service-public.gouv.fr. Aucun achat, aucun envoi. Détail, méthode et cas d'échec : [`docs/resultats.md`](docs/resultats.md).
 
-| Mesure | Valeur | Runs |
-|---|---|---|
-| Taux de réussite, tous usages | 27,5 % (11 succès) | 40 |
-| Usage 1 · conditions générales | 4 sur 4 | 4 |
-| Usage 3 · OTV et assureur | 4 sur 4 | 4 |
-| Usage 2 · contre-mesure, contrôle strict des citations | 3 sur 32 (9,4 %) | 32 |
-| Durée moyenne d'un run | 88,5 s | 39 |
-| Même tâche à la main, estimation de l'équipe | 360 s (usage 1), 240 s (usage 2), 900 s (usage 3) | 12 |
-| Coût moyen d'un run | 0,062 USD | 40 |
+**Configuration montrée au jury** (Flash, agent `chez-soi-acheteur:2`, IKEA France), 10 runs lancés depuis l'application en production le 20/11 :
 
-Lecture de l'usage 2 : l'agent atteint le bon produit et s'arrête au bon moment, mais recopie souvent mal la fiche (« pour tissus » au lieu de « pour tapis »). Notre contrôle cherche chaque citation mot pour mot sur la fiche publique et refuse le produit si elle n'y est pas. Nous avons préféré un taux bas et vérifiable à un panier « validé » sur une preuve déformée.
+| Mesure | Valeur |
+|---|---|
+| Bon produit au panier, dimensions et découpe prouvées par la fiche, arrêt avant commande | **10 sur 10** |
+| Durée moyenne d'un run | 74 s (10 à 12 étapes) |
+| Coût moyen d'un run | 0,025 USD |
+| Achat, envoi, coupe-circuit | aucun |
+
+Ces 10 runs sont jugés par le **contrôle v2** : le code relit la fiche produit et y trouve lui-même la phrase qui autorise la découpe et les dimensions annoncées ; sans elles, le produit est refusé. Avec l'ancienne règle, qui exigeait que l'agent recopie la phrase mot pour mot, les 10 auraient été refusés : l'agent écrit « tissus » au lieu de « tapis » à chaque fois. La preuve vient maintenant de la page, pas de la recopie.
+
+**Les 40 runs de mise au point** (18 et 19/11), relus avec les deux règles :
+
+| Mesure | Règle stricte v1 | Contrôle v2 | Runs |
+|---|---|---|---|
+| Usage 1 · conditions générales | 4 sur 4 | 4 sur 4 | 4 |
+| Usage 3 · OTV et assureur | 4 sur 4 | 4 sur 4 | 4 |
+| Usage 2 · Flash, toutes versions de l'agent | 3 sur 20 | 14 sur 20 | 20 |
+| Usage 2 · Pro, écarté pour la démo | 0 sur 12 | 0 sur 12 | 12 |
+| Tous usages | 11 sur 40 (27,5 %) | 22 sur 40 (55 %) | 40 |
+| Durée moyenne d'un run | 88,5 s | | 39 |
+| Même tâche à la main, estimation de l'équipe | 360 s (usage 1), 240 s (usage 2), 900 s (usage 3) | | 12 |
+| Coût moyen d'un run | 0,062 USD | | 40 |
+
+Pro est écarté : il n'appelle l'outil des cotes que dans 1 run sur 12, et coûte trois fois plus cher. Les échecs Flash restants : produit non déclaré au panier (dont le site de secours Decoweb), dimensions absentes, arrêt manquant.
 
 ## Ce que nous utilisons de l'Agents API
 
@@ -164,7 +178,7 @@ En production :
 Limites connues :
 
 - sur un vrai logement, la date de départ de l'absence n'est pas encore saisissable (15/12 par défaut) ; seule la durée se règle ;
-- l'usage 2 recopie mal certaines fiches produit : le contrôle des citations le détecte et refuse le produit ;
+- l'usage 2 recopie mal certaines fiches produit (« tissus » pour « tapis ») : depuis le contrôle v2, le code lit lui-même les preuves sur la fiche et ne dépend plus de la recopie de l'agent ;
 - le Space se met en veille après 30 minutes : le premier appel attend son réveil ;
 - les cotes du service vision ne sont comparées au mètre ruban que sur une porte (72,9 cm mesurés pour 71,5 cm réels) : pas encore de précision annoncée ([`docs/mesures.md`](docs/mesures.md)).
 

@@ -9,7 +9,7 @@
 | **Prototype** | https://chezsoi.vercel.app (a sample home opens without an account) |
 | **Repository** | https://github.com/jeanlisek/Chez-Soi |
 | **Try it** | [How to test](#how-to-test), 2 minutes without an account |
-| **Agent results** | [40 real runs, measured](docs/resultats.md) (in French) |
+| **Agent results** | [50 real runs, 10 out of 10 in the final configuration](docs/resultats.md) (in French) |
 | **Detailed architecture** | [Miro board, code status on 19 Nov](https://miro.com/app/board/uXjVEMi8KjI=/) (in French) |
 | **Mock-ups** | [Figma: user journeys and screens](https://www.figma.com/design/Qrx8XsJiiFWFeY98FX4dJ9/Chez-soi---Parcours-utilisateurs-et-%C3%A9crans?node-id=0-1) (in French) |
 | **Public replays** | [Use 1, MAIF](https://agp.eu.hcompany.ai/share/api/v1/trajectories/6737e71f-59a5-4dc5-ab92-20c49a33d469) · [Use 2, IKEA, demo fallback](https://agp.eu.hcompany.ai/share/api/v1/trajectories/dfb8e4d2-8a96-448b-9a87-c5e8b3740cab) |
@@ -50,19 +50,33 @@ Retail sites, insurers' customer areas and public services offer no open API. Th
 
 ## Measured results
 
-40 real runs of the H agent on 18 and 19 November, on IKEA France, Decoweb, maif.fr, acheel.com and service-public.gouv.fr. Nothing bought, nothing sent. Details, method and failure cases: [`docs/resultats.md`](docs/resultats.md) (in French).
+50 real runs of the H agent from 18 to 20 November, on IKEA France, Decoweb, maif.fr, acheel.com and service-public.gouv.fr. Nothing bought, nothing sent. Details, method and failure cases: [`docs/resultats.md`](docs/resultats.md) (in French).
 
-| Metric | Value | Runs |
-|---|---|---|
-| Success rate, all uses | 27.5 % (11 successes) | 40 |
-| Use 1 · general terms | 4 out of 4 | 4 |
-| Use 3 · OTV and insurer | 4 out of 4 | 4 |
-| Use 2 · countermeasure, strict quote check | 3 out of 32 (9.4 %) | 32 |
-| Mean run duration | 88.5 s | 39 |
-| Same task by hand, team estimate | 360 s (use 1), 240 s (use 2), 900 s (use 3) | 12 |
-| Mean cost per run | USD 0.062 | 40 |
+**Configuration shown to the jury** (Flash, `chez-soi-acheteur:2` agent, IKEA France), 10 runs launched from the production app on 20 Nov:
 
-Reading use 2: the agent reaches the right product and stops at the right time, but often miscopies the product page ("pour tissus", for fabrics, instead of "pour tapis", for rugs). Our check looks for every quote word for word on the public product page and rejects the product if it is not there. We chose a low, verifiable rate over a cart "approved" on distorted evidence.
+| Metric | Value |
+|---|---|
+| Right product in the cart, size and cut-to-size proven by the product page, stop before ordering | **10 out of 10** |
+| Mean run duration | 74 s (10 to 12 steps) |
+| Mean cost per run | USD 0.025 |
+| Purchase, submission, circuit breaker | none |
+
+These 10 runs are judged by **check v2**: the code re-reads the product page and finds there, by itself, the sentence that allows cutting and the stated dimensions; without them the product is rejected. Under the old rule, which required the agent to copy the sentence word for word, all 10 would have been rejected: the agent writes "tissus" (fabrics) instead of "tapis" (rugs) every time. The evidence now comes from the page, not from the agent's copy.
+
+**The 40 tuning runs** (18 and 19 Nov), re-read under both rules:
+
+| Metric | Strict rule v1 | Check v2 | Runs |
+|---|---|---|---|
+| Use 1 · general terms | 4 out of 4 | 4 out of 4 | 4 |
+| Use 3 · OTV and insurer | 4 out of 4 | 4 out of 4 | 4 |
+| Use 2 · Flash, all agent versions | 3 out of 20 | 14 out of 20 | 20 |
+| Use 2 · Pro, dropped for the demo | 0 out of 12 | 0 out of 12 | 12 |
+| All uses | 11 out of 40 (27.5 %) | 22 out of 40 (55 %) | 40 |
+| Mean run duration | 88.5 s | | 39 |
+| Same task by hand, team estimate | 360 s (use 1), 240 s (use 2), 900 s (use 3) | | 12 |
+| Mean cost per run | USD 0.062 | | 40 |
+
+Pro is dropped: it calls the sizes tool in only 1 run out of 12, at three times the cost. Remaining Flash failures: product not declared in the cart (including the Decoweb fallback site), missing dimensions, missing stop.
 
 ## What we use from the Agents API
 
@@ -161,7 +175,7 @@ In production:
 Known limits:
 
 - on a real home, the absence departure date cannot be entered yet (15 Dec by default); only the duration can be set;
-- use 2 miscopies some product pages: the quote check detects it and rejects the product;
+- use 2 miscopies some product pages ("tissus" for "tapis"): since check v2, the code reads the evidence on the page itself and no longer relies on the agent's copy;
 - the Space sleeps after 30 minutes: the first call waits for it to wake up;
 - the vision sizes have been compared with a tape measure on one door only (72.9 cm measured for 71.5 cm actual): no accuracy figure is claimed yet ([`docs/mesures.md`](docs/mesures.md)).
 

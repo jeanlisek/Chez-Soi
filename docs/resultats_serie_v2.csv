@@ -1,0 +1,11 @@
+run,date,usage,site,agent,modele,cadre,scenario,duree_s,etapes,cout_usd,decision_validation,citation_agent,verdict_v1,verdict_v2,session
+41,2026-11-19,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,76.1,12,0.0311,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,0db03505
+42,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,68.3,11,0.0259,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,497ef259
+43,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,70.0,11,0.0267,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,b475e22f
+44,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,61.7,10,0.0203,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,9ceb5ff0
+45,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,90.9,12,0.0306,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,9116d254
+46,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,75.8,12,0.0252,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,afe595d9
+47,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,66.4,10,0.0194,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,89b14472
+48,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,73.6,11,0.0218,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,e4d14573
+49,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,80.7,11,0.0252,refuse,"« Antidipopant », « àcouper », « tissus »",Partiel,Succès,2186e0a3
+50,2026-11-20,2,ikea.com/fr/fr,chez-soi-acheteur:2,flash,serie_v2,paillasson-38x59,76.7,12,0.0244,refuse,"« tissus » au lieu de « tapis »",Partiel,Succès,12de4853

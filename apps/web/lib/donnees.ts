@@ -47,6 +47,16 @@ function repere3d(position: unknown): [number, number, number] | null {
   return [c[0], c[1], c[2]];
 }
 
+/** « Photo en relief » du point (`position_3d.relief`, écrite par le service vision). */
+function relief(position: unknown): { noeud: string; camera: [number, number, number]; cible: [number, number, number] } | null {
+  const r = (position as { relief?: { noeud?: unknown; camera?: unknown; cible?: unknown } } | null)?.relief;
+  const triplet = (v: unknown): v is [number, number, number] => Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === "number" && Number.isFinite(n));
+  if (!r || typeof r.noeud !== "string" || !/^vue_\d{1,4}$/.test(r.noeud) || !triplet(r.camera) || !triplet(r.cible)) return null;
+  // Caméra et cible confondues : aucune direction de regard, on garde le nuage.
+  if (Math.hypot(r.camera[0] - r.cible[0], r.camera[1] - r.cible[1], r.camera[2] - r.cible[2]) < 0.15) return null;
+  return { noeud: r.noeud, camera: r.camera, cible: r.cible };
+}
+
 /** Tranche de la planche d'images qui montre ce point (`position_3d.vignette`, écrite par le service vision). */
 function vignette(position: unknown): { index: number; total: number; largeur: number; hauteur: number; boite: [number, number, number, number] | null } | null {
   const v = (position as { vignette?: Record<string, unknown> } | null)?.vignette;
@@ -197,6 +207,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
       piece_id: piece?.id ?? slug(f.piece ?? "logement"),
       repere_3d: deLaDerniereAnalyse(f) ? repere3d(f.position_3d) : null,
       vignette: deLaDerniereAnalyse(f) ? vignette(f.position_3d) : null,
+      relief: deLaDerniereAnalyse(f) ? relief(f.position_3d) : null,
       titre: LIBELLES_ELEMENT[f.element] ?? f.element.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()),
       element: f.element,
       risque: f.risque,

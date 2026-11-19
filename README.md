@@ -114,9 +114,7 @@ flowchart LR
 Détail des circuits : [`docs/architecture.md`](docs/architecture.md). Schéma complet des couches et du socle : [Miro](https://miro.com/app/board/uXjVEMi8KjI=/).
 
 Démo : [fiche de déroulé](docs/deroule-demo.md), [PDF d’une page](output/pdf/chez-soi-deroule-demo.pdf)
-et [protocole du replay depuis l’app](docs/protocole-replay-app.md). Jean-Li enregistre
-et parle, Hoang-Kim prépare la trame ; Bastian fournit le protocole et la fiche.
-La fiche distingue les secours vérifiés du clip app, dont la disponibilité reste à contrôler.
+et [protocole du replay depuis l’app](docs/protocole-replay-app.md).
 
 ## Comment tester
 
@@ -202,6 +200,6 @@ Jean-Li Sek (CEO), Briac Turquety (CTO, CDO), Aurélie Périchon (CAIO), Bastian
 
 [1] Santé publique France, « Hospitalisations et mortalité en lien avec une chute chez les personnes de 65 ans et plus en France. Données 2015-2024 », bulletin national, 12 mars 2026, mis à jour le 16 mars 2026. Source primaire. [En ligne]. Disponible : https://www.santepubliquefrance.fr/traumatismes/chute/bulletin-national/hospitalisations-et-mortalite-en-lien-avec-une-chute-chez-les-personnes-de-65-ans-et-plus-en-france
 
-[2] SSMSI, bilan statistique « Insécurité et délinquance en 2025 », cité par DegroupTest, « Bonne nouvelle : les cambriolages ont reculé en 2025, mais les grandes villes restent plus exposées ». Source secondaire. [En ligne]. Disponible : https://www.degrouptest.com/actualite/cambriolages-recul-2025-ssmsi-disparites-regionales
+[2] SSMSI, « Insécurité et délinquance en 2025 : bilan statistique et atlas départemental », Interstats, ministère de l'Intérieur, 9 juillet 2026. Source primaire. [En ligne]. Disponible : https://www.interieur.gouv.fr/Interstats/Actualites/Insecurite-et-delinquance-en-2025-bilan-statistique-et-atlas-departemental. Chiffre de 211 600 repris par DegroupTest (source secondaire) : https://www.degrouptest.com/actualite/cambriolages-recul-2025-ssmsi-disparites-regionales
 
 [3] Hugging Face, « GPU Spaces », documentation du Hub, tarifs du matériel (1x Nvidia L4 : 0,80 USD par heure), consulté le 19/11/2026. [En ligne]. Disponible : https://huggingface.co/docs/hub/main/spaces-gpus

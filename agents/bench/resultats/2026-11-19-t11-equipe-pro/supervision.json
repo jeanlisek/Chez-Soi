@@ -1,0 +1,11 @@
+{
+  "annulation_demandee": true,
+  "http_delete": 204,
+  "statut_final_confirme": "interrupted",
+  "quota_final": {
+    "scope": "org",
+    "limit": 3,
+    "active": 0,
+    "available": 3
+  }
+}

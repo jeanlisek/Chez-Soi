@@ -114,3 +114,10 @@ Le premier essai réel sur l’agent de l’équipe (19/11) est dans
 mais nom et citation de compatibilité déformés. Le résultat reste partiel.
 Le banc contrôle désormais aussi ces champs contre la fiche lue, sans réécrire
 la sortie brute. Le replay de secours du run 35 reste inchangé.
+
+Le second essai T11 en Pro, dans `resultats/2026-11-19-t11-equipe-pro/`, échoue
+avant tout panier : neuf noms d’outil de mesure incorrects, malgré une correction
+pendant le run. La lecture de fiche est bloquée côté handler, puis l’agent demande
+validation sans ajout. Statut final `interrupted` après annulation de supervision,
+165,2 s et 0,11829160 USD. Cet échec reste dans les mesures ; aucun nouveau replay
+de succès n’est publié. Flash reste le modèle conseillé pour la démo à ce stade.

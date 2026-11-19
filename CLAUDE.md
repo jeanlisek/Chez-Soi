@@ -298,3 +298,9 @@ les essais d’amélioration sont séparés). Le harness U2 ajoute `lire_fiche_p
 (lecture publique de fiches autorisées, Python 3 standard) par override de session.
 Ce handler local n’est pas encore raccordé aux routes de l’application. Une revue
 Codex documentée ne remplit jamais `revue_humaine` à la place d’une personne.
+
+T11 du 19/11 : run équipe Flash 38 partiel (panier réel 5,99 €, découpe/dimensions
+prouvées, nom et autre citation altérés) ; second run Pro 39 en échec (neuf noms
+d’outil de mesure incorrects, aucun ajout, annulation de supervision). Rapports
+séparés dans `agents/bench/resultats/2026-11-19-t11-equipe*/`. Quota final nul.
+Conserver Flash pour la démo ; plan B public du run 35 inchangé.

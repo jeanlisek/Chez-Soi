@@ -1,6 +1,6 @@
 # Chez Soi
 
-> « Mieux, chez soi ! » · Team 2 · Hackathon Build The Future (H Company × Hugging Face × Vercel), Eugenia School, 16 au 20 novembre 2026.
+> « Parce qu'on est mieux, chez soi. » · Team 2 · Hackathon Build The Future (H Company × Hugging Face × Vercel), Eugenia School, 16 au 20 novembre 2026.
 >
 > 🇬🇧 [English version](README.en.md)
 
@@ -91,6 +91,8 @@ Ce que l'API nous a appris, en bref : aucun garde-fou natif n'empêche un clic s
 Aucun modèle sous licence non commerciale n'est utilisé.
 
 ## L'architecture
+
+| **Architecture (Miro)** | https://miro.com/app/board/uXjVEMi8KjI=/ |
 
 ```mermaid
 flowchart LR

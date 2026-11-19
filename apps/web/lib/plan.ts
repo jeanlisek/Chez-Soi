@@ -50,6 +50,9 @@ type Faille = {
   largeur_cm: number | null;
   longueur_cm: number | null;
   hauteur_cm: number | null;
+  /** Cote confirmée par l'utilisateur : l'action est prête pour l'agent, elle passe devant à rang égal. */
+  cotes_confirmees_le: string | null;
+  created_at: string;
 };
 
 type Occupant = { deplacement: number; vue_reduite: boolean; audition_reduite: boolean; vigilance: string };
@@ -228,7 +231,7 @@ function gravite(risque: string, verdict: Verdict, occupants: Occupant[]): 1 | 2
 export async function calculerPlan(admin: Admin, logementId: string): Promise<ResultatPlan> {
   const [lg, fls, occ, rgl, ctr] = await Promise.all([
     admin.from("logements").select("id, statut_occupation").eq("id", logementId).single(),
-    admin.from("failles").select("id, element, piece, risque, largeur_cm, longueur_cm, hauteur_cm").eq("logement_id", logementId),
+    admin.from("failles").select("id, element, piece, risque, largeur_cm, longueur_cm, hauteur_cm, cotes_confirmees_le, created_at").eq("logement_id", logementId),
     admin.from("occupants").select("deplacement, vue_reduite, audition_reduite, vigilance").eq("logement_id", logementId),
     admin.from("regles_en_vigueur").select("id, code, version, intitule, element, force, verdict_type, parametres, source_ref"),
     admin
@@ -366,7 +369,12 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
     (a, b) =>
       FORCE_RANG[a.force] - FORCE_RANG[b.force] ||
       b.gravite - a.gravite ||
-      (a.faille.risque === "chute" ? 0 : 1) - (b.faille.risque === "chute" ? 0 : 1),
+      (a.faille.risque === "chute" ? 0 : 1) - (b.faille.risque === "chute" ? 0 : 1) ||
+      // À rang égal : d'abord ce qui est prêt pour l'agent (cote confirmée), puis un ordre fixe.
+      // Sans départage, l'ordre changeait à chaque recalcul et le plan se réorganisait sous l'utilisateur.
+      (a.faille.cotes_confirmees_le ? 0 : 1) - (b.faille.cotes_confirmees_le ? 0 : 1) ||
+      a.faille.created_at.localeCompare(b.faille.created_at) ||
+      a.faille.id.localeCompare(b.faille.id),
   );
 
   // Explication par LLM, en parallèle, sur les faits déjà calculés. Le verdict ne change pas ;
@@ -397,11 +405,8 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
     }),
   );
 
-  // Recalcul : on remplace les actions encore proposées et les diagnostics du logement.
-  if (ids.length) {
-    const del = await admin.from("actions").delete().in("faille_id", ids).eq("statut", "proposee");
-    if (del.error) throw new Error(del.error.message);
-  }
+  // Recalcul : les diagnostics du logement sont remplacés ; les actions encore proposées sont mises
+  // à jour sur place (voir plus bas), pour garder leur identifiant.
   const delD = await admin.from("diagnostic_regles").delete().eq("logement_id", logementId);
   if (delD.error) throw new Error(delD.error.message);
 
@@ -424,8 +429,34 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
   }));
   // Une action « contrat » doit citer son obligation ; « loi » et « recommandé » leur règle (contraintes 0008).
   const valides = actions.filter((a) => (a.force === "contrat" ? a.obligation_id : a.force === "information" || a.regle_id));
-  if (valides.length) {
-    const ins = await admin.from("actions").insert(valides as never);
+  // Une action proposée garde son identifiant d'un recalcul à l'autre : une page ouverte (plan
+  // d'action, mission en cours de lancement) ne doit pas pointer sur une action disparue.
+  const proposees = new Map<string, string>();
+  const enTrop: string[] = [];
+  for (const a of existantes ?? []) {
+    if (a.statut !== "proposee" || !a.faille_id) continue;
+    if (proposees.has(a.faille_id)) enTrop.push(a.id);
+    else proposees.set(a.faille_id, a.id);
+  }
+  const gardees = new Set<string>();
+  const nouvelles: typeof valides = [];
+  for (const a of valides) {
+    const id = proposees.get(a.faille_id);
+    if (!id) {
+      nouvelles.push(a);
+      continue;
+    }
+    gardees.add(id);
+    const maj = await admin.from("actions").update(a as never).eq("id", id);
+    if (maj.error) throw new Error(maj.error.message);
+  }
+  const aSupprimer = [...enTrop, ...[...proposees.values()].filter((id) => !gardees.has(id))];
+  if (aSupprimer.length) {
+    const del = await admin.from("actions").delete().in("id", aSupprimer).eq("statut", "proposee");
+    if (del.error) throw new Error(del.error.message);
+  }
+  if (nouvelles.length) {
+    const ins = await admin.from("actions").insert(nouvelles as never);
     if (ins.error) throw new Error(ins.error.message);
   }
 

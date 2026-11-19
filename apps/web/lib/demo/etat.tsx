@@ -17,6 +17,8 @@ export type EtatParcours = {
   cotes: Record<string, { largeur_cm: number; longueur_cm: number; confirmee: boolean }>;
   missions: Record<string, "agent" | "moi">;
   run: "aucun" | "en_cours" | "proposition" | "termine";
+  /** Vrai logement : session H en cours ou dernière session, créée par `/api/agent/run`. */
+  sessionId?: string | null;
   decision: "approuve" | "refuse" | "modifier" | null;
   absenceJours: number;
 };
@@ -55,6 +57,7 @@ function etatInitial(logement: Logement): EtatParcours {
     cotes,
     missions,
     run: "aucun",
+    sessionId: null,
     decision: null,
     absenceJours: jours,
   };

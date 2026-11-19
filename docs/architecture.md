@@ -37,4 +37,4 @@ Circuit sans attente côté Vercel :
 3. `demander_validation` n'est répondu qu'après le clic de l'utilisateur (`POST /api/agent/tools`). `POST /api/agent/steer` envoie une consigne pendant le run.
 4. En fin de session, la réponse est revalidée (Zod et contrôle métier) et `runs_agent` complété. Usage 1 : le code télécharge le PDF des conditions générales sur les domaines officiels de l'assureur et vérifie lui-même la référence.
 
-Branchés dans l'application : usages 1 et 2. Usage 3 : agent `chez-soi-demarches:1` testé par script (4 runs sur 4), route encore à brancher (`/api/agent/run` renvoie 501 pour cet usage). Résultats mesurés : [`resultats.md`](resultats.md). Règles et détail : `CLAUDE.md` et `agents/README.md`.
+Branchés dans l'application : les trois usages. Usage 1 depuis l'écran Contrat, usage 2 depuis le plan d'action, usage 3 depuis le mode absence : `POST /api/absence` enregistre les dates dans `absences`, que l'agent `chez-soi-demarches:1` relit ; à l'arrêt, la seule réponse possible refuse l'envoi (PR #86 et #90). Résultats mesurés : [`resultats.md`](resultats.md). Règles et détail : `CLAUDE.md` et `agents/README.md`.

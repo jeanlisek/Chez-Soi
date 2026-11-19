@@ -125,9 +125,26 @@ def suivre_instances(vues: list[tuple[int, str]], ecart_max: int = 3) -> list[in
 
 # Deux objets du même type à moins de cette distance (m) dans le modèle sont le même objet, revu plus tard.
 RAYON_MEME_OBJET_M = {"tapis": 0.5, "porte": 0.6, "fenetre": 0.6}
+TOLERANCE_MEME_OBJET = 1.3  # une vue d'un objet ne montre pas 30 % de plus que cet objet vu en entier
 # Éléments qui se mesurent : vus dans une seule image d'une vidéo, ce sont le plus souvent de fausses détections.
 ELEMENTS_A_CONFIRMER_PAR_DEUX_VUES = {"tapis", "porte", "fenetre"}
 NB_IMAGES_MIN_POUR_EXIGER_DEUX_VUES = 8
+
+
+def _tailles_compatibles(a: list[MesureVue], b: list[MesureVue]) -> bool:
+    """Deux instances proches ne sont le même objet que si aucune ne dépasse nettement l'autre vue en entier.
+
+    Mesuré le 19/11 : le parquet de l'entrée, pris pour un tapis (88 cm visibles), absorbait le vrai paillasson
+    (40 × 61 cm, vu en entier) placé juste à côté, et sa cote disparaissait.
+    """
+    for entier, autre in ((a, b), (b, a)):
+        for dimension in _DIMENSIONS:
+            reference = [getattr(v, dimension) for v in entier if not v.coupe and getattr(v, dimension) is not None]
+            if not reference:
+                continue
+            if any((getattr(v, dimension) or 0) > TOLERANCE_MEME_OBJET * max(reference) for v in autre):
+                return False
+    return True
 
 
 def fusionner_instances_proches(mesures: list[MesureVue]) -> None:
@@ -142,11 +159,15 @@ def fusionner_instances_proches(mesures: list[MesureVue]) -> None:
         if vus:
             centres[cle] = np.median(np.asarray(vus, float), axis=0)
     cible = {cle: cle[1] for cle in centres}
+    vues: dict[tuple[str, int], list[MesureVue]] = defaultdict(list)
+    for mesure in mesures:
+        vues[(mesure.element, mesure.instance)].append(mesure)
     for element, rayon in RAYON_MEME_OBJET_M.items():
         instances = sorted(i for e, i in centres if e == element)
         for a in instances:
             for b in instances:
-                if a < b and cible[(element, b)] == b and np.linalg.norm(centres[(element, a)] - centres[(element, b)]) <= rayon:
+                proches = np.linalg.norm(centres[(element, a)] - centres[(element, b)]) <= rayon
+                if a < b and cible[(element, b)] == b and proches and _tailles_compatibles(vues[(element, a)], vues[(element, b)]):
                     cible[(element, b)] = cible[(element, a)]
     for mesure in mesures:
         mesure.instance = cible.get((mesure.element, mesure.instance), mesure.instance)

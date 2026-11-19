@@ -336,3 +336,18 @@ def test_chaque_faille_recoit_son_relief_et_la_camera_de_son_image_cle(tmp_path)
     assert failles[0].position_3d["relief"] == {"noeud": "vue_002", "camera": [0.5, -0.2, -1.0], "cible": [0.1, 0.0, -2.0]}
     assert failles[1].position_3d["relief"]["noeud"] == "vue_002"
     assert "relief" not in failles[2].position_3d
+
+
+def test_un_objet_plus_grand_que_le_tapis_vu_en_entier_ne_l_absorbe_pas():
+    paillasson = [_vue_3d("image_000.jpg", 0, (0.0, 0.0, 1.0)), _vue_3d("image_001.jpg", 0, (0.02, 0.0, 1.0))]
+    for vue in paillasson:
+        vue.largeur_cm, vue.longueur_cm = 40.0, 61.0
+    parquet = _vue_3d("image_021.jpg", 1, (0.2, 0.0, 1.1))       # tout près, mais 88 cm visibles et coupé par le cadre
+    parquet.coupe, parquet.largeur_cm, parquet.longueur_cm = True, 38.0, 88.0
+    revu = _vue_3d("image_025.jpg", 2, (0.05, 0.0, 1.05))        # le paillasson revu plus tard, coupé : 40 × 35 visibles
+    revu.coupe, revu.largeur_cm, revu.longueur_cm = True, 40.0, 35.0
+    mesures = [*paillasson, parquet, revu]
+
+    fusionner_instances_proches(mesures)
+
+    assert [m.instance for m in mesures] == [0, 0, 1, 0]

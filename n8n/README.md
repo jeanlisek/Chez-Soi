@@ -190,4 +190,6 @@ Le Space garde ses fichiers en mémoire et dans `/tmp` : ils disparaissent à sa
 4. « 17 · Déposer dans modeles3d » : `PUT` du fichier sur `signed_url` (`model/gltf-binary`).
 5. Le nœud 10 ajoute `modele_3d_path` au retour à l'app si le dépôt a réussi.
 
-Les nœuds 15 à 17 continuent en cas d'erreur (`onError: continueRegularOutput`) : un échec de copie ne bloque jamais le retour des failles. Aucune clé Supabase dans n8n : l'URL signée ne vaut que pour ce fichier.
+5. « 18 · Télécharger l'image annotée » puis « 19 · Déposer l'image annotée » : même principe pour `image_annotee.jpg` (la vue de la vidéo où les éléments repérés sont encadrés avec leur cote), déposée sur `image_signed_url` dans le bucket privé `exports` ; le nœud 10 renvoie `image_annotee_path` à l'app.
+
+Les nœuds 15 à 19 continuent en cas d'erreur (`onError: continueRegularOutput`) : un échec de copie ne bloque jamais le retour des failles. Aucune clé Supabase dans n8n : l'URL signée ne vaut que pour ce fichier.

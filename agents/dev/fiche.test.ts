@@ -24,3 +24,27 @@ test('coupe-vent et sur mesure ne prouvent pas une découpe par l’utilisateur'
   assert.match(ecartDecoupe('Produit fabriqué sur mesure') ?? '', /REFUSER/);
   assert.equal(ecartDecoupe('Facile à couper aux ciseaux'), null);
 });
+
+/* ---------- Contrôle v2 : preuves lues sur la fiche par le code ---------- */
+import { dimensionsSurFiche, phraseDecoupe, preuvesDepuisHtml } from './fiche';
+
+const FICHE_STOPP = `<html><head><meta property="og:title" content="STOPP Antidérapant pour tapis, 67.5x200 cm - IKEA"></head>
+<body><h1>STOPP</h1><p>Antidérapant pour tapis, 67.5x200 cm</p><p>5,99 €</p>
+<p>Antidérapant facile à couper ou à plier, ou possibilité d'en combiner plusieurs, pour l'adapter à toutes les tailles et formes de tapis.</p>
+<p>Ne pas couper le câble d'alimentation.</p></body></html>`;
+
+test('v2 : la phrase de découpe est lue sur la fiche, même si l\'agent l\'a mal recopiée', () => {
+  const p = preuvesDepuisHtml('https://www.ikea.com/fr/fr/p/stopp-90549052/', FICHE_STOPP, { largeur_cm: 67.5, longueur_cm: 200 });
+  assert.match(p.phrase_decoupe ?? '', /facile à couper/);
+  assert.match(p.phrase_decoupe ?? '', /^Antidérapant facile à couper.*tapis\.$/);
+  assert.equal(p.dimensions_sur_fiche, true);
+  assert.equal(p.nom_fiche, 'STOPP Antidérapant pour tapis, 67.5x200 cm');
+});
+test('v2 : une phrase négative ne prouve pas la découpe', () => {
+  assert.equal(phraseDecoupe('Ne pas couper ce produit. Lavable en machine.'), null);
+});
+test('v2 : des dimensions absentes de la fiche ne sont pas prouvées', () => {
+  assert.equal(dimensionsSurFiche('Antidérapant 60x120 cm', 67.5, 200), false);
+  assert.equal(dimensionsSurFiche('Largeur : 67,5 cm. Longueur : 200 cm.', 67.5, 200), true);
+  assert.equal(dimensionsSurFiche('Format 200 × 67,5 cm', 67.5, 200), true);
+});

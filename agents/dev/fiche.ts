@@ -182,3 +182,81 @@ export function ecartNom(nomAgent: string | undefined, nomFiche: string | null):
     ? null
     : `produit : « ${nomAgent} » n'est pas le nom de la fiche « ${nomFiche} »`;
 }
+
+/* ---------- Contrôle v2 (19/11 au soir) : la preuve est lue sur la fiche par le code ---------- */
+
+/**
+ * Règle stricte v1 (PR #32) : l'agent devait recopier mot pour mot la phrase de découpe ; une
+ * faute de recopie (« tissus » pour « tapis ») faisait refuser un bon produit. En v2, le code lit
+ * la fiche lui-même et cherche les preuves dans le texte affiché : une phrase qui dit que le
+ * produit se découpe, et les dimensions annoncées. La citation de l'agent n'est plus qu'un indice.
+ * Un produit sans phrase de découpe sur sa fiche reste refusé, comme en v1.
+ */
+export type PreuvesFiche = {
+  version: "v2";
+  url: string;
+  /** Phrase de la fiche qui autorise la découpe, recopiée par le code depuis la page. */
+  phrase_decoupe: string | null;
+  /** Vrai si la paire de dimensions annoncée (« 67,5x200 cm ») figure sur la fiche. */
+  dimensions_sur_fiche: boolean;
+  nom_fiche: string | null;
+  erreur: string | null;
+};
+
+const MOTS_DECOUPE_FICHE = /(d[ée]coup|recoup|couper|ciseau|cutter)/i;
+const NEGATION = /\b(ne|n'|pas|impossible|interdit|non)\b/i;
+
+/** Première phrase de la page qui dit que le produit se découpe, sans négation. */
+export function phraseDecoupe(texte: string): string | null {
+  // Découpe d'abord sur les blocs de la page (balises remplacées par des espaces), puis sur les phrases.
+  const phrases = texte
+    .split(/\s{2,}|\n|(?<=[.!?])\s+|\s[•·]\s/)
+    .map((p) => p.replace(/\s+/g, " ").trim())
+    .filter((p) => p.length >= 12 && p.length <= 400);
+  return phrases.find((p) => MOTS_DECOUPE_FICHE.test(p) && !NEGATION.test(p)) ?? null;
+}
+
+/** Vrai si la page affiche les deux dimensions ensemble (« 67,5x200 cm », « 67.5 × 200 cm »), dans un sens ou l'autre. */
+export function dimensionsSurFiche(texte: string, largeur: number, longueur: number): boolean {
+  const t = texte.replace(/,/g, ".");
+  const egal = (a: number, b: number) => Math.abs(a - b) < 0.05;
+  for (const m of t.matchAll(/(\d+(?:\.\d+)?)\s*(?:cm)?\s*[x×]\s*(\d+(?:\.\d+)?)\s*cm/gi)) {
+    const a = Number(m[1]);
+    const b = Number(m[2]);
+    if ((egal(a, largeur) && egal(b, longueur)) || (egal(a, longueur) && egal(b, largeur))) return true;
+  }
+  // Fiche qui donne les côtés séparément (« Largeur : 67,5 cm », « Longueur : 200 cm »).
+  const valeurs = [...t.matchAll(/(\d+(?:\.\d+)?)\s*cm\b/gi)].map((m) => Number(m[1]));
+  return valeurs.some((v) => egal(v, largeur)) && valeurs.some((v) => egal(v, longueur));
+}
+
+/** Lit la fiche (IKEA France, liste blanche de l'usage 2) et en extrait les preuves. */
+export async function preuvesSurFiche(url: string, dims?: { largeur_cm?: number; longueur_cm?: number }): Promise<PreuvesFiche> {
+  const vide: PreuvesFiche = { version: "v2", url, phrase_decoupe: null, dimensions_sur_fiche: false, nom_fiche: null, erreur: null };
+  if (!estFicheAutorisee(url)) return { ...vide, erreur: "fiche hors liste blanche" };
+  try {
+    const reponse = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (ChezSoi controle)", "Accept-Language": "fr-FR,fr;q=0.9" },
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!reponse.ok || !estFicheAutorisee(reponse.url || url)) return { ...vide, erreur: `HTTP ${reponse.status}` };
+    const html = await reponse.text();
+    return preuvesDepuisHtml(url, html, dims);
+  } catch (erreur) {
+    return { ...vide, erreur: erreur instanceof Error ? erreur.message : String(erreur) };
+  }
+}
+
+/** Partie pure de `preuvesSurFiche` : testable et rejouable sur une page enregistrée. */
+export function preuvesDepuisHtml(url: string, html: string, dims?: { largeur_cm?: number; longueur_cm?: number }): PreuvesFiche {
+  const texte = texteDeLaPage(html);
+  return {
+    version: "v2",
+    url,
+    phrase_decoupe: phraseDecoupe(texte),
+    dimensions_sur_fiche:
+      dims?.largeur_cm !== undefined && dims?.longueur_cm !== undefined ? dimensionsSurFiche(texte, dims.largeur_cm, dims.longueur_cm) : false,
+    nom_fiche: nomDepuisHtml(html),
+    erreur: null,
+  };
+}

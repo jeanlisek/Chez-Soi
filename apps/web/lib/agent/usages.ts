@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { CheminsAutorises } from "../../../../agents/dev/boucle";
 import { controlerSortieUsage1, controlerSortieUsage2, evaluerSortie, type Evaluation } from "../../../../agents/dev/controle";
-import { ecartNom, ecartsCitationFiche, estFicheAutorisee, lireNomSurFiche } from "../../../../agents/dev/fiche";
+import { estFicheAutorisee, preuvesSurFiche } from "../../../../agents/dev/fiche";
 import { artisansDe, sortieUsage1Schema, sortieUsage2Schema, sortieUsage3Schema, sortieUsage4Schema, versJsonSchema, type SortieUsage3, type SortieUsage4 } from "@/lib/schemas";
 import type { Database } from "@/lib/supabase/types";
 
@@ -144,15 +144,20 @@ const usage2: DefinitionUsage = {
     }
     const evaluation = evaluerSortie(reponse, sortieUsage2Schema, (s) => controlerSortieUsage2(s, cote));
     const sortie = evaluation.sortie;
-    // Le code relit la fiche (run 40 du 19/11 : nom et citation mal recopiés par l'agent) : le nom
-    // est comparé à celui de la fiche, et la citation doit y figurer mot pour mot (règle stricte de
-    // Bastian, `ecartCitation`), comme dans run_u2.ts et recontroler.ts.
     if (!sortie?.trouve || !sortie.lien || !estFicheAutorisee(sortie.lien)) return evaluation as Evaluation<unknown>;
-    const [citation, nom] = await Promise.all([ecartsCitationFiche(sortie), lireNomSurFiche(sortie.lien)]);
-    const ecartDuNom = ecartNom(sortie.produit, nom);
+    // Contrôle v2 (19/11) : le code relit la fiche et y cherche lui-même les preuves. La recopie de
+    // l'agent (nom, citation) n'est plus jugée : seule la page compte. Sans phrase de découpe sur la
+    // fiche, un produit plus grand que la cote reste refusé ; des dimensions absentes de la fiche aussi.
+    const preuves = await preuvesSurFiche(sortie.lien, sortie);
+    if (preuves.erreur) {
+      return { ...evaluation, ecarts_metier: [...evaluation.ecarts_metier, `fiche illisible (${preuves.erreur}) : aucune preuve, produit à REFUSER`] } as Evaluation<unknown>;
+    }
+    const ecarts = evaluation.ecarts_metier.filter((e) => !(preuves.phrase_decoupe && /citation_decoupe/.test(e)));
+    if (!preuves.dimensions_sur_fiche) ecarts.push(`dimensions ${sortie.largeur_cm} × ${sortie.longueur_cm} cm introuvables sur la fiche : produit à REFUSER`);
     return {
       ...evaluation,
-      ecarts_metier: [...evaluation.ecarts_metier, ...citation, ...(ecartDuNom ? [ecartDuNom] : [])],
+      brut: { ...(evaluation.brut as object), preuves_fiche: preuves },
+      ecarts_metier: ecarts,
     } as Evaluation<unknown>;
   },
 };

@@ -78,7 +78,8 @@ export default function PageAnalyse() {
   const pieces = logement.pieces.map((p, i) => ({ p, e: etatPiece(p.nom, i) }));
   const finies = pieces.filter(({ e }) => e.etat === "terminee").length;
   const contrat = etat.parcours === "A" ? logement.contrat : null;
-  const agentFini = logement.exemple ? tick > 18 : false;
+  // Vrai logement : la recherche est finie dès que la clause d'inoccupation est connue (contrat déposé ou usage 1).
+  const agentFini = logement.exemple ? tick > 18 : Boolean(contrat?.inoccupation);
   const fini = pieces.length > 0 && finies === pieces.length;
   const enCours = pieces.some(({ e }) => e.etat === "en_cours");
   const points = logement.failles.length;
@@ -132,7 +133,7 @@ export default function PageAnalyse() {
           {!contrat ? (
             <>Sans contrat, le diagnostic s&apos;appuie sur <b>la loi puis les recommandations</b>.</>
           ) : agentFini && contrat.inoccupation ? (
-            <>J&apos;ai trouvé les conditions générales <b>{contrat.assureur} {contrat.reference_cg}</b>. Inoccupation limitée à <b>{contrat.inoccupation.duree_max_jours} jours, p. {contrat.inoccupation.page}</b>.</>
+            <>{logement.exemple ? "J'ai trouvé les conditions générales" : "Conditions générales lues :"} <b>{contrat.assureur} {contrat.reference_cg}</b>. Inoccupation limitée à <b>{contrat.inoccupation.duree_max_jours} jours, p. {contrat.inoccupation.page}</b>.</>
           ) : (
             <>Je cherche les conditions générales <b>{contrat.assureur} {contrat.reference_cg}</b> sur le site de l&apos;assureur…</>
           )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Icon, Triangle, type IconName } from "@/components/cs/icons";
 import { ActionBar, BackButton, ExempleTag, Header, Illus, Note, Pill, RoundButton, Screen, SectionTitle, Signal, cx } from "@/components/cs/ui";
@@ -8,6 +8,7 @@ import { useParcours } from "@/lib/demo/etat";
 import { lireResume, runTermine, useRunAgent } from "@/lib/agent/client";
 import type { SortieUsage3 } from "@/lib/schemas";
 import { formaterDate } from "@/lib/domaine";
+import { clientNavigateur } from "@/lib/supabase/client";
 
 function ajouterJours(iso: string, n: number) {
   const d = new Date(`${iso}T12:00:00Z`);
@@ -31,6 +32,25 @@ export default function PageAbsence() {
   const [lancement, setLancement] = useState(false);
   const [alerte, setAlerte] = useState<string | null>(null);
   const [repondu, setRepondu] = useState(false);
+  // Au retour sur l'écran, on retrouve le dernier dossier préparé (lecture sous RLS) au lieu de repartir de zéro.
+  useEffect(() => {
+    if (!reel) return;
+    let actif = true;
+    void clientNavigateur()
+      ?.from("runs_agent")
+      .select("session_id")
+      .eq("logement_id", logement.id)
+      .eq("usage", 3)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (actif && data?.session_id) setSessionId((actuel) => actuel ?? data.session_id);
+      });
+    return () => {
+      actif = false;
+    };
+  }, [reel, logement.id]);
   const suivi = useRunAgent(reel ? sessionId : null);
   const termine = runTermine(suivi.etat);
   const demande = suivi.etat?.validation_en_attente ?? null;
@@ -150,7 +170,7 @@ export default function PageAbsence() {
               <b className="text-[15px]">{d.titre}</b>
               <span className={cx("text-xs leading-4", d.sub)}>{d.detail}</span>
             </span>
-            {pret ? <Signal kind="attention">À relire</Signal> : <span className="flex-none rounded-full bg-[#EEF0F6] px-2.5 py-1 text-[11px] font-bold text-nuit">À faire</span>}
+            {pret || (reel && Boolean(dossier?.recapitulatif || dossier?.otv_url_demarche)) ? <Signal kind="attention">À relire</Signal> : <span className="flex-none rounded-full bg-[#EEF0F6] px-2.5 py-1 text-[11px] font-bold text-nuit">À faire</span>}
           </li>
         ))}
       </ul>

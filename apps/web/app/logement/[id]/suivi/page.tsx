@@ -93,7 +93,7 @@ export default function PageSuivi() {
         <span className="flex h-[46px] w-[46px] flex-none items-center justify-center rounded-full bg-pervenche-soft text-cobalt"><Cursor /></span>
         <span className="flex flex-1 flex-col">
           <b className="text-[15px]">Veille des prix</b>
-          <span className="text-xs text-ink-muted">À trancher par l&apos;équipe</span>
+          <span className="text-xs text-ink-muted">Bientôt disponible</span>
         </span>
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-nuit text-white"><Icon name="arrow" size={18} /></span>
       </div>

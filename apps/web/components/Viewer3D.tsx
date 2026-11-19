@@ -90,7 +90,18 @@ function Modele({ url, tourner }: { url: string; tourner: boolean }) {
   const { scene } = useGLTF(url);
   const camera = useThree((etat) => etat.camera);
   const nuage = useMemo(() => preparerNuage(scene), [scene]);
-  const materiau = useMemo(() => new PointsMaterial({ size: 0.03, sizeAttenuation: true, vertexColors: true, toneMapped: false }), []);
+  const materiau = useMemo(() => {
+    const m = new PointsMaterial({ size: 0.03, sizeAttenuation: true, vertexColors: true, toneMapped: false });
+    // Taille bornée à l'écran : sans plafond, un point à 20 cm de la caméra devient un pavé qui cache
+    // la pièce ; sans plancher, le fond de la pièce redevient un semis.
+    m.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader.replace(
+        "#include <clipping_planes_vertex>",
+        "gl_PointSize = clamp( gl_PointSize, 3.0, 14.0 );\n#include <clipping_planes_vertex>",
+      );
+    };
+    return m;
+  }, []);
 
   useEffect(() => {
     if (!nuage) return;
@@ -98,7 +109,8 @@ function Modele({ url, tourner }: { url: string; tourner: boolean }) {
     // Trop près du centre (vidéo filmée en tournant sur place) : on recule d'un pas pour voir la pièce.
     if (centre.length() < 0.8) camera.position.set(centre.x, centre.y + 0.2, centre.z + Math.max(1.2, rayon));
     else camera.position.set(0, 0, 0);
-    camera.near = 0.05;
+    // Ce qui est à moins de 25 cm de l'objectif (main, montant de porte) masquerait tout le reste.
+    camera.near = 0.25;
     camera.far = Math.max(50, rayon * 10);
     camera.lookAt(centre);
     camera.updateProjectionMatrix();

@@ -1,6 +1,6 @@
 import pytest
 
-from pipeline.analyse import MesureVue, construire_failles
+from pipeline.analyse import MesureVue, construire_failles, ecarter_vues_uniques, fusionner_instances_proches
 
 
 def _vue(image: str, element: str = "tapis", risque: str = "chute", **cotes) -> MesureVue:
@@ -192,3 +192,40 @@ def test_la_vue_de_reference_montre_le_tapis_et_une_cote_en_grand():
     }
 
     assert choisir_vue_de_reference(vues) == "chambre.jpg"
+
+
+def _vue_3d(image, instance, centre, element="tapis"):
+    return MesureVue(element=element, risque="chute", image=image, score=0.6, boite_px=(0, 0, 10, 10), centre=None,
+                     instance=instance, centre_monde=centre)
+
+
+def test_un_objet_revu_plus_tard_au_meme_endroit_reste_le_meme_objet():
+    mesures = [
+        _vue_3d("image_001.jpg", 0, (1.0, 0.0, 2.0)),
+        _vue_3d("image_002.jpg", 0, (1.02, 0.0, 2.01)),
+        _vue_3d("image_020.jpg", 1, (1.1, 0.0, 2.1)),   # même tapis, revu en fin de vidéo
+        _vue_3d("image_021.jpg", 2, (3.5, 0.0, 0.5)),   # autre tapis, ailleurs dans la pièce
+    ]
+
+    fusionner_instances_proches(mesures)
+
+    assert [m.instance for m in mesures] == [0, 0, 0, 2]
+
+
+def test_sans_position_3d_les_instances_ne_bougent_pas():
+    mesures = [_vue_3d("image_001.jpg", 0, None), _vue_3d("image_020.jpg", 1, None)]
+
+    fusionner_instances_proches(mesures)
+
+    assert [m.instance for m in mesures] == [0, 1]
+
+
+def test_un_element_mesurable_vu_une_seule_fois_dans_une_video_est_ecarte():
+    mesures = [
+        _vue_3d("image_001.jpg", 0, None), _vue_3d("image_002.jpg", 0, None),
+        _vue_3d("image_009.jpg", 1, None),                      # tapis vu une seule fois
+        _vue_3d("image_009.jpg", 0, None, element="serrure"),   # petit élément : une vue suffit
+    ]
+
+    assert [(m.element, m.instance) for m in ecarter_vues_uniques(mesures, nb_images=30)] == [("tapis", 0), ("tapis", 0), ("serrure", 0)]
+    assert len(ecarter_vues_uniques(mesures, nb_images=3)) == 4  # quelques photos : on garde tout

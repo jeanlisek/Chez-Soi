@@ -14,13 +14,49 @@ class Reconstruction:
     poses: np.ndarray  # (vues, 4, 4), caméra → repère commun
 
 
-def nuage_fusionne(points: np.ndarray, couleurs: np.ndarray, max_points: int = 400_000) -> tuple[np.ndarray, np.ndarray]:
-    """Rassemble les points valides de toutes les vues, en tirant au sort au-delà de `max_points`."""
+def _un_point_par_voxel(nuage: np.ndarray, teintes: np.ndarray, voxel_m: float) -> tuple[np.ndarray, np.ndarray]:
+    """Garde un point par cube de `voxel_m` : les vues qui se recouvrent n'empilent plus leurs couches."""
+    cases = np.floor(nuage / voxel_m).astype(np.int64)
+    cles = cases[:, 0] * 73856093 ^ cases[:, 1] * 19349663 ^ cases[:, 2] * 83492791
+    _, premiers = np.unique(cles, return_index=True)
+    premiers.sort()
+    return nuage[premiers], teintes[premiers]
+
+
+def _sans_points_isoles(nuage: np.ndarray, teintes: np.ndarray, voisins: int = 8) -> tuple[np.ndarray, np.ndarray]:
+    """Écarte les points loin de leurs voisins (bords de masque, reflets) : distance moyenne > médiane + 3 écarts (au moins 2,5 fois la médiane)."""
+    if len(nuage) <= voisins + 1:
+        return nuage, teintes
+    from scipy.spatial import cKDTree
+
+    distances, _ = cKDTree(nuage).query(nuage, k=voisins + 1)
+    moyennes = distances[:, 1:].mean(axis=1)
+    mediane = np.median(moyennes)
+    ecart = np.median(np.abs(moyennes - mediane)) * 1.4826
+    # Plancher sur l'écart : sur une surface très régulière il est presque nul, et les bords seraient retirés à tort.
+    gardes = moyennes <= mediane + 3 * max(ecart, 0.5 * mediane)
+    return nuage[gardes], teintes[gardes]
+
+
+def nuage_fusionne(
+    points: np.ndarray, couleurs: np.ndarray, max_points: int = 400_000,
+    voxel_m: float | None = None, nettoyer: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Rassemble les points valides de toutes les vues, en tirant au sort au-delà de `max_points`.
+
+    Pour le modèle montré à l'utilisateur : `voxel_m` garde un point par cube (densité régulière, sans
+    couches empilées d'une vue à l'autre) et `nettoyer` écarte les points isolés. Les deux s'appliquent
+    avant le tirage au sort, pour que le plafond ne retire que des points utiles en trop.
+    """
     valides = np.isfinite(points).all(axis=-1)
     nuage, teintes = points[valides], couleurs[valides]
+    if voxel_m and len(nuage):
+        nuage, teintes = _un_point_par_voxel(nuage, teintes, voxel_m)
     if len(nuage) > max_points:
         choix = np.random.default_rng(0).choice(len(nuage), max_points, replace=False)
         nuage, teintes = nuage[choix], teintes[choix]
+    if nettoyer:
+        nuage, teintes = _sans_points_isoles(nuage, teintes)
     return nuage, teintes
 
 

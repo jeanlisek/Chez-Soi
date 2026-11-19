@@ -120,6 +120,48 @@ def suivre_instances(vues: list[tuple[int, str]], ecart_max: int = 3) -> list[in
     return numeros
 
 
+# Deux objets du même type à moins de cette distance (m) dans le modèle sont le même objet, revu plus tard.
+RAYON_MEME_OBJET_M = {"tapis": 0.5, "porte": 0.6, "fenetre": 0.6}
+# Éléments qui se mesurent : vus dans une seule image d'une vidéo, ce sont le plus souvent de fausses détections.
+ELEMENTS_A_CONFIRMER_PAR_DEUX_VUES = {"tapis", "porte", "fenetre"}
+NB_IMAGES_MIN_POUR_EXIGER_DEUX_VUES = 8
+
+
+def fusionner_instances_proches(mesures: list[MesureVue]) -> None:
+    """Réunit les instances d'un même type dont les centres sont proches dans le repère commun.
+
+    `suivre_instances` sépare les objets par continuité dans la vidéo : un tapis revu dix images plus tard
+    devenait un second tapis. Ici la position 3D tranche. Sans `centre_monde`, rien ne change.
+    """
+    centres: dict[tuple[str, int], np.ndarray] = {}
+    for cle in {(m.element, m.instance) for m in mesures}:
+        vus = [m.centre_monde for m in mesures if (m.element, m.instance) == cle and m.centre_monde is not None]
+        if vus:
+            centres[cle] = np.median(np.asarray(vus, float), axis=0)
+    cible = {cle: cle[1] for cle in centres}
+    for element, rayon in RAYON_MEME_OBJET_M.items():
+        instances = sorted(i for e, i in centres if e == element)
+        for a in instances:
+            for b in instances:
+                if a < b and cible[(element, b)] == b and np.linalg.norm(centres[(element, a)] - centres[(element, b)]) <= rayon:
+                    cible[(element, b)] = cible[(element, a)]
+    for mesure in mesures:
+        mesure.instance = cible.get((mesure.element, mesure.instance), mesure.instance)
+
+
+def ecarter_vues_uniques(mesures: list[MesureVue], nb_images: int) -> list[MesureVue]:
+    """Sur une vidéo, retire les éléments mesurables vus dans une seule image (fausses détections)."""
+    if nb_images < NB_IMAGES_MIN_POUR_EXIGER_DEUX_VUES:
+        return mesures
+    vues: dict[tuple[str, int], set[str]] = defaultdict(set)
+    for mesure in mesures:
+        vues[(mesure.element, mesure.instance)].add(mesure.image)
+    return [
+        m for m in mesures
+        if m.element not in ELEMENTS_A_CONFIRMER_PAR_DEUX_VUES or len(vues[(m.element, m.instance)]) >= 2
+    ]
+
+
 def _masquees(entieres: list[MesureVue], coupees: list[MesureVue]) -> list[MesureVue]:
     """Vues « entières » en réalité masquées par un obstacle : une vue coupée du même objet en montre davantage."""
     return [
@@ -347,6 +389,11 @@ def analyser_images(
                     reconstruit.points[indices[nom]], _zone(detection, vue["points"].shape[:2])
                 )
 
+        # La position 3D réunit un objet revu plus tard dans la vidéo, au lieu d'en compter deux.
+        fusionner_instances_proches(mesures)
+    # Un tapis, une porte ou une fenêtre vus dans une seule image d'une vidéo : presque toujours une erreur.
+    mesures = ecarter_vues_uniques(mesures, len(images))
+
     facteur_a4 = facteur_echelle_a4(mesures)
     facteur = facteur_a4 if (calibrer_a4 and facteur_a4) else 1.0
     failles = construire_failles(mesures, piece, facteur)
@@ -389,7 +436,10 @@ def analyser_images(
                 if faille.position_3d["image_cle"] == nom:
                     faille.position_3d["repere"] = "modele.glb"
     if reconstruit is not None:
-        nuage, couleurs = nuage_fusionne(reconstruit.points * facteur, reconstruit.couleurs)
+        # Modèle montré à l'utilisateur : densité régulière (1 point par cube de 1 cm), points isolés retirés.
+        nuage, couleurs = nuage_fusionne(
+            reconstruit.points * facteur, reconstruit.couleurs, max_points=900_000, voxel_m=0.01, nettoyer=True
+        )
     if nuage is not None:
         exporter_glb(vers_repere_glb(nuage), couleurs, sortie / "modele.glb")
         modele_3d = "modele.glb"

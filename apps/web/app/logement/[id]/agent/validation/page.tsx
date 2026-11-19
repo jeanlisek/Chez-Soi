@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 
 import { Icon, Triangle } from "@/components/cs/icons";
 import { ActionBar, BackButton, Header, Illus, Pill, RoundButton, Screen } from "@/components/cs/ui";
+import { lireResume, useRunAgent } from "@/lib/agent/client";
 import { PROPOSITION_EXEMPLE } from "@/lib/demo/logement-exemple";
 import { useParcours } from "@/lib/demo/etat";
 import { formaterEuros } from "@/lib/domaine";
@@ -14,6 +15,8 @@ import { formaterEuros } from "@/lib/domaine";
  * Écran 10 · Validation (T18). Reprend exactement ce que l'agent envoie à `demander_validation`
  * (résumé, produit, montant, lien) et renvoie { decision: approuve | refuse | modifier, message? }.
  * Le panier reste dans le navigateur de H (T28) : l'utilisateur ajoute le produit lui-même depuis le lien.
+ * Vrai logement : la demande vient de la session (`GET /api/agent/run?id=`) et le clic part à H par
+ * `POST /api/agent/tools`. La décision n'est affichée qu'une fois acceptée par le serveur.
  */
 function LienProduit({ url, plein = false }: { url: string; plein?: boolean }) {
   return (
@@ -36,14 +39,60 @@ export default function PageValidation() {
   const router = useRouter();
   const { logement, etat, maj } = useParcours();
   const base = `/logement/${logement.id}`;
-  const p = PROPOSITION_EXEMPLE;
   const [modif, setModif] = useState(false);
   const [texte, setTexte] = useState("");
+  const [envoi, setEnvoi] = useState(false);
+  const [alerte, setAlerte] = useState<string | null>(null);
 
-  const pasPret = etat.run === "aucun" || etat.run === "en_cours";
+  const reel = !logement.exemple;
+  const suivi = useRunAgent(reel && etat.run !== "aucun" ? etat.sessionId : null);
+  const demande = suivi.etat?.validation_en_attente ?? null;
+  const [garde, setGarde] = useState<typeof PROPOSITION_EXEMPLE | null>(null);
+
+  // Vrai logement : la proposition affichée est celle de la session ; on la garde après le clic.
+  const sortie = suivi.etat?.run.sortie_finale as { lien?: string; produit?: string; prix_eur?: number; largeur_cm?: number; longueur_cm?: number } | null | undefined;
+  const lue = demande ? lireResume(demande.resume) : null;
+  const reelle: typeof PROPOSITION_EXEMPLE | null = lue
+    ? { action: "panier", resume: lue.texte, produit: lue.produit ?? lue.texte, montant_eur: lue.montant_eur ?? 0, url: "", dimensions: undefined }
+    : garde;
+  const p: typeof PROPOSITION_EXEMPLE = reel
+    ? {
+        ...(reelle ?? { action: "panier", resume: "", produit: sortie?.produit ?? "", montant_eur: sortie?.prix_eur ?? 0, url: "", dimensions: undefined }),
+        url: sortie?.lien ?? "",
+        dimensions: sortie?.largeur_cm && sortie?.longueur_cm ? `${sortie.largeur_cm} × ${sortie.longueur_cm} cm` : undefined,
+      }
+    : PROPOSITION_EXEMPLE;
+
+  const pasPret = etat.run === "aucun" || etat.run === "en_cours" || (reel && !etat.decision && !demande);
   const attente = !pasPret && !etat.decision;
-  const envoyerModif = (e: FormEvent) => {
+
+  /** Vrai logement : la réponse part à H ; l'écran ne change que si le serveur l'a acceptée. */
+  const repondre = async (decision: "approuve" | "refuse" | "modifier", message?: string): Promise<boolean> => {
+    if (!reel) return true;
+    if (!demande) return false;
+    setEnvoi(true);
+    setAlerte(null);
+    const r = await fetch("/api/agent/tools", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ validation_id: demande.id, decision, message }),
+    }).catch(() => null);
+    setEnvoi(false);
+    if (!r || !r.ok) {
+      const corps = r ? ((await r.json().catch(() => null)) as { message?: string } | null) : null;
+      setAlerte(corps?.message ?? "Votre réponse n'a pas pu être transmise à l'agent.");
+      return false;
+    }
+    if (reelle) setGarde(reelle);
+    return true;
+  };
+  const decider = async (decision: "approuve" | "refuse") => {
+    if (await repondre(decision)) maj({ decision, run: "termine" });
+  };
+  const envoyerModif = async (e: FormEvent) => {
     e.preventDefault();
+    if (reel && !texte.trim()) return;
+    if (!(await repondre("modifier", texte.trim()))) return;
     maj({ decision: null, run: "en_cours" });
     router.push(`${base}/agent`);
   };
@@ -107,11 +156,17 @@ export default function PageValidation() {
           </section>
 
           <section className="flex flex-col gap-2 rounded-[26px] bg-pervenche-soft p-3">
-            <LienProduit url={p.url} />
-            <p className="px-1 text-xs leading-4 text-ink-soft">Le panier de l&apos;agent reste dans son navigateur. Si vous approuvez, ajoutez le produit vous-même depuis ce lien.</p>
+            {p.url && <LienProduit url={p.url} />}
+            <p className="px-1 text-xs leading-4 text-ink-soft">
+              {p.url
+                ? "Le panier de l'agent reste dans son navigateur. Si vous approuvez, ajoutez le produit vous-même depuis ce lien."
+                : "Le panier de l'agent reste dans son navigateur. Le lien vers la fiche produit s'affiche après votre décision."}
+            </p>
           </section>
         </>
       )}
+
+      {alerte && <p role="alert" className="rounded-[20px] bg-attention-bg px-4 py-3 text-sm font-semibold text-attention-text">{alerte}</p>}
 
       {modif && attente && (
         <form onSubmit={envoyerModif} className="flex items-center gap-2 rounded-full bg-white py-1.5 pr-1.5 pl-[18px]">
@@ -124,16 +179,16 @@ export default function PageValidation() {
       <ActionBar withNav>
         {attente && (
           <>
-            <Pill onClick={() => maj({ decision: "approuve", run: "termine" })}>Approuver</Pill>
+            <Pill onClick={() => void decider("approuve")} disabled={envoi}>{envoi ? "Envoi…" : "Approuver"}</Pill>
             <div className="grid grid-cols-2 gap-2">
-              <Pill variant="blanc" onClick={() => setModif(true)}>Modifier</Pill>
-              <Pill variant="blanc" onClick={() => maj({ decision: "refuse", run: "termine" })}>Refuser</Pill>
+              <Pill variant="blanc" onClick={() => setModif(true)} disabled={envoi}>Modifier</Pill>
+              <Pill variant="blanc" onClick={() => void decider("refuse")} disabled={envoi}>Refuser</Pill>
             </div>
           </>
         )}
         {etat.decision === "approuve" && (
           <>
-            <LienProduit url={p.url} plein />
+            {p.url && <LienProduit url={p.url} plein />}
             <Link href={`${base}/absence`} className="flex h-10 items-center justify-center text-[15px] font-bold">
               Préparer l&apos;absence de {logement.occupant.libelle}
             </Link>

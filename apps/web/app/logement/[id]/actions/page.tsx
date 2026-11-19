@@ -39,20 +39,30 @@ export default function PageActions() {
     o === "contrat" ? actions.filter((a) => a.source.force === "contrat").length : actions.filter((a) => a.groupe === o).length;
 
   const lancer = async () => {
+    let sessionId: string | null = null;
     if (!logement.exemple) {
+      // L'agent lit la cote avec get_mesures : seules les missions dont la cote est confirmée
+      // peuvent partir. Une session par action : la route lance la première de la liste.
+      const pretes = missions.filter((a) => logement.failles.find((f) => f.id === a.faille_id)?.cote?.statut === "confirmee");
+      if (pretes.length === 0) {
+        setMessage("Confirmez d'abord les dimensions sur l'écran du point concerné : l'agent en a besoin pour choisir le produit.");
+        return;
+      }
       setEnvoi(true);
       const r = await fetch("/api/agent/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ logement_id: logement.id, usage: 2, action_ids: missions.map((a) => a.id) }),
+        body: JSON.stringify({ logement_id: logement.id, usage: 2, action_ids: pretes.map((a) => a.id) }),
       }).catch(() => null);
+      const corps = r ? ((await r.json().catch(() => null)) as { session_id?: string; message?: string } | null) : null;
       setEnvoi(false);
-      if (!r || !r.ok) {
-        setMessage("L'agent arrive très bientôt pour votre logement. Vous pouvez déjà l'essayer sur le logement exemple.");
+      if (!r || !r.ok || !corps?.session_id) {
+        setMessage(corps?.message ?? "L'agent n'a pas pu démarrer. Réessayez dans un instant.");
         return;
       }
+      sessionId = corps.session_id;
     }
-    maj({ run: "en_cours", decision: null });
+    maj({ run: "en_cours", decision: null, sessionId });
     router.push(`${base}/agent`);
   };
 

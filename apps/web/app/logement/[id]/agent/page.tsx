@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { Cursor } from "@/components/cs/icons";
 import { ActionBar, BackButton, Chip, Header, Illus, Pill, RoundButton, Screen, Signal, cx } from "@/components/cs/ui";
+import { runTermine, useRunAgent } from "@/lib/agent/client";
 import { ETAPES_AGENT_EXEMPLE } from "@/lib/demo/logement-exemple";
 import { useParcours } from "@/lib/demo/etat";
 
@@ -11,26 +12,42 @@ const CONSIGNES = ["sans découpe", "livraison rapide", "lavable"];
 
 /**
  * Écran 9 · Agent. Logement exemple : replay du run réel du 18/11 (IKEA France, PR #9),
- * sans session H. Vrai logement : session créée par `/api/agent/run`, suivie par webhook.
- * Pilotage : la consigne part à la session par `/api/agent/steer`. Arrêt par `demander_validation`.
+ * sans session H. Vrai logement : session créée par `/api/agent/run`, suivie ici par
+ * `GET /api/agent/run?id=` (toutes les 3 s). Pilotage : la consigne part à la session par
+ * `/api/agent/steer`. Arrêt par `demander_validation` : l'écran Validation prend le relais.
  */
 export default function PageAgent() {
   const { logement, etat, maj } = useParcours();
   const base = `/logement/${logement.id}`;
   const coteTapis = Object.values(etat.cotes)[0];
   const [consignes, setConsignes] = useState<string[]>([]);
-  const etapes = useMemo(() => {
-    const e = [`Cote lue dans votre plan : ${coteTapis?.largeur_cm ?? 60} × ${coteTapis?.longueur_cm ?? 160} cm`, ...ETAPES_AGENT_EXEMPLE.slice(1)];
-    for (const c of consignes) e.splice(e.length - 1, 0, `Consigne reçue : ${c}`);
-    return e;
-  }, [coteTapis?.largeur_cm, coteTapis?.longueur_cm, consignes]);
   const [step, setStep] = useState(0);
   const [pause, setPause] = useState(false);
   const [texte, setTexte] = useState("");
+  const [alerte, setAlerte] = useState<string | null>(null);
+
+  // Vrai logement : l'état vient de la session H, jamais d'une animation.
+  const reel = !logement.exemple;
+  const suivi = useRunAgent(reel && etat.run !== "aucun" ? etat.sessionId : null);
+  const termine = runTermine(suivi.etat);
+  const validationAttendue = Boolean(suivi.etat?.validation_en_attente);
+  const coupe = Boolean(suivi.etat?.run.coupe_circuit);
+
+  const etapes = useMemo(() => {
+    if (reel) {
+      const e = ["Session ouverte chez H, sans connexion à aucun compte", "Cotes et contraintes lues dans votre plan", "Recherche et vérification de la dimension sur la fiche"];
+      for (const c of consignes) e.push(`Consigne envoyée : ${c}`);
+      e.push("Produit au panier, validation demandée");
+      return e;
+    }
+    const e = [`Cote lue dans votre plan : ${coteTapis?.largeur_cm ?? 60} × ${coteTapis?.longueur_cm ?? 160} cm`, ...ETAPES_AGENT_EXEMPLE.slice(1)];
+    for (const c of consignes) e.splice(e.length - 1, 0, `Consigne reçue : ${c}`);
+    return e;
+  }, [reel, coteTapis?.largeur_cm, coteTapis?.longueur_cm, consignes]);
 
   const fini = etat.run === "proposition" || etat.run === "termine";
   const aucun = etat.run === "aucun";
-  const actif = etat.run === "en_cours" && !pause;
+  const actif = !reel && etat.run === "en_cours" && !pause;
 
   useEffect(() => {
     if (!actif) return;
@@ -39,18 +56,44 @@ export default function PageAgent() {
   }, [actif]);
 
   useEffect(() => {
-    if (etat.run === "en_cours" && step >= etapes.length - 1) maj({ run: "proposition" });
-  }, [etat.run, step, etapes.length, maj]);
+    if (!reel && etat.run === "en_cours" && step >= etapes.length - 1) maj({ run: "proposition" });
+  }, [reel, etat.run, step, etapes.length, maj]);
 
-  const courant = fini ? etapes.length - 1 : Math.min(step, etapes.length - 1);
-  const piloter = (c: string) => {
+  // Vrai logement : la session décide de l'étape affichée et de la suite du parcours.
+  useEffect(() => {
+    if (!reel || etat.run === "aucun") return;
+    if (validationAttendue && etat.run !== "proposition") maj({ run: "proposition", decision: null });
+    else if (termine && !validationAttendue && etat.run !== "termine") maj({ run: "termine" });
+  }, [reel, etat.run, validationAttendue, termine, maj]);
+
+  const etapesHAi = suivi.etat?.run.nb_etapes ?? 0;
+  const courantReel = validationAttendue || termine ? etapes.length - 1 : !suivi.etat ? 0 : etapesHAi > 0 || suivi.etat.run.statut_final === "running" ? 2 : 1;
+  const courant = reel ? courantReel : fini ? etapes.length - 1 : Math.min(step, etapes.length - 1);
+  const echec = reel && termine && !validationAttendue && (coupe || suivi.etat?.run.statut_final !== "completed" || !suivi.etat?.run.decision_validation);
+
+  const piloter = async (c: string) => {
     const t = c.trim();
-    if (t && !consignes.includes(t)) setConsignes((l) => [...l, t]);
     setTexte("");
+    if (!t || consignes.includes(t)) return;
+    if (reel) {
+      if (!etat.sessionId) return;
+      setAlerte(null);
+      const r = await fetch("/api/agent/steer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: etat.sessionId, message: t }),
+      }).catch(() => null);
+      if (!r || !r.ok) {
+        const corps = r ? ((await r.json().catch(() => null)) as { message?: string } | null) : null;
+        setAlerte(corps?.message ?? "La consigne n'a pas pu être envoyée.");
+        return;
+      }
+    }
+    setConsignes((l) => [...l, t]);
   };
   const envoyer = (e: FormEvent) => {
     e.preventDefault();
-    piloter(texte);
+    void piloter(texte);
   };
 
   return (
@@ -71,17 +114,22 @@ export default function PageAgent() {
               <span className="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-pervenche bg-white text-xs font-extrabold">IKEA</span>
             </span>
             <span className="absolute top-[18px] right-[18px]">
-              {fini ? <Signal kind="attentionPlein" icon>Validation attendue</Signal> : pause ? <Signal kind="info">En pause</Signal> : <Signal kind="info" icon>En cours</Signal>}
+              {echec ? <Signal kind="info">Arrêté</Signal> : fini && etat.run === "termine" ? <Signal kind="info">Terminé</Signal> : fini ? <Signal kind="attentionPlein" icon>Validation attendue</Signal> : pause ? <Signal kind="info">En pause</Signal> : <Signal kind="info" icon>En cours</Signal>}
             </span>
             <Illus name="navigateur" width={126} className="absolute top-[62px] left-1/2 -translate-x-1/2" />
             <p className="absolute top-[168px] left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap" aria-live="polite">
-              {fini ? "Proposition prête. Rien n'est acheté." : "Je compare les sous-tapis pour le couloir"}
+              {echec
+                ? coupe ? "Session coupée : page non autorisée." : "L'agent s'est arrêté sans proposition."
+                : fini ? "Proposition prête. Rien n'est acheté." : reel ? "Je cherche le produit sur IKEA" : "Je compare les sous-tapis pour le couloir"}
             </p>
-            <div className="absolute inset-x-0 bottom-5 flex items-center justify-center gap-5">
-              <RoundButton icon={pause ? "play" : "pause"} label={pause ? "Reprendre" : "Mettre en pause"} size={54} onClick={() => setPause(!pause)} />
-              <RoundButton icon="eye" label="Voir le navigateur de l'agent" size={74} variant="nuit" className="border-[5px] border-white/70" />
-              <RoundButton icon="stop" label="Arrêter l'agent" size={54} href={`${base}/actions`} onClick={() => maj({ run: "aucun" })} />
-            </div>
+            {/* Pause, aperçu et arrêt ne pilotent que le replay : sur une vraie session, ils ne feraient rien chez H. */}
+            {!reel && (
+              <div className="absolute inset-x-0 bottom-5 flex items-center justify-center gap-5">
+                <RoundButton icon={pause ? "play" : "pause"} label={pause ? "Reprendre" : "Mettre en pause"} size={54} onClick={() => setPause(!pause)} />
+                <RoundButton icon="eye" label="Voir le navigateur de l'agent" size={74} variant="nuit" className="border-[5px] border-white/70" />
+                <RoundButton icon="stop" label="Arrêter l'agent" size={54} href={`${base}/actions`} onClick={() => maj({ run: "aucun" })} />
+              </div>
+            )}
           </section>
 
           <p className="flex justify-between text-[13px] text-ink-muted">
@@ -101,14 +149,17 @@ export default function PageAgent() {
           </form>
           <div className="scrollbar-none -mx-5 flex gap-2 overflow-x-auto px-5">
             {CONSIGNES.map((c) => (
-              <Chip key={c} active={consignes.includes(c)} onClick={fini ? undefined : () => piloter(c)}>{c}</Chip>
+              <Chip key={c} active={consignes.includes(c)} onClick={fini ? undefined : () => void piloter(c)}>{c}</Chip>
             ))}
           </div>
 
+          {(alerte ?? suivi.erreur) && <p role="alert" className="rounded-[20px] bg-attention-bg px-4 py-3 text-sm font-semibold text-attention-text">{alerte ?? suivi.erreur}</p>}
+          {reel && !etat.sessionId && <p role="alert" className="rounded-[20px] bg-attention-bg px-4 py-3 text-sm font-semibold text-attention-text">Session introuvable : relancez la mission depuis le plan d&apos;action.</p>}
+
           <ol className="flex flex-col gap-0.5" aria-label="Étapes de l'agent">
             {etapes.map((e, i) => {
-              const done = i < courant || fini;
-              const now = i === courant && !fini;
+              const done = !echec && (i < courant || fini);
+              const now = !echec && i === courant && !fini;
               return (
                 <li key={e} className="flex items-start gap-3 py-[5px]">
                   <span className={cx("mt-0.5 h-4 w-4 flex-none rounded-full border-2", done ? "border-succes-solid bg-succes-solid" : now ? "anim-pulse border-info-solid bg-pervenche-soft" : "border-[#8C8068] bg-white")} />
@@ -123,7 +174,11 @@ export default function PageAgent() {
 
       {!aucun && (
         <ActionBar withNav>
-          <Pill href={`${base}/agent/validation`} variant={fini ? "nuit" : "contour"}>{fini ? "Voir le résultat" : "Voir le résultat dès qu'il est prêt"}</Pill>
+          {echec ? (
+            <Pill href={`${base}/actions`} onClick={() => maj({ run: "aucun", sessionId: null })}>Retour au plan d&apos;action</Pill>
+          ) : (
+            <Pill href={`${base}/agent/validation`} variant={fini ? "nuit" : "contour"}>{fini ? "Voir le résultat" : "Voir le résultat dès qu'il est prêt"}</Pill>
+          )}
         </ActionBar>
       )}
     </Screen>

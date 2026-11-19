@@ -53,7 +53,7 @@ export default function PageAbsence() {
   // une clause d'inoccupation est dépassée (avec sa page), sinon simple recommandation.
   const assureur = contrat?.assureur ? `Prévenir ${contrat.assureur}` : "Prévenir votre assureur";
   const detailAssureur = contrat && depasse
-    ? `Conseillé : le contrat impose des protections au-delà de ${seuil} jours (p. ${contrat.inoccupation!.page})`
+    ? `Exigé par le contrat au-delà de ${seuil} jours, avant le départ (p. ${contrat.inoccupation!.page})`
     : contrat && seuil != null
       ? `Sous le seuil de ${seuil} jours du contrat : facultatif`
       : "Recommandé pour une absence longue";

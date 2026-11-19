@@ -35,13 +35,14 @@ Persona de démo, fictif : Marc aide sa mère Jeanne, 79 ans, qui vit seule en r
 2. **Contrat** (facultatif) : le PDF est lu ; chaque clause retenue garde sa citation et sa page. Une clause sans preuve dans le PDF est rejetée.
 3. **Visite** : une vidéo par pièce. Le service vision reconstruit la pièce en 3D, repère les points de risque et estime leurs cotes en centimètres.
 4. **Plan d'action** : chaque point est confronté à des règles sourcées et validées. Ordre du verdict : contrat (clause et page), puis loi, puis recommandation. Un LLM rédige l'explication ; un garde-fou en code la relit.
-5. **Agent H** : il exécute trois démarches sur les vrais sites et s'arrête toujours avant l'engagement.
+5. **Agent H** : il exécute quatre démarches sur les vrais sites et s'arrête toujours avant l'engagement.
 
 | Usage | Ce que fait l'agent | Où il s'arrête |
 |---|---|---|
 | 1 · Conditions générales | Retrouve sur le site officiel de l'assureur les conditions générales du contrat ; le code télécharge le PDF et vérifie la référence | Lecture seule, aucune connexion |
 | 2 · Contre-mesure | Lit les cotes du point de risque (`get_mesures`), choisit un produit compatible, prouve la compatibilité par une citation de la fiche, le met au panier | `demander_validation` : rien n'est commandé sans le clic de l'utilisateur |
 | 3 · Absence | Prépare l'OTV et l'information de l'assureur à partir des dates et des clauses du contrat | Aucun envoi, aucune connexion FranceConnect |
+| 4 · Artisans | Pour les travaux du plan (serrure trois points, porte à élargir…), trouve jusqu'à trois artisans près de la commune, avec labels et coordonnées lus sur leur page, et rédige le message de devis. Seuls le code postal et la ville partent chez l'agent, jamais la rue | Lecture seule : il ne contacte personne et ne remplit aucun formulaire |
 
 ## Pourquoi un agent computer-use
 
@@ -67,7 +68,7 @@ Lecture de l'usage 2 : l'agent atteint le bon produit et s'arrête au bon moment
 
 | Fonctionnalité | Dans Chez Soi |
 |---|---|
-| Agents maison figés (`nom:N`) | `chez-soi-sourcing:1` (usage 1), `chez-soi-acheteur:2` (usage 2), `chez-soi-demarches:1` (usage 3), créés par l'API depuis [`agents/definitions/`](agents/definitions/) |
+| Agents maison figés (`nom:N`) | `chez-soi-sourcing:1` (usage 1), `chez-soi-acheteur:2` (usage 2), `chez-soi-demarches:1` (usage 3), `chez-soi-artisans:1` (usage 4), créés par l'API depuis [`agents/definitions/`](agents/definitions/) |
 | Skill maison | `verifier-dimension:2` : la dimension et la découpe se prouvent par une citation de la fiche ([`agents/skills/verifier_dimension.md`](agents/skills/verifier_dimension.md)) |
 | Custom tools | `get_mesures` et `get_contrat` répondent avec les données du logement de la session ; `demander_validation` attend le clic de l'utilisateur |
 | Sortie structurée | Schémas JSON plats, revalidés par Zod côté application |
@@ -158,7 +159,7 @@ En production :
 - profil en trois étapes, accord des habitants retirable à tout moment (capacités effacées sans accord) ; détection étendue aux serrures, escaliers, éclairages et détecteurs de fumée, repérés sans cote ; chaque point détecté est revérifié par SigLIP et retiré s'il ressemble davantage à une confusion connue (pomme de douche prise pour un détecteur, poignée de placard pour une serrure) ;
 - plan d'action calculé sur les règles, avec le graphe pour reconnaître les éléments et une explication rédigée par un LLM puis contrôlée par du code ;
 - lecture du contrat de bout en bout, testée avec des conditions particulières fictives ;
-- agent H dans l'application pour les trois usages : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Pour l'usage 2, l'écran de validation affiche le nom du produit relu sur la fiche IKEA, pas celui recopié par l'agent, et une citation absente de la fiche est notée « à refuser » dans `runs_agent`. Le 19/11 en production : usage 2 de bout en bout sur `chez-soi-acheteur:2` (130 s, 9 étapes, pilotage envoyé, arrêt au panier sur `demander_validation`), usage 1 depuis l'écran Contrat, et l'usage 3 depuis le mode absence, arrêté sur `demander_validation` (#86, #97).
+- agent H dans l'application pour les trois usages : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Pour l'usage 2, l'écran de validation affiche le nom du produit relu sur la fiche IKEA, pas celui recopié par l'agent, et une citation absente de la fiche est notée « à refuser » dans `runs_agent`. Le 19/11 en production : usage 2 de bout en bout sur `chez-soi-acheteur:2` (130 s, 9 étapes, pilotage envoyé, arrêt au panier sur `demander_validation`), usage 1 depuis l'écran Contrat, et l'usage 3 depuis le mode absence, arrêté sur `demander_validation` (#86, #97). Usage 4, premier run réel le 19/11 au soir (serrure trois points de l'entrée) : trois serruriers proches avec téléphone et page source, message de devis prêt, réponse conforme au schéma et aucun écart au contrôle, 35 étapes, 0,115 USD (#120).
 
 Limites connues :
 
@@ -167,7 +168,7 @@ Limites connues :
 - le Space se met en veille après 30 minutes : le premier appel attend son réveil ;
 - les cotes du service vision ne sont comparées au mètre ruban que sur une porte (72,9 cm mesurés pour 71,5 cm réels) : pas encore de précision annoncée ([`docs/mesures.md`](docs/mesures.md)).
 
-Suite envisagée : la saisie de la date de départ, une consigne de session qui nomme la contre-mesure, un sous-agent par site marchand pour comparer les offres, la demande d'aide MaPrimeAdapt' et les devis d'artisans.
+Suite envisagée : la saisie de la date de départ, une consigne de session qui nomme la contre-mesure, un sous-agent par site marchand pour comparer les offres, et la demande d'aide MaPrimeAdapt'.
 
 ## Ce que le code garantit
 

@@ -46,6 +46,7 @@ export function versLigneRunsAgent(
     pages_vues,
     actions_agent,
     observations_api,
+    controle_document,
     ...reste
   } = run;
   const aucunChampOublie: Record<string, never> = reste;
@@ -80,5 +81,7 @@ export function versLigneRunsAgent(
     pages_vues,
     actions_agent,
     observations_api,
+    // Usage 1 seulement (migration 0008) ; absent pour les usages 2 et 3.
+    controle_document: (controle_document ?? null) as Json | null,
   };
 }

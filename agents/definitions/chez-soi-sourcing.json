@@ -1,0 +1,10 @@
+{
+  "_note": "Agent maison de l'usage 1 (issue #7), créé sur H par `npm run agent:creer -- ../../agents/definitions/chez-soi-sourcing.json --publier`. Même base que h/web-surfer-flash révision 2. `outils` est remplacé par les déclarations de agents/schemas/tools/ à l'envoi. Le prompt et le format de réponse restent passés à chaque session.",
+  "name": "chez-soi-sourcing",
+  "description": "Agent web de Chez Soi en lecture seule : retrouve sur le site public d'un assureur les conditions générales d'un contrat d'assurance habitation et renvoie leur adresse. Ne se connecte jamais et ne remplit aucun formulaire.",
+  "environments": ["h/browser"],
+  "model": "holo4-35b-a3b",
+  "skills": ["h/company", "h/user-collaboration", "h/answering", "h/planning"],
+  "instructions_fichier": "chez-soi-sourcing.instructions.md",
+  "outils": ["get_contrat"]
+}

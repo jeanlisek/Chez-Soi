@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { creerClientHai, HaiErreur } from "@/lib/hai";
 import { clientAdmin, clientServeur } from "@/lib/supabase/server";
 
-import { ErreurRoute } from "./serveur";
+import { ErreurRoute } from "./erreurs";
 
 /**
  * Ce dont une route agent a besoin : l'utilisateur connecté (client sous RLS), le client

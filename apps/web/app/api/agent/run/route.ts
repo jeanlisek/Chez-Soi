@@ -7,8 +7,8 @@ import { creerRun, lireRun } from "@/lib/agent/serveur";
 const entreeSchema = z.object({
   logement_id: z.uuid(),
   usage: z.number().int().min(1).max(3),
-  /** Une session par action. L'écran Plan d'action envoie la liste : on lance la première. */
-  action_ids: z.array(z.uuid()).min(1),
+  /** Une session par action (usages 2 et 3). L'écran Plan d'action envoie la liste : on lance la première. Usage 1 : aucune. */
+  action_ids: z.array(z.uuid()).default([]),
 });
 
 /**
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       ...contexte,
       logementId: corps.data.logement_id,
       usage: corps.data.usage,
-      actionId: corps.data.action_ids[0],
+      actionId: corps.data.action_ids[0] ?? null,
     });
     return NextResponse.json({ ...run, actions_en_attente: corps.data.action_ids.slice(1) }, { status: 201 });
   } catch (erreur) {

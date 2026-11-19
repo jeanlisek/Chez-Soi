@@ -106,6 +106,45 @@ export const CHAMPS_ATTENDUS_USAGE_2 = [
   "delai_livraison",
 ] as const satisfies readonly (keyof SortieUsage2)[];
 
+/* ---------- Usage 1 (sourcing) : réponse finale de l'agent ---------- */
+
+/**
+ * Réponse finale de l'usage 1 (issue #7). Schéma plat, comme l'usage 2. Seul `trouve` est
+ * obligatoire, pour que l'agent puisse dire « non publié » sans inventer d'adresse.
+ * L'`outcome` et `reference_trouvee` sont des déclarations de l'agent : le code télécharge
+ * le PDF et contrôle lui-même la référence (`controle_document` du run).
+ */
+export const sortieUsage1Schema = z.object({
+  trouve: z.boolean().describe("Vrai si les conditions générales de la bonne formule ont été trouvées sur le site de l'assureur."),
+  url_cg: z.string().optional().describe("Adresse complète du document des conditions générales, de préférence le PDF."),
+  url_fiche_information: z.string().optional().describe("Adresse de la fiche d'information (IPID), si elle existe."),
+  reference_trouvee: z
+    .string()
+    .optional()
+    .describe("Code de référence du document lu écrit sur la page ou dans le document (ex. M2442), jamais le nom du fichier. Vide si non vu."),
+  titre: z.string().optional().describe("Titre du document ou du lien, tel qu'affiché."),
+  date_version: z.string().optional().describe("Date ou édition du document, si elle est affichée."),
+  raison: z.string().optional().describe("Raison de l'échec, ou doute utile."),
+});
+export type SortieUsage1 = z.infer<typeof sortieUsage1Schema>;
+
+/** Contrôle du document par le code, après le run de l'usage 1. */
+export const controleDocumentSchema = z.object({
+  url: z.string(),
+  url_finale: z.string().nullable(),
+  domaine_officiel: z.boolean(),
+  telecharge: z.boolean(),
+  est_pdf: z.boolean(),
+  octets: z.number().nullable(),
+  sha256: z.string().nullable(),
+  /** `trouvee` : la référence attendue est dans le texte du PDF ; `absente` : le texte est lisible mais ne la contient pas ; `non_verifiable` : texte non extrait (polices encodées), contrôle à refaire par Docling ou à la main. */
+  reference: z.enum(["trouvee", "absente", "non_verifiable"]).nullable(),
+  reference_attendue: z.string(),
+  fichier_local: z.string().nullable(),
+  erreur: z.string().nullable(),
+});
+export type ControleDocument = z.infer<typeof controleDocumentSchema>;
+
 /** JSON Schema à passer à H, dérivé du schéma Zod (une seule source de vérité). */
 export function versJsonSchema(schema: z.ZodType): Record<string, unknown> {
   const json: Record<string, unknown> = { ...z.toJSONSchema(schema) };
@@ -202,6 +241,8 @@ export const runAgentSchema = z.object({
     /** Valeur d'`outcome` renvoyée par H quand elle n'est pas une des quatre connues, sinon `null`. */
     outcome_brut: z.string().nullable().default(null),
   }),
+  /** Usage 1 seulement : téléchargement du PDF et contrôle de la référence par le code. */
+  controle_document: controleDocumentSchema.nullable().optional(),
 });
 export type RunAgent = z.infer<typeof runAgentSchema>;
 

@@ -1,0 +1,111 @@
+{
+  "session_id": "1f5833d7-80f9-467f-837b-e970717eeef4",
+  "usage": "u1",
+  "agent": "chez-soi-sourcing:1",
+  "agent_revision": 1,
+  "site": "www.maif.fr",
+  "etat_final": "completed",
+  "outcome": null,
+  "error_code": null,
+  "erreur": null,
+  "motif_fin": "terminee",
+  "annulee_par_script": false,
+  "coupe_circuit": null,
+  "debut": "2026-11-18T10:43:20.838057Z",
+  "fin": "2026-11-18T10:46:18.746868Z",
+  "duree_s": 177.9,
+  "nb_etapes": 39,
+  "tokens": {
+    "entree": 1100872,
+    "cache": 836352,
+    "sortie": 10680,
+    "raisonnement": 7265,
+    "par_modele": [
+      {
+        "modele": "holo4-35b-a3b",
+        "entree": 1100872,
+        "cache": 836352,
+        "sortie": 10680,
+        "raisonnement": 7265
+      }
+    ]
+  },
+  "cout_usd": 0.12580655999999998,
+  "decision_validation": null,
+  "appels_outils": [
+    {
+      "outil": "get_contrat",
+      "args": {
+        "champs": [
+          "assureur",
+          "formule",
+          "reference_cg"
+        ],
+        "logement_id": "logement-demo-jeanne-01"
+      },
+      "reponse": {
+        "assureur": "MAIF",
+        "formule": "Raqvam",
+        "reference_cg": "M2442"
+      },
+      "erreur": null,
+      "duree_s": 0
+    }
+  ],
+  "sortie_finale": {
+    "titre": "Conditions générale MAIF - ASSURANCE HABITATION Raqvam 1",
+    "trouve": true,
+    "url_cg": "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf",
+    "date_version": "01/2023",
+    "reference_trouvee": "M2442",
+    "url_fiche_information": "https://www.maif.fr/files/live/sites/maif-fr/files/pdf/documentation-contractuelle/habitation/document-information-assurance-habitation.pdf"
+  },
+  "schema_valide": true,
+  "erreurs_schema": [],
+  "ecarts_metier": [],
+  "pages_vues": [
+    "https://www.maif.fr/",
+    "https://www.maif.fr/habitation/assurance-habitation",
+    "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf",
+    "https://www.maif.fr/habitation",
+    "https://www.maif.fr/habitation/assurance-habitation",
+    "https://www.maif.fr/recherche",
+    "https://www.maif.fr/maiffr/documents/pdf/documentation-contractuelle/habitation/conditions-generales-assurance-habitation.pdf",
+    "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf",
+    "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/IPIDRaqvamMaif.pdf",
+    "https://www.maif.fr/habitation/assurance-habitation",
+    "https://www.maif.fr/recherche",
+    "https://www.maif.fr/files/live/sites/maif-fr/files/pdf/documentation-contractuelle/habitation/document-information-assurance-habitation.pdf"
+  ],
+  "actions_agent": {
+    "get_contrat": 1,
+    "click_web": 9,
+    "scroll_web": 4,
+    "web_search": 3,
+    "go_to_web": 7,
+    "write": 3,
+    "press_keys_web": 1
+  },
+  "observations_api": {
+    "appels_sans_id": 0,
+    "attente_outils_s": 0,
+    "appels_encore_listes_apres_reponse": 0,
+    "renvois_de_resultat": 0,
+    "reponse_presente_apres_annulation": null,
+    "approbations_natives_vues": 0,
+    "outcome_brut": null
+  },
+  "controle_document": {
+    "url": "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf",
+    "url_finale": "https://www.maif.fr/content/documents/public/maif-fr/pdf/contrat/pp/CGRaqvamMaif.pdf",
+    "domaine_officiel": true,
+    "telecharge": true,
+    "est_pdf": true,
+    "octets": 414750,
+    "sha256": "016842588227965284733feb162e08baa82705ef2476876336db39bfb5eed231",
+    "reference": "trouvee",
+    "reference_attendue": "M2442",
+    "fichier_local": "agents\\bench\\pdf\\2026-11-18_maif_016842588227.pdf",
+    "erreur": null
+  }
+}

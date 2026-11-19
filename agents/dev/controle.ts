@@ -12,6 +12,7 @@
 import {
   CHAMPS_ATTENDUS_USAGE_2,
   type SchemaZod,
+  type SortieUsage1,
   type SortieUsage2,
 } from "../../apps/web/lib/schemas";
 
@@ -140,6 +141,51 @@ export function controlerSortieUsage2(
         ecarts.push(`dimensions : ${petit} × ${grand} cm dépasse ${petitTapis} × ${grandTapis} cm, ${decoupe}`);
       }
     }
+  }
+  return ecarts;
+}
+
+/* ---------- Usage 1 ---------- */
+
+/** Vrai si l'hôte de l'URL est l'un des domaines officiels ou l'un de leurs sous-domaines. */
+export function surDomaineOfficiel(url: string, domaines: readonly string[]): boolean {
+  let hote: string;
+  try {
+    hote = new URL(url).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+  return domaines.some((domaine) => hote === domaine || hote.endsWith(`.${domaine}`));
+}
+
+/**
+ * Écarts métier de l'usage 1, signalés et jamais corrigés. La référence déclarée par
+ * l'agent n'est qu'un indice : le contrôle qui compte est celui du PDF par le code.
+ */
+export function controlerSortieUsage1(
+  sortie: SortieUsage1,
+  attendu: { domaines: readonly string[]; reference: string },
+): string[] {
+  if (!sortie.trouve) {
+    return sortie.raison ? [] : ["raison : absente alors que trouve est faux"];
+  }
+  const ecarts: string[] = [];
+  if (!sortie.url_cg) {
+    ecarts.push("url_cg : absente alors que trouve est vrai");
+  } else {
+    if (!surDomaineOfficiel(sortie.url_cg, attendu.domaines)) {
+      ecarts.push(`url_cg : ${sortie.url_cg} n'est pas sur le site de l'assureur (${attendu.domaines.join(", ")})`);
+    }
+    if (!/^https:\/\//i.test(sortie.url_cg)) ecarts.push("url_cg : pas en https");
+  }
+  if (sortie.url_fiche_information && !surDomaineOfficiel(sortie.url_fiche_information, attendu.domaines)) {
+    ecarts.push(`url_fiche_information : ${sortie.url_fiche_information} n'est pas sur le site de l'assureur`);
+  }
+  const normaliser = (texte: string) => texte.normalize("NFKD").replace(/[^0-9a-z]/gi, "").toUpperCase();
+  if (!sortie.reference_trouvee) {
+    ecarts.push("reference_trouvee : absente, la référence ne sera contrôlée que dans le PDF");
+  } else if (!normaliser(sortie.reference_trouvee).includes(normaliser(attendu.reference))) {
+    ecarts.push(`reference_trouvee : « ${sortie.reference_trouvee} » ne contient pas ${attendu.reference}`);
   }
   return ecarts;
 }

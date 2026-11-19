@@ -29,10 +29,13 @@ const PLAN_T2: Record<string, { l: number; t: number; w: number; h: number }> = 
 
 /** Positions des pièces : le plan de la maquette si les noms s'y prêtent, sinon une grille de 3 colonnes. */
 function disposer(pieces: Piece[]) {
-  if (pieces.length > 0 && pieces.every((p) => PLAN_T2[p.nom]))
+  // Le plan du T2 n'a de sens que s'il est presque complet : sinon il laisse des trous (pièces non filmées).
+  if (pieces.length >= 5 && pieces.every((p) => PLAN_T2[p.nom]))
     return { hauteur: 196, cases: pieces.map((p) => ({ p, ...PLAN_T2[p.nom] })), vide: true };
-  const cases = pieces.map((p, i) => ({ p, l: (i % 3) * 120, t: Math.floor(i / 3) * 88, w: 110, h: 80 }));
-  return { hauteur: Math.max(1, Math.ceil(pieces.length / 3)) * 88 - 8, cases, vide: false };
+  const colonnes = pieces.length <= 4 ? 2 : 3;
+  const largeur = colonnes === 2 ? 171 : 110;
+  const cases = pieces.map((p, i) => ({ p, l: (i % colonnes) * (largeur + 8), t: Math.floor(i / colonnes) * 70, w: largeur, h: 62 }));
+  return { hauteur: Math.max(1, Math.ceil(pieces.length / colonnes)) * 70 - 8, cases, vide: false };
 }
 
 /** Écran 6 · Accueil et plan du logement : points à traiter, filtres chute / intrusion, failles par pièce. */

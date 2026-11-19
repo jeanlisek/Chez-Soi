@@ -119,7 +119,7 @@ Circuit details: [`docs/architecture.md`](docs/architecture.md) (in French). Ful
 
 **2. With an account (5 minutes).**
 
-1. Sign in with an e-mail link, from any address. Google sign-in only accepts `@eugeniaschool.com` accounts: the Google app is restricted to Eugenia's Google organisation. The home is created and the journey starts at the profile.
+1. Sign in with an e-mail link, from any address (checked with a non-Eugenia address). Google sign-in only accepts `@eugeniaschool.com` accounts: the Google app is restricted to Eugenia's Google organisation. The home is created and the journey starts at the profile.
 2. Fill in the profile, then upload a video of one room (MP4 or MOV, 50 MB max). The Space wakes up when the screen opens; the analysis takes a few minutes.
 3. Optional: upload a home insurance contract as a PDF. Kept clauses appear with their page. The same screen can start the agent that finds the general terms on the insurer's site.
 4. Open the action plan, confirm a risk point's size, then start the agent. The screen follows the real H session and asks for approval before any commitment. Approving orders nothing.
@@ -155,11 +155,10 @@ In production:
 - three-step profile, occupants' consent revocable at any time (abilities erased without consent); detection extended to locks, stairs, lights and smoke detectors, spotted without a size; each detected point is re-checked by SigLIP and dropped if it looks more like a known confusion (a shower head taken for a detector, a cupboard handle for a lock);
 - action plan computed from the rules, with the graph to recognise elements and an LLM-written explanation checked by code;
 - end-to-end contract reading, tested with fictitious special conditions;
-- H agent inside the app for all three uses: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker. For use 2, the approval screen shows the product name re-read from the IKEA page, not the one copied by the agent, and a quote missing from the page is flagged "to refuse" in `runs_agent`. On 19 Nov in production: use 2 end to end on `chez-soi-acheteur:2` (130 s, 9 steps, steering sent, stop at the cart on `demander_validation`), use 1 from the Contract screen, and a first real use 3 run after it was wired (#86).
+- H agent inside the app for all three uses: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker. For use 2, the approval screen shows the product name re-read from the IKEA page, not the one copied by the agent, and a quote missing from the page is flagged "to refuse" in `runs_agent`. On 19 Nov in production: use 2 end to end on `chez-soi-acheteur:2` (130 s, 9 steps, steering sent, stop at the cart on `demander_validation`), use 1 from the Contract screen, and use 3 from absence mode, stopped on `demander_validation` (#86, #97).
 
 Known limits:
 
-- use 3: on the first real run after it was wired, the agent returned its answer without calling `demander_validation`; the prompt now reminds it, not yet re-checked by a new run (nothing can be sent: the agent does not sign in and the circuit breaker cuts any sign-in page);
 - on a real home, the absence departure date cannot be entered yet (15 Dec by default); only the duration can be set;
 - use 2 miscopies some product pages: the quote check detects it and rejects the product;
 - the Space sleeps after 30 minutes: the first call waits for it to wake up;

@@ -119,7 +119,7 @@ Circuit details: [`docs/architecture.md`](docs/architecture.md) (in French). Ful
 
 **2. With an account (5 minutes).**
 
-1. Sign in with Google or an e-mail link: the home is created and the journey starts at the profile.
+1. Sign in with an e-mail link, from any address. Google sign-in only accepts `@eugeniaschool.com` accounts: the Google app is restricted to Eugenia's Google organisation. The home is created and the journey starts at the profile.
 2. Fill in the profile, then upload a video of one room (MP4 or MOV, 50 MB max). The Space wakes up when the screen opens; the analysis takes a few minutes.
 3. Optional: upload a home insurance contract as a PDF. Kept clauses appear with their page. The same screen can start the agent that finds the general terms on the insurer's site.
 4. Open the action plan, confirm a risk point's size, then start the agent. The screen follows the real H session and asks for approval before any commitment. Approving orders nothing.
@@ -149,7 +149,7 @@ Environment variables are listed in [`.env.example`](.env.example) (names only).
 
 In production:
 
-- sign-in with Google or e-mail link, home creation; Account screen to edit the profile, manage several occupants (the rule protecting the most vulnerable applies) and re-film a room;
+- sign-in with an e-mail link (any address) or Google (Eugenia accounts only), home creation; Account screen to edit the profile, manage several occupants (the rule protecting the most vulnerable applies) and re-film a room;
 - guided capture (filming tips, import of an existing video, review before sending), analysis on the Space (automatic wake-up, retries), risk points and sizes stored, 3D model and annotated image of each room in private storage; a re-filmed room replaces its old points, except those whose size was confirmed;
 - risk point screen: photo cropped on the element and a "relief photo" of the filmed surface; on the vision side, an object seen in several frames is counted once;
 - three-step profile, occupants' consent revocable at any time (abilities erased without consent); detection extended to locks, stairs, lights and smoke detectors, spotted without a size;

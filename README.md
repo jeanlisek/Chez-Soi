@@ -10,6 +10,7 @@
 | **Dépôt** | https://github.com/jeanlisek/Chez-Soi |
 | **Tester** | [Comment tester](#comment-tester), en 2 minutes sans compte |
 | **Résultats de l'agent** | [40 runs réels mesurés](docs/resultats.md) |
+| **Architecture détaillée** | [Schéma Miro, état du code au 19/11](https://miro.com/app/board/uXjVEMi8KjI=/) |
 | **Replays publics** | [Usage 1, MAIF](https://agp.eu.hcompany.ai/share/api/v1/trajectories/6737e71f-59a5-4dc5-ab92-20c49a33d469) · [Usage 2, IKEA, plan B de la démo](https://agp.eu.hcompany.ai/share/api/v1/trajectories/dfb8e4d2-8a96-448b-9a87-c5e8b3740cab) |
 <!-- Vidéo démo (5 min) : ajouter ici une ligne « | **Vidéo démo** | <lien> | » dès que le lien existe, et vérifier qu'il s'ouvre en navigation privée. -->
 
@@ -92,8 +93,6 @@ Aucun modèle sous licence non commerciale n'est utilisé.
 
 ## L'architecture
 
-| **Architecture (Miro)** | https://miro.com/app/board/uXjVEMi8KjI=/ |
-
 ```mermaid
 flowchart LR
   U[Utilisateur] --> APP[App Next.js<br/>Vercel]
@@ -111,7 +110,7 @@ flowchart LR
 - **L'agent ne voit que ce qu'il demande.** Ses outils prennent le logement de la session, jamais celui que l'agent donne, et ne renvoient que les champs utiles.
 - **Un coupe-circuit dans le code** annule la session dès que l'agent ouvre une page de commande, de paiement, de connexion ou hors liste blanche.
 
-Détail des circuits : [`docs/architecture.md`](docs/architecture.md).
+Détail des circuits : [`docs/architecture.md`](docs/architecture.md). Schéma complet des couches et du socle : [Miro](https://miro.com/app/board/uXjVEMi8KjI=/).
 
 ## Comment tester
 
@@ -123,6 +122,9 @@ Détail des circuits : [`docs/architecture.md`](docs/architecture.md).
 2. Remplir le profil, puis déposer la vidéo d'une pièce (MP4 ou MOV, 50 Mo au plus). Le Space se réveille à l'ouverture de l'écran ; l'analyse prend quelques minutes.
 3. Facultatif : déposer un contrat d'assurance habitation en PDF. Les clauses retenues apparaissent avec leur page. Le même écran peut lancer l'agent qui retrouve les conditions générales sur le site de l'assureur.
 4. Ouvrir le plan d'action, confirmer la cote d'un point, puis lancer l'agent. L'écran suit la vraie session H et demande la validation avant tout engagement. Approuver ne commande rien.
+5. Ouvrir le mode absence et demander à l'agent de préparer les démarches : il prépare l'OTV et l'information de l'assureur sans se connecter, puis s'arrête ; la seule réponse possible refuse l'envoi.
+
+L'écran Compte permet ensuite de modifier le profil, d'ajouter un occupant ou de refilmer une pièce.
 
 **3. En local.**
 
@@ -146,21 +148,22 @@ Les variables d'environnement sont listées dans [`.env.example`](.env.example) 
 
 En production :
 
-- connexion par Google ou lien e-mail, création du logement et du profil ;
-- dépôt de la vidéo, analyse sur le Space (réveil automatique, nouveaux essais), points de risque et cotes en base, modèle 3D de chaque pièce conservé et affiché ;
+- connexion par Google ou lien e-mail, création du logement ; écran Compte pour modifier le profil, gérer plusieurs occupants (la règle du plus vulnérable s'applique) et refilmer une pièce ;
+- capture guidée (conseils pour bien filmer, import d'une vidéo déjà tournée, relecture avant l'envoi), analyse sur le Space (réveil automatique, nouveaux essais), points de risque et cotes en base, modèle 3D et image annotée de chaque pièce dans le stockage privé ; une pièce refilmée remplace ses anciens points, sauf ceux dont la cote a été confirmée ;
+- écran du point : photo cadrée sur l'élément et « photo en relief » de la surface filmée ; côté vision, un objet revu dans plusieurs images n'est compté qu'une fois ;
 - plan d'action calculé sur les règles, avec le graphe pour reconnaître les éléments et une explication rédigée par un LLM puis contrôlée par du code ;
 - lecture du contrat de bout en bout, testée avec des conditions particulières fictives ;
-- agent H dans l'application pour les usages 1 et 2 : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit.
+- agent H dans l'application pour les trois usages : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Le 19/11 en production : usage 2 de bout en bout sur `chez-soi-acheteur:2` (130 s, 9 étapes, pilotage envoyé, arrêt au panier sur `demander_validation`), usage 1 depuis l'écran Contrat, et un premier run réel de l'usage 3 après son branchement (#86).
 
 Limites connues :
 
-- l'usage 3 a réussi 4 runs sur 4 lancés par script, mais n'est pas encore lancé depuis l'écran Absence ;
-- sur un vrai logement, l'écran Absence affiche encore les dates de la persona : la saisie des dates n'est pas branchée ;
+- usage 3 : au premier run réel après son branchement, l'agent a rendu sa réponse sans passer par `demander_validation` ; la consigne le rappelle désormais, pas encore revérifié par un nouveau run (rien ne peut partir : l'agent ne se connecte pas et le coupe-circuit coupe toute page de connexion) ;
+- sur un vrai logement, la date de départ de l'absence n'est pas encore saisissable (15/12 par défaut) ; seule la durée se règle ;
 - l'usage 2 recopie mal certaines fiches produit : le contrôle des citations le détecte et refuse le produit ;
 - le Space se met en veille après 30 minutes : le premier appel attend son réveil ;
 - les cotes du service vision ne sont comparées au mètre ruban que sur une porte (72,9 cm mesurés pour 71,5 cm réels) : pas encore de précision annoncée ([`docs/mesures.md`](docs/mesures.md)).
 
-Suite envisagée : brancher l'usage 3 et les dates d'absence, une consigne de session qui nomme la contre-mesure, un sous-agent par site marchand pour comparer les offres, la demande d'aide MaPrimeAdapt' et les devis d'artisans.
+Suite envisagée : la saisie de la date de départ, une consigne de session qui nomme la contre-mesure, un sous-agent par site marchand pour comparer les offres, la demande d'aide MaPrimeAdapt' et les devis d'artisans.
 
 ## Ce que le code garantit
 

@@ -263,7 +263,9 @@ def test_la_planche_montre_une_vignette_par_point_sur_son_image_cle(tmp_path):
 
     hauteur = round(1920 * LARGEUR_VIGNETTE / 1080)
     assert planche.shape == (2 * hauteur, LARGEUR_VIGNETTE, 3)
-    assert failles[0].position_3d["vignette"] == {"index": 0, "total": 2, "largeur": LARGEUR_VIGNETTE, "hauteur": hauteur}
+    assert failles[0].position_3d["vignette"] == {
+        "index": 0, "total": 2, "largeur": LARGEUR_VIGNETTE, "hauteur": hauteur, "boite": [0.0926, 0.1042, 0.5556, 0.4688],
+    }
     assert failles[1].position_3d["vignette"]["index"] == 1
     assert "vignette" not in failles[2].position_3d
     assert planche_par_point([], vues, lambda f: f.element) is None

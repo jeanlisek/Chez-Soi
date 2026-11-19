@@ -257,11 +257,12 @@ def planche_par_point(failles: list, vues: dict[str, dict], libelle) -> np.ndarr
     """Une vignette par point, empilées de haut en bas : l'image clé du point, avec ce seul élément encadré.
 
     L'image annotée unique montrait une seule vue de la pièce : la page d'un tapis pouvait afficher la fenêtre.
-    Chaque faille reçoit `position_3d["vignette"]` (index, total, largeur, hauteur) : l'app affiche sa tranche.
+    Chaque faille reçoit `position_3d["vignette"]` (index, total, largeur, hauteur, boite) : l'app affiche sa tranche.
     Un seul fichier, pour que la copie vers le stockage (n8n) ne change pas. None s'il n'y a rien à montrer.
     """
     vignettes: list[np.ndarray] = []
     servies: list = []
+    boites: list[list[float]] = []
     taille: tuple[int, int] | None = None
     for faille in failles:
         vue = vues.get(faille.position_3d.get("image_cle"))
@@ -281,13 +282,19 @@ def planche_par_point(failles: list, vues: dict[str, dict], libelle) -> np.ndarr
         if taille is None:
             taille = (LARGEUR_VIGNETTE, round(annotee.shape[0] * LARGEUR_VIGNETTE / annotee.shape[1]))
         vignettes.append(cv2.resize(annotee, taille, interpolation=cv2.INTER_AREA))
+        hauteur, largeur = image.shape[:2]
+        x1, y1, x2, y2 = detection.boite_px
+        # Boîte en fractions de la vignette : l'app cadre l'affichage sur l'élément.
+        boites.append([round(x1 / largeur, 4), round(y1 / hauteur, 4), round(x2 / largeur, 4), round(y2 / hauteur, 4)])
         servies.append(faille)
         if len(vignettes) == NB_VIGNETTES_MAX:
             break
     if not vignettes or taille is None:
         return None
     for index, faille in enumerate(servies):
-        faille.position_3d["vignette"] = {"index": index, "total": len(servies), "largeur": taille[0], "hauteur": taille[1]}
+        faille.position_3d["vignette"] = {
+            "index": index, "total": len(servies), "largeur": taille[0], "hauteur": taille[1], "boite": boites[index],
+        }
     return np.vstack(vignettes)
 
 

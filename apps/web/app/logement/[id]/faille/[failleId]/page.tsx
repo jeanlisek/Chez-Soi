@@ -190,7 +190,7 @@ function PhotoDuPoint({ src, vignette, alt }: { src: string; vignette: NonNullab
   const tranche = `calc(100cqw * ${r})`;
   const [, y1, , y2] = vignette.boite ?? [0, 0.25, 1, 0.75];
   // Élément plus haut que le cadre : on montre son sommet et son libellé ; sinon on le centre.
-  const haut = (y2 - y1) * r > 0.8 ? Math.max(0, y1 - 0.06) : null;
+  const haut = (y2 - y1) * r > 0.6 ? Math.max(0, y1 - 0.06) : null;
   const decalage = haut != null ? `calc(100cqw * ${-(haut * r).toFixed(4)})` : `calc(50cqh - 100cqw * ${(((y1 + y2) / 2) * r).toFixed(4)})`;
   return (
     <div className="relative h-full w-full overflow-hidden bg-nuit" style={{ containerType: "size" }}>

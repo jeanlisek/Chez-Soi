@@ -115,6 +115,9 @@ export async function POST(request: Request) {
         longueur_cm: f.data.longueur_cm ?? null,
         hauteur_cm: f.data.hauteur_cm ?? null,
         position_3d: (f.data.position_3d as object | undefined) ?? null,
+        // Un point retrouvé à l'identique garde son identifiant : sa date suit la dernière analyse, sinon l'app
+        // le prendrait pour un point d'une ancienne analyse et ne lui donnerait ni photo ni vue 3D.
+        created_at: new Date().toISOString(),
       });
     }
     if (retenues.length) {

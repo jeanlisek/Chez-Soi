@@ -11,6 +11,7 @@
 | **Tester** | [Comment tester](#comment-tester), en 2 minutes sans compte |
 | **Résultats de l'agent** | [40 runs réels mesurés](docs/resultats.md) |
 | **Architecture détaillée** | [Schéma Miro, état du code au 19/11](https://miro.com/app/board/uXjVEMi8KjI=/) |
+| **Maquettes** | [Figma : parcours utilisateurs et écrans](https://www.figma.com/design/Qrx8XsJiiFWFeY98FX4dJ9/Chez-soi---Parcours-utilisateurs-et-%C3%A9crans?node-id=0-1) |
 | **Replays publics** | [Usage 1, MAIF](https://agp.eu.hcompany.ai/share/api/v1/trajectories/6737e71f-59a5-4dc5-ab92-20c49a33d469) · [Usage 2, IKEA, plan B de la démo](https://agp.eu.hcompany.ai/share/api/v1/trajectories/dfb8e4d2-8a96-448b-9a87-c5e8b3740cab) |
 <!-- Vidéo démo (5 min) : ajouter ici une ligne « | **Vidéo démo** | <lien> | » dès que le lien existe, et vérifier qu'il s'ouvre en navigation privée. -->
 

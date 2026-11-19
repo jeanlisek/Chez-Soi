@@ -65,8 +65,11 @@ export default function PagePlan() {
         <Logo size={52} />
         <span className="flex flex-1 flex-col">
           <b className="text-[17px]">Bonjour {logement.aidant}</b>
-          <span className="text-[13px] text-ink-muted">Logement de {prenom}{logement.type ? ` · ${logement.type}` : ""}</span>
+          <Link href={`${base}/compte`} className="truncate text-[13px] text-ink-muted underline underline-offset-2" aria-label={`Logement de ${prenom}, voir le compte et le profil`}>
+            Logement de {prenom}{logement.type ? ` · ${logement.type}` : ""}
+          </Link>
         </span>
+        <RoundButton icon="user" label="Compte et profil" href={`${base}/compte`} />
         <span className="relative">
           <RoundButton icon="bell" label={enAttente ? "Notifications, 1 validation en attente" : "Notifications"} href={enAttente ? `${base}/agent/validation` : undefined} />
           {enAttente && <span className="absolute top-[9px] right-[11px] h-[9px] w-[9px] rounded-full border-2 border-white bg-attention-solid" />}

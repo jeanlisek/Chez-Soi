@@ -1,11 +1,12 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { Cursor, Icon } from "@/components/cs/icons";
-import { BackButton, Header, Pill, RoundButton, Screen, Signal, cx } from "@/components/cs/ui";
+import { BackButton, Header, OptionsMenu, Pill, RoundButton, Screen, Signal, cx, useToast } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { libelleSource, type Faille } from "@/lib/domaine";
 
@@ -37,6 +38,8 @@ export default function PageFaille() {
   const [vue, setVue] = useState<"photo" | "3d">("photo");
   const [erreur, setErreur] = useState<string | null>(null);
 
+  const toast = useToast();
+  const router = useRouter();
   if (!f) return null;
   const piece = logement.pieces.find((p) => p.id === f.piece_id);
   const photo = piece?.image_url ?? null;
@@ -69,9 +72,31 @@ export default function PageFaille() {
     setAr(ok ? "Réalité augmentée disponible : bientôt dans Chez Soi." : "Réalité augmentée non disponible sur cet appareil.");
   };
 
+  // Partage réel : un résumé du point par le partage du téléphone (ou le presse-papiers), sans lien d'accès au logement.
+  const partager = async () => {
+    const texte = [
+      `Chez Soi · ${piece?.nom ?? "Logement"} : ${f.titre}`,
+      cote ? `Dimensions : ${cote.largeur_cm} × ${cote.longueur_cm} cm` : null,
+      f.description,
+      libelleSource(f.source),
+    ].filter(Boolean).join("\n");
+    try {
+      if (navigator.share) await navigator.share({ title: `Chez Soi · ${f.titre}`, text: texte });
+      else {
+        await navigator.clipboard.writeText(texte);
+        toast.show("Résumé copié, prêt à coller");
+      }
+    } catch {
+      // Partage annulé par l'utilisateur : rien à signaler.
+    }
+  };
+
   return (
     <Screen className="gap-3">
-      <Header left={<BackButton href={`${base}/plan`} />} title={piece?.nom ?? "Faille"} right={<RoundButton icon="menu" label="Plan d'action" href={`${base}/actions`} />} />
+      <Header left={<BackButton href={`${base}/plan`} />} title={piece?.nom ?? "Faille"} right={<OptionsMenu label="Options du point" items={[
+        { label: "Partager avec un proche", icon: "share", onClick: () => void partager() },
+        { label: "Voir le plan d'action", icon: "list", onClick: () => router.push(`${base}/actions`) },
+      ]} />} />
 
       <section className="relative h-[300px] flex-none overflow-hidden rounded-card bg-pervenche">
         {photo && vue === "photo" ? (
@@ -182,6 +207,7 @@ export default function PageFaille() {
           </Pill>
         )}
       </div>
+      {toast.node}
     </Screen>
   );
 }

@@ -109,6 +109,22 @@ export default function PageAgent() {
   };
 
   // Relancer et arrêter ne pilotent que le replay : une vraie session se relance depuis le plan d'action.
+  const relancer = async () => {
+    const ids = logement.actions.filter((a) => etat.missions[a.id] === "agent" && a.faille_id).map((a) => a.id);
+    if (!ids.length) return setAlerte("Aucune mission confiée à l'agent : choisissez-en une dans le plan d'action.");
+    setAlerte(null);
+    const r = await fetch("/api/agent/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ logement_id: logement.id, usage: 2, action_ids: ids }),
+    }).catch(() => null);
+    const corps = r ? ((await r.json().catch(() => null)) as { session_id?: string; message?: string } | null) : null;
+    if (!r?.ok || !corps?.session_id) return setAlerte(corps?.message ?? "La recherche n'a pas pu être relancée.");
+    setConsignes([]);
+    maj({ sessionId: corps.session_id, run: "en_cours", decision: null });
+    toast.show("Recherche relancée");
+  };
+
   const options: { label: string; icon: IconName; onClick: () => void; danger?: boolean }[] = [
     { label: "Ce que l'agent a le droit de faire", icon: "shield", onClick: () => setFeuille("droits") },
     ...(!reel && !aucun
@@ -118,6 +134,8 @@ export default function PageAgent() {
           { label: "Arrêter l'agent", icon: "stop" as const, danger: true, onClick: () => { maj({ run: "aucun" }); router.push(`${base}/actions`); } },
         ]
       : []),
+    // Vraie session terminée (ou arrêtée) : on en ouvre une nouvelle pour les mêmes missions.
+    ...(reel && !aucun && (termine || echec) ? [{ label: "Relancer la recherche", icon: "refresh" as const, onClick: () => void relancer() }] : []),
     { label: "Retour au plan d'action", icon: "list", onClick: () => router.push(`${base}/actions`) },
   ];
 

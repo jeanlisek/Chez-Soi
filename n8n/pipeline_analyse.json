@@ -127,6 +127,39 @@
         ]
       ]
     },
+    "15 · Demander l'URL de dépôt": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "16 · Télécharger le modèle 3D",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "16 · Télécharger le modèle 3D": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "17 · Déposer dans modeles3d",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "17 · Déposer dans modeles3d": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "10 · Préparer le retour à l'app",
+            "type": "main"
+          }
+        ]
+      ]
+    },
     "Analyse acceptée ?": {
       "main": [
         [
@@ -150,7 +183,7 @@
         [
           {
             "index": 0,
-            "node": "10 · Préparer le retour à l'app",
+            "node": "Modèle 3D à copier ?",
             "type": "main"
           }
         ],
@@ -199,6 +232,24 @@
           {
             "index": 0,
             "node": "Répondre 400 · entrée invalide",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Modèle 3D à copier ?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "15 · Demander l'URL de dépôt",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "10 · Préparer le retour à l'app",
             "type": "main"
           }
         ]
@@ -832,7 +883,7 @@
       "id": "c06aa686-14c4-53df-8b82-c274e9103414",
       "name": "10 · Préparer le retour à l'app",
       "parameters": {
-        "jsCode": "// Résultat du Space (GET /analyse/{id}) → corps attendu par l'app (POST /api/analyse/resultat).\nconst r = $json.statusCode === 200 && $json.body && typeof $json.body === 'object' ? $json.body : {};\nconst i = $('04 · Interpréter la réponse').first().json;\nconst fini = r.etat === 'termine';\nreturn [{ json: {\n  analyse_id: i.analyse_id,\n  logement_id: i.logement_id,\n  etat: fini ? 'termine' : 'echec',\n  resultat: r.resultat ?? null,\n  service_analyse_id: i.service_analyse_id,\n  failles: fini && Array.isArray(r.failles) ? r.failles : [],\n  modele_3d_url: r.modele_3d_url ?? null,\n  erreur: fini ? null : (r.erreur ?? (r.etat === 'en_cours' ? 'Analyse trop longue : délai dépassé' : 'Service vision injoignable (HTTP ' + $json.statusCode + ')')),\n} }];\n"
+        "jsCode": "// Résultat du Space (GET /analyse/{id}) → corps attendu par l'app (POST /api/analyse/resultat).\nconst lu = $('09 · Lire l\\'analyse du Space').last().json;\nconst r = lu.statusCode === 200 && lu.body && typeof lu.body === 'object' ? lu.body : {};\n// Modèle 3D copié dans Supabase (nœuds 15 à 17) : chemin renvoyé à l'app, sinon null.\nlet modele_3d_path = null;\ntry {\n  const depot = $('17 · Déposer dans modeles3d').last().json;\n  const url = $('15 · Demander l\\'URL de dépôt').first().json;\n  if (depot.statusCode >= 200 && depot.statusCode < 300 && url.body && url.body.path) modele_3d_path = url.body.path;\n} catch (e) { /* nœuds non exécutés : pas de modèle */ }\nconst i = $('04 · Interpréter la réponse').first().json;\nconst fini = r.etat === 'termine';\nreturn [{ json: {\n  analyse_id: i.analyse_id,\n  logement_id: i.logement_id,\n  etat: fini ? 'termine' : 'echec',\n  resultat: r.resultat ?? null,\n  service_analyse_id: i.service_analyse_id,\n  failles: fini && Array.isArray(r.failles) ? r.failles : [],\n  modele_3d_url: r.modele_3d_url ?? null,\n  modele_3d_path,\n  erreur: fini ? null : (r.erreur ?? (r.etat === 'en_cours' ? 'Analyse trop longue : délai dépassé' : 'Service vision injoignable (HTTP ' + lu.statusCode + ')')),\n} }];\n"
       },
       "position": [
         2800,
@@ -1000,6 +1051,164 @@
       ],
       "type": "n8n-nodes-base.code",
       "typeVersion": 2
+    },
+    {
+      "id": "e526568c-9c59-4e77-865f-b923256e1a65",
+      "name": "Modèle 3D à copier ?",
+      "notes": "Analyse terminée avec un modèle 3D : on le copie dans Supabase avant la mise en veille du Space (30 min), qui l'efface.",
+      "notesInFlow": false,
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "m1",
+              "leftValue": "={{ ($json.body || {}).etat }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "termine"
+            },
+            {
+              "id": "m2",
+              "leftValue": "={{ ($json.body || {}).modele_3d_url || '' }}",
+              "operator": {
+                "operation": "notEmpty",
+                "singleValue": true,
+                "type": "string"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        2800,
+        360
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qb6ZVKSFAnrnOdFo",
+          "name": "Chez Soi · webhook"
+        }
+      },
+      "id": "af18e4e6-2057-46d0-84f7-1b25aa3d8cb0",
+      "name": "15 · Demander l'URL de dépôt",
+      "notes": "POST /api/analyse/modele-url : l'app renvoie une URL de dépôt signée (bucket modeles3d). Aucune clé Supabase dans n8n.",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "jsonBody": "={{ JSON.stringify({ analyse_id: $('04 · Interpréter la réponse').first().json.analyse_id, logement_id: $('04 · Interpréter la réponse').first().json.logement_id }) }}",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 20000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "={{ $('Config').first().json.APP_URL }}/api/analyse/modele-url"
+      },
+      "position": [
+        3020,
+        240
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "GonCoee08q3s4Crd",
+          "name": "Chez Soi · vision Space"
+        }
+      },
+      "id": "07de2632-5060-4785-9c1d-44a6d47a0005",
+      "name": "16 · Télécharger le modèle 3D",
+      "notes": "GET du .glb sur le Space (jeton HF et clé du service via le credential).",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "method": "GET",
+        "options": {
+          "response": {
+            "response": {
+              "outputPropertyName": "modele",
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 120000
+        },
+        "url": "={{ $('Config').first().json.VISION_SERVICE_URL }}{{ $('09 · Lire l\\'analyse du Space').last().json.body.modele_3d_url }}"
+      },
+      "position": [
+        3240,
+        240
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "e5727aae-bc96-47f8-b62c-60aa8c3ad4e9",
+      "name": "17 · Déposer dans modeles3d",
+      "notes": "PUT du fichier sur l'URL signée. Un échec ici n'empêche pas le retour à l'app : la vue 3D reprend alors la pièce schématique.",
+      "notesInFlow": false,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "contentType": "binaryData",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "model/gltf-binary"
+            },
+            {
+              "name": "x-upsert",
+              "value": "true"
+            }
+          ]
+        },
+        "inputDataFieldName": "modele",
+        "method": "PUT",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          },
+          "timeout": 120000
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "url": "={{ $('15 · Demander l\\'URL de dépôt').first().json.body.signed_url }}"
+      },
+      "position": [
+        3460,
+        240
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
     }
   ],
   "settings": {

@@ -13,7 +13,7 @@ Première mesure, le 18/11/2026, sur une vraie vidéo. Commande et méthode : `s
 | Vidéo | Visite de plusieurs pièces d'un logement de l'équipe, 31,5 s, 480 × 848 px, compressée par WhatsApp, sans feuille A4 |
 | Découpage | 5 pièces, analysées séparément (tableau plus bas) |
 | Images analysées | 104, choisies par score de netteté (environ 4 par seconde filmée) |
-| Modèles | MoGe-2 (cotes), Grounding DINO base, SAM 2.1, MapAnything variante Apache (reconstruction) |
+| Modèles | MoGe-2 (cotes), Grounding DINO base, SAM 2.1, MapAnything variante Apache (reconstruction), SigLIP base (vérification des points) |
 | Machine | Mac M5 Pro, GPU Apple |
 | Référence | Mètre ruban, relevé par Jean-Li |
 

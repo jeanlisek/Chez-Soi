@@ -2,13 +2,13 @@
 
 from huggingface_hub import hf_hub_download, snapshot_download
 
-from modeles import GROUNDING_DINO, MAPANYTHING, MOGE, SAM
+from modeles import GROUNDING_DINO, MAPANYTHING, MOGE, SAM, SIGLIP
 
 # On ne prend que les poids safetensors : les dépôts contiennent aussi des doublons .bin et .pt.
-FICHIERS = ["*.json", "*.txt", "model.safetensors"]
+FICHIERS = ["*.json", "*.txt", "*.model", "model.safetensors"]
 
 if __name__ == "__main__":
-    for modele in (GROUNDING_DINO, SAM, MAPANYTHING):
+    for modele in (GROUNDING_DINO, SAM, MAPANYTHING, SIGLIP):
         snapshot_download(modele.depot, revision=modele.revision, allow_patterns=FICHIERS)
         print(f"{modele.depot} @ {modele.revision[:8]} ({modele.licence})")
     hf_hub_download(MOGE.depot, "model.pt", revision=MOGE.revision)

@@ -48,6 +48,11 @@ DA3_METRIC = Modele(
     "Secours : profondeur métrique à partir d'une seule image",
 )
 
+SIGLIP = Modele(
+    "google/siglip-base-patch16-224", "7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed", "apache-2.0",
+    "Deuxième avis sur chaque point détecté (image comparée à des descriptions)", verifie_le="2026-11-19",
+)
+
 @dataclass(frozen=True)
 class CodeFige:
     """Code tiers téléchargé depuis GitHub, figé sur un commit."""
@@ -70,4 +75,4 @@ CODE_DINOV2 = CodeFige(
     "Code de l'encodeur DINOv2 utilisé par MapAnything",
 )
 
-MODELES = {m.depot: m for m in (MOGE, GROUNDING_DINO, SAM, MAPANYTHING, DA3_BASE, DA3_METRIC)}
+MODELES = {m.depot: m for m in (MOGE, GROUNDING_DINO, SAM, MAPANYTHING, DA3_BASE, DA3_METRIC, SIGLIP)}

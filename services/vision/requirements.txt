@@ -9,6 +9,8 @@ scipy>=1.11
 torch>=2.4
 torchvision>=0.19
 transformers>=4.56
+# Tokeniseur de SigLIP (vérification des points).
+sentencepiece>=0.2
 huggingface_hub>=0.25
 trimesh>=4.4
 # Dépendances utiles de MapAnything et d'uniception (installés sans dépendances : voir requirements-modeles.txt).

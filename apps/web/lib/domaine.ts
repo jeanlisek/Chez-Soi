@@ -61,6 +61,8 @@ export type Faille = {
   /** Origine de la mesure : pipeline vision, plan B précalculé, ou saisie manuelle. */
   origine: "pipeline" | "precalcule" | "manuel";
   statut: "a_traiter" | "en_traitement" | "regle" | "a_surveiller";
+  /** Position de l'élément dans le modèle 3D de sa pièce (repère du .glb, en mètres), quand la vision la donne. */
+  repere_3d?: [number, number, number] | null;
 };
 
 export type Action = {

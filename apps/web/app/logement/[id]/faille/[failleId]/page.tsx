@@ -83,6 +83,7 @@ export default function PageFaille() {
           className="h-full w-full"
           tourner={tourner}
           apres={apres}
+          repere={f.repere_3d ? { position: f.repere_3d, libelle: f.titre } : null}
           objet={cote && f.element === "tapis" ? { largeur_cm: cote.largeur_cm, longueur_cm: cote.longueur_cm, libelle: f.titre } : null}
         />
         )}

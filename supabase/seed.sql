@@ -335,3 +335,101 @@ where c.assureur_id is null
   and lower(btrim(c.assureur)) = lower(btrim(a.nom));
 
 commit;
+
+-- Articles de loi (19/11) : un nœud Article par texte publié sur Légifrance qui fonde une règle validée,
+-- puis Article IMPOSE Regle. Le lien Légifrance ne vit plus seulement dans la règle : le GraphRAG remonte
+-- jusqu'au texte. Embedding laissé vide : l'app le calcule au prochain plan (completerEmbeddings).
+-- Rejouable : la clé est l'URL du texte.
+insert into public.graphe_noeuds (type, libelle, proprietes)
+select distinct on (r.source_url)
+       'Article',
+       split_part(r.source_ref, ',', 1),
+       jsonb_build_object('source_url', r.source_url, 'source_ref', split_part(r.source_ref, ',', 1), 'origine', 'seed')
+from public.regles_en_vigueur r
+where r.source_url like 'https://www.legifrance.gouv.fr/%'
+  and not exists (
+    select 1 from public.graphe_noeuds n
+    where n.type = 'Article' and n.contrat_id is null and n.proprietes ->> 'source_url' = r.source_url
+  )
+order by r.source_url, r.code;
+
+insert into public.graphe_aretes (source_id, cible_id, relation)
+select na.id, nr.id, 'IMPOSE'
+from public.graphe_noeuds na
+join public.regles_en_vigueur r on r.source_url = na.proprietes ->> 'source_url'
+join public.graphe_noeuds nr
+  on nr.type = 'Regle' and nr.contrat_id is null and nr.proprietes ->> 'code' = r.code
+where na.type = 'Article' and na.contrat_id is null
+on conflict (source_id, cible_id, relation) do nothing;
+
+-- Validées le 19/11 par Jean-Li Sek, sources vérifiées sur Légifrance et Service-Public :
+-- DAAF v2 (source : CCH art. R142-2 sur Légifrance ; la v1 citait une réponse ministérielle, retirée)
+-- et CAMB-FENETRES (conseil police et gendarmerie, Service-Public A15031, déjà au registre pour l'OTV).
+-- Rejouable : rien n'est réinséré si la règle existe ; une règle n'est jamais modifiée (prive.figer_regle).
+insert into public.regles (code, version, intitule, element, force, verdict_type, parametres, source_id, source_ref, source_url, statut_validation, verifie_le, relu_par)
+select code, 2, intitule, element, force, verdict_type, parametres, source_id, 'CCH, art. R142-2 (Légifrance)',
+       'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051721576', 'validee', '2026-11-19', 'Jean-Li Sek'
+from public.regles where code = 'DAAF' and version = 1
+  and not exists (select 1 from public.regles where code = 'DAAF' and version = 2);
+update public.regles set statut_validation = 'retiree' where code = 'DAAF' and version = 1 and statut_validation = 'proposee';
+
+insert into public.regles (code, version, intitule, element, force, verdict_type, parametres, source_id, source_ref, source_url, statut_validation, verifie_le, relu_par)
+select 'CAMB-FENETRES', 1, 'Verrouiller avec soin la fermeture des portes, fenêtres et volets', 'fenetre', 'recommande', 'presence', '{}'::jsonb,
+       s.id, 'Service-Public, actualité A15031 : conseils de la police et de la gendarmerie',
+       'https://www.service-public.gouv.fr/particuliers/actualites/A15031?lang=fr', 'validee', '2026-11-19', 'Jean-Li Sek'
+from public.sources s where s.url = 'https://www.service-public.gouv.fr/particuliers/actualites/A15031?lang=fr'
+  and not exists (select 1 from public.regles where code = 'CAMB-FENETRES');
+
+-- Nœud Regle repointé sur la dernière version, nœud et arêtes de la nouvelle règle, contre-mesure.
+update public.graphe_noeuds n
+set regle_id = r.id,
+    proprietes = n.proprietes || jsonb_build_object('version', r.version, 'source_ref', r.source_ref, 'source_url', r.source_url)
+from public.regles r
+where n.type = 'Regle' and n.contrat_id is null and n.proprietes ->> 'code' = r.code
+  and r.version = (select max(r2.version) from public.regles r2 where r2.code = r.code and r2.statut_validation = 'validee')
+  and n.regle_id is distinct from r.id;
+insert into public.graphe_noeuds (type, libelle, proprietes, regle_id)
+select 'Regle', r.intitule, jsonb_build_object('code', r.code, 'version', r.version, 'force', r.force, 'source_ref', r.source_ref, 'source_url', r.source_url), r.id
+from public.regles r
+where r.code = 'CAMB-FENETRES'
+  and not exists (select 1 from public.graphe_noeuds n where n.type = 'Regle' and n.contrat_id is null and n.proprietes ->> 'code' = r.code);
+insert into public.graphe_aretes (source_id, cible_id, relation)
+select nr.id, ne.id, 'PORTE_SUR'
+from public.graphe_noeuds nr
+join public.regles r on r.id = nr.regle_id
+join public.graphe_noeuds ne on ne.type = 'Element' and ne.contrat_id is null and ne.proprietes ->> 'element' = r.element
+where nr.type = 'Regle' and nr.contrat_id is null
+on conflict (source_id, cible_id, relation) do nothing;
+insert into public.graphe_noeuds (type, libelle, proprietes)
+select 'ContreMesure', 'Fenêtres et volets verrouillés, surtout en cas d''absence',
+       jsonb_build_object('code_regle', 'CAMB-FENETRES', 'element', 'fenetre', 'origine', 'seed')
+where not exists (
+  select 1 from public.graphe_noeuds n
+  where n.type = 'ContreMesure' and n.contrat_id is null and n.proprietes ->> 'code_regle' = 'CAMB-FENETRES'
+);
+insert into public.graphe_aretes (source_id, cible_id, relation)
+select nc.id, nr.id, 'CORRIGE'
+from public.graphe_noeuds nc
+join public.graphe_noeuds nr on nr.type = 'Regle' and nr.contrat_id is null and nr.proprietes ->> 'code' = nc.proprietes ->> 'code_regle'
+where nc.type = 'ContreMesure' and nc.contrat_id is null
+on conflict (source_id, cible_id, relation) do nothing;
+
+-- Textes de loi dont la règle cite une autre page (Service-Public) : article Légifrance vérifié le 19/11.
+with art (code_regle, libelle, url) as (values
+  ('DAAF', 'CCH, art. R142-2', 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051721576'),
+  ('LOC-TRAVAUX', 'Loi n° 89-462 du 6 juillet 1989, art. 7 f', 'https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000509310')
+)
+insert into public.graphe_noeuds (type, libelle, proprietes)
+select 'Article', a.libelle, jsonb_build_object('source_url', a.url, 'source_ref', a.libelle, 'origine', 'seed')
+from art a
+where not exists (select 1 from public.graphe_noeuds n where n.type = 'Article' and n.contrat_id is null and n.proprietes ->> 'source_url' = a.url);
+with art (code_regle, url) as (values
+  ('DAAF', 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000051721576'),
+  ('LOC-TRAVAUX', 'https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000509310')
+)
+insert into public.graphe_aretes (source_id, cible_id, relation)
+select na.id, nr.id, 'IMPOSE'
+from art a
+join public.graphe_noeuds na on na.type = 'Article' and na.contrat_id is null and na.proprietes ->> 'source_url' = a.url
+join public.graphe_noeuds nr on nr.type = 'Regle' and nr.contrat_id is null and nr.proprietes ->> 'code' = a.code_regle
+on conflict (source_id, cible_id, relation) do nothing;

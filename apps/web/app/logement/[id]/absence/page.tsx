@@ -53,7 +53,7 @@ export default function PageAbsence() {
   // une clause d'inoccupation est dépassée (avec sa page), sinon simple recommandation.
   const assureur = contrat?.assureur ? `Prévenir ${contrat.assureur}` : "Prévenir votre assureur";
   const detailAssureur = contrat && depasse
-    ? `Exigé au-delà des ${seuil} jours du contrat (p. ${contrat.inoccupation!.page})`
+    ? `Conseillé : le contrat impose des protections au-delà de ${seuil} jours (p. ${contrat.inoccupation!.page})`
     : contrat && seuil != null
       ? `Sous le seuil de ${seuil} jours du contrat : facultatif`
       : "Recommandé pour une absence longue";
@@ -180,11 +180,11 @@ export default function PageAbsence() {
               <a href={dossier.otv_url_demarche} target="_blank" rel="noopener noreferrer" className="font-bold text-cobalt underline">Ouvrir la page officielle</a>
             </p>
           )}
-          {dossier.otv_informations_demandees && <p className="whitespace-pre-line text-ink-soft"><b className="text-nuit">À préparer :</b>{"\n"}{dossier.otv_informations_demandees}</p>}
+          {dossier.otv_informations_demandees && <p className="whitespace-pre-line text-ink-soft"><b className="text-nuit">À préparer :</b>{"\n"}{sansBalises(dossier.otv_informations_demandees)}</p>}
           {(dossier.assureur_moyen || dossier.assureur_url) && (
             <p><b>Assureur.</b> {dossier.assureur_moyen ?? ""} {dossier.assureur_url && <a href={dossier.assureur_url} target="_blank" rel="noopener noreferrer" className="font-bold text-cobalt underline">Voir la page</a>}</p>
           )}
-          {dossier.recapitulatif && <p className="whitespace-pre-line rounded-xl2 bg-creme px-3 py-2.5 text-[13px]">{dossier.recapitulatif}</p>}
+          {dossier.recapitulatif && <p className="whitespace-pre-line rounded-xl2 bg-creme px-3 py-2.5 text-[13px]">{sansBalises(dossier.recapitulatif)}</p>}
           {dossier.remarque && <p className="text-xs text-ink-muted">{dossier.remarque}</p>}
         </section>
       )}
@@ -211,4 +211,9 @@ export default function PageAbsence() {
       </ActionBar>
     </Screen>
   );
+}
+
+/** Le récapitulatif de l'agent arrive parfois en Markdown : on retire les marques, le texte reste tel quel. */
+function sansBalises(texte: string): string {
+  return texte.replace(/\*\*(.+?)\*\*/g, "$1").replace(/^#{1,4}\s+/gm, "").replace(/^\s*[-*]\s+/gm, "• ");
 }

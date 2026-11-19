@@ -106,15 +106,23 @@ const usage2: DefinitionUsage = {
   cheminsAutorises: [
     { hote: "ikea.com", exacts: ["/fr/fr"], prefixes: ["/fr/fr/search", "/fr/fr/cat/", "/fr/fr/p/", "/fr/fr/shoppingcart"] },
   ],
-  preparer: async (_admin, _logementId, action) => ({
-    site: "www.ikea.com/fr/fr",
-    urlDepart: "https://www.ikea.com/fr/fr",
-    consigne: [
-      `Trouve sur le site www.ikea.com/fr/fr un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
-      `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,
-      "Applique tes règles permanentes : vérification de la dimension sur la fiche, panier comme dernière page, demander_validation avec action « panier », puis plus aucune action et la réponse finale au format demandé.",
-    ].join("\n"),
-  }),
+  preparer: async (admin, _logementId, action) => {
+    // La contre-mesure du plan dit QUOI chercher (« Sous-tapis antidérapant 50 × 80 cm ») : sans elle,
+    // l'agent choisit un produit de la bonne taille mais pas forcément du bon type (run du 19/11).
+    const { data } = action ? await admin.from("actions").select("contre_mesure").eq("id", action.id).maybeSingle() : { data: null };
+    const recherche = data?.contre_mesure?.trim();
+    return {
+      site: "www.ikea.com/fr/fr",
+      urlDepart: "https://www.ikea.com/fr/fr",
+      consigne: [
+        recherche
+          ? `Trouve sur le site www.ikea.com/fr/fr ce type de produit, et pas un autre : « ${recherche} », pour corriger la faille ${action?.faille_id} du logement. Mets-le au panier, puis arrête-toi et demande la validation. Si le site ne vend pas ce type de produit, dis-le au lieu de proposer autre chose.`
+          : `Trouve sur le site www.ikea.com/fr/fr un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
+        `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,
+        "Applique tes règles permanentes : vérification de la dimension sur la fiche, panier comme dernière page, demander_validation avec action « panier », puis plus aucune action et la réponse finale au format demandé.",
+      ].join("\n"),
+    };
+  },
   evaluer: async (admin, run, reponse) => {
     // Cote de la faille du run (et pas le tapis de démo) pour juger la dimension du produit.
     let cote: { largeur_cm: number; longueur_cm: number } | undefined;

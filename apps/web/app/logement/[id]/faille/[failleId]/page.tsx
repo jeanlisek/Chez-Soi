@@ -114,18 +114,23 @@ export default function PageFaille() {
       </section>
 
       <div className="-mt-0.5 flex items-center justify-center gap-5">
+        {/* AR et avant/après n'agissent que sur la pièce schématique du logement exemple : sur un vrai logement, ils ne faisaient rien. */}
+        {logement.exemple && (
         <span className="flex flex-col items-center gap-1">
           <RoundButton icon="ar" label="Voir en réalité augmentée" size={54} onClick={testerAr} />
           <span className="text-xs font-semibold">AR</span>
         </span>
+        )}
         <span className="flex flex-col items-center gap-1">
           <RoundButton icon="rotate" label="Tourner la vue" size={70} variant="nuit" onClick={() => setTourner((v) => !v)} />
           <span className="text-xs font-semibold">Tourner</span>
         </span>
+{logement.exemple && (
         <span className="flex flex-col items-center gap-1">
           <RoundButton icon="compare" label="Avant et après" size={54} variant={apres ? "pervenche" : "blanc"} onClick={() => setApres((v) => !v)} />
           <span className="text-xs font-semibold">Avant/après</span>
         </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">

@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { Cursor, Icon } from "@/components/cs/icons";
-import { ExempleTag, Illus, Logo, RoundButton, Screen, cx } from "@/components/cs/ui";
+import { ExempleTag, Illus, Logo, Screen, cx } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import type { Faille } from "@/lib/domaine";
 
@@ -52,7 +52,6 @@ export default function PageSuivi() {
           <b className="text-[17px]">Suivi</b>
           <span className="text-[13px] text-ink-muted">Logement de {prenom}</span>
         </span>
-        <RoundButton icon="share" label="Partager le plan avec un proche" />
       </div>
       {logement.exemple && <ExempleTag />}
 

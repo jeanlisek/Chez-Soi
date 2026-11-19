@@ -11,6 +11,7 @@
 | **Try it** | [How to test](#how-to-test), 2 minutes without an account |
 | **Agent results** | [40 real runs, measured](docs/resultats.md) (in French) |
 | **Detailed architecture** | [Miro board, code status on 19 Nov](https://miro.com/app/board/uXjVEMi8KjI=/) (in French) |
+| **Mock-ups** | [Figma: user journeys and screens](https://www.figma.com/design/Qrx8XsJiiFWFeY98FX4dJ9/Chez-soi---Parcours-utilisateurs-et-%C3%A9crans?node-id=0-1) (in French) |
 | **Public replays** | [Use 1, MAIF](https://agp.eu.hcompany.ai/share/api/v1/trajectories/6737e71f-59a5-4dc5-ab92-20c49a33d469) · [Use 2, IKEA, demo fallback](https://agp.eu.hcompany.ai/share/api/v1/trajectories/dfb8e4d2-8a96-448b-9a87-c5e8b3740cab) |
 <!-- Demo video (5 min): add a "| **Demo video** | <link> |" row here once the link exists, and check that it opens in a private window. -->
 

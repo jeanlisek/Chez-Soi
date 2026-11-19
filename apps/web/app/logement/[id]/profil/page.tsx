@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { BackButton, Chip, Header, Illus, Pill, Ring, Screen, cx } from "@/components/cs/ui";
@@ -26,7 +26,9 @@ export default function PageProfil() {
   const [statut, setStatut] = useState(logement.statut);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
-  const suivant = `/logement/${logement.id}/contrat`;
+  // Ouvert depuis « Compte et profil » : on y revient après l'enregistrement, au lieu de reprendre le parcours.
+  const depuisCompte = useSearchParams().get("depuis") === "compte";
+  const suivant = depuisCompte ? `/logement/${logement.id}/compte` : `/logement/${logement.id}/contrat`;
   const setO = (p: Partial<Occupant>) => maj({ occupant: { ...o, ...p } });
   const accord = Boolean(o.consentement_art9_le);
   const prenomManquant = !logement.exemple && (!o.libelle.trim() || o.libelle === "l'occupant");
@@ -55,7 +57,7 @@ export default function PageProfil() {
 
   return (
     <Screen className="gap-3.5">
-      <Header left={<BackButton href="/" />} title="Profil" right={<Ring value={1} total={3} size={48} track="#E3E5EE" />} />
+      <Header left={<BackButton href={depuisCompte ? suivant : "/"} />} title="Profil" right={depuisCompte ? undefined : <Ring value={1} total={3} size={48} track="#E3E5EE" />} />
 
       <section className="relative min-h-[150px] overflow-hidden rounded-card bg-pervenche p-5">
         <div className="flex max-w-[190px] flex-col gap-1.5">

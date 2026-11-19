@@ -63,8 +63,9 @@ flowchart LR
 Détail des circuits : [`docs/architecture.md`](docs/architecture.md). Contexte complet et règles de travail : [`CLAUDE.md`](CLAUDE.md).
 
 Démo : [fiche de déroulé](docs/deroule-demo.md), [PDF d’une page](output/pdf/chez-soi-deroule-demo.pdf)
-et [protocole du replay depuis l’app](docs/protocole-replay-app.md). La fiche distingue
-les secours déjà vérifiés du clip app encore à réceptionner avec Hoang-Kim.
+et [protocole du replay depuis l’app](docs/protocole-replay-app.md). Jean-Li enregistre
+et parle, Hoang-Kim prépare la trame ; Bastian fournit le protocole et la fiche.
+La fiche distingue les secours vérifiés du clip app, dont la disponibilité reste à contrôler.
 
 ## Comment tester
 

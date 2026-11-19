@@ -5,13 +5,16 @@ Production : https://chezsoi.vercel.app. Démo U2 : sous-tapis antidérapant pou
 un tapis de 60 × 160 cm, pilotage **« moins de 50 € »**, validation **refusée**.
 Une seule session H, annoncée au groupe ; aucun achat ni envoi.
 
+**Rôles confirmés :** Jean-Li enregistre et parle ; Hoang-Kim prépare la trame.
+Bastian transmet le protocole et maintient cette fiche si l’ordre change ; il ne filme pas.
+
 ## Avant de monter sur scène
 
 | Quand | Régie : contrôle à faire |
 |---|---|
 | T-40 min | Réveiller le service vision depuis Contrat ou Capture sur un **logement de test authentifié**, pas `/logement/exemple` (qui ne réveille pas le service). Jean-Li a observé 25 min d’attente faute de L4 : le réveil ne garantit pas un GPU. |
 | T-15 min | Contrôler que le service est réellement prêt, pas seulement qu’il a accusé réception du réveil. Tester l’ouverture du logement déjà analysé, des photos et de la 3D. Garder une analyse préparée et la 3D précalculée accessibles. |
-| T-10 min | Préouvrir les écrans dans l’ordre, le replay run 35 et le fichier vidéo app s’il a été livré. Faire confirmer par Hoang-Kim la séquence déjà enregistrée ; ne pas refaire une prise en parallèle. Vérifier lecture locale/son et connexion de secours. |
+| T-10 min | Préouvrir les écrans dans l’ordre, le replay run 35 et le fichier vidéo app s’il a été livré. Jean-Li relit sa capture avec la trame préparée par Hoang-Kim ; pas de seconde prise par Bastian. Vérifier lecture locale/son et connexion de secours. |
 | T-5 min puis juste avant H | Vérifier que le service est encore prêt. Annoncer le créneau et contrôler **quota H : 0 actif / 3 maximum** (`GET /api/v2/sessions/quota`, par la régie, sans afficher la clé). Si une session est active, attendre sa fin. Agent figé `chez-soi-acheteur:2`, skill `verifier-dimension:2`. |
 
 ## Ordre des écrans
@@ -34,8 +37,9 @@ Une seule session H, annoncée au groupe ; aucun achat ni envoi.
 | Produit / citation incohérents | Refuser, garder l’écart visible et expliquer le contrôle. Le run 40 reste partiel : ne pas annoncer un panier entièrement validé. |
 
 **Secours vérifié :** [run 35, pilotage « point relais uniquement » et arrêt sans ajout au panier](https://agp.eu.hcompany.ai/share/api/v1/trajectories/dfb8e4d2-8a96-448b-9a87-c5e8b3740cab).
-Il ne remplace pas un enregistrement complet depuis l’app. Le fichier de ce second
-replay reste à réceptionner/valider avec Hoang-Kim ; ne pas le déclarer prêt avant lecture.
+Il ne remplace pas un enregistrement complet depuis l’app. Jean-Li réalise et commente
+ce second replay avec la trame de Hoang-Kim ; disponibilité et lecture à vérifier
+par la régie. Bastian livre le protocole, sans prise vidéo à sa charge.
 
 Sources : consignes de Jean-Li du 19/11 ; routes et écrans de `main` 52645d8 ;
 résultats U2 et limites dans la PR #32. Le délai de réveil est une observation de Jean-Li,

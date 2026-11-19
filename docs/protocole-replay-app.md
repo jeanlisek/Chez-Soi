@@ -1,22 +1,24 @@
 # Enregistrement de secours U2 depuis l’app
 
-Statut au 19/11 : coordination demandée à Hoang-Kim sur Slack. **Aucun nouveau
-fichier vidéo app créé par Bastian à ce stade.** Le run 35 reste le secours H,
-distinct de ce livrable. Ne pas remplacer la prise réelle par une animation,
-des captures assemblées ou un run du banc.
+Répartition confirmée par Jean-Li le 19/11 à 16h45 : **Jean-Li enregistre et parle ;
+Hoang-Kim prépare la trame ; Bastian fournit ce protocole et tient la fiche régie
+à jour si l’ordre des écrans change. Bastian n’a pas à filmer.**
 
-Contrôle d’accès du 19/11 : la production s’ouvre sur l’écran de connexion dans
-le navigateur de Bastian, sans logement de test ouvert. Le lien du logement et
-la répartition de la prise ont été demandés à Jean-Li ; aucun fichier ni accord
-exploitable de répartition reçu de Hoang-Kim au moment de cette rédaction.
-Aucune nouvelle session H n’a été lancée pour préparer ces documents.
+Le logement de test n’est visible que depuis le compte de Jean-Li : cette
+restriction est normale, aucun lien ni accès supplémentaire à demander pour
+Bastian. La réception du fichier final relève de Jean-Li et Hoang-Kim ; sa
+disponibilité ne peut pas être déduite de cette répartition.
+
+Le run 35 reste le secours H, distinct du clip app. Ne pas remplacer la prise
+réelle par une animation, des captures assemblées ou un run du banc. Aucune
+nouvelle session H n’a été lancée pour préparer ces documents.
 
 ## Une seule prise coordonnée
 
-1. Demander à Hoang-Kim si la vidéo de ce soir contient déjà l’Agent, le pilotage
-   et le refus. S’il a la prise, récupérer le fichier et vérifier son contenu ;
-   ne pas relancer H. Sinon convenir de qui enregistre et annoncer le créneau.
-2. Ouvrir la production avec le compte et le logement **de test** convenus.
+1. Hoang-Kim intègre ce protocole à sa trame. Jean-Li réalise une seule prise,
+   enregistre sa voix et annonce le créneau H avant de commencer. Si la séquence
+   existe déjà, la relire et la réutiliser plutôt que relancer H.
+2. Jean-Li ouvre la production avec son compte et son logement **de test**.
    `/logement/exemple` rejoue un scénario local et ne prouve pas une session H réelle.
    Préparer un sous-tapis, des cotes confirmées et une seule mission U2.
 3. Vérifier quota organisation 0/3, agent `chez-soi-acheteur:2`, skill

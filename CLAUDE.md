@@ -260,7 +260,10 @@ Fiche régie du 19/11 : `docs/deroule-demo.md` et `output/pdf/chez-soi-deroule-d
 (une page). Réveil Vision T-40 min, contrôle réel de disponibilité et quota H nul,
 ordre des écrans, refus et plans B. Protocole vidéo dans `docs/protocole-replay-app.md` :
 le run 35 prouve le pilotage et l’arrêt, pas un parcours enregistré depuis l’app.
-La vidéo app reste à réceptionner/valider avec Hoang-Kim ; ne pas annoncer ce livrable prêt.
+Répartition confirmée le 19/11 à 16h45 : Jean-Li enregistre et parle, Hoang-Kim
+prépare la trame ; Bastian transmet le protocole et maintient la fiche si l’ordre
+change, sans filmer. Le logement de test reste dans le compte de Jean-Li, aucun
+accès à demander pour Bastian. La disponibilité du clip final reste à vérifier par la régie.
 
 Chemin critique : schéma Supabase + seed, puis capture et upload, puis `/analyse` (avec un résultat 3D précalculé en plan B), puis `/api/plan`, puis usage 2 avec `demander_validation` et pilotage, puis `ValidationModal`, puis `runs_agent`, puis usage 1 (conditions générales de l'assureur → graphe, #7).
 Bonus, une fois le chemin critique tenu : usage 3, AR, veille réglementaire, export Minecraft.

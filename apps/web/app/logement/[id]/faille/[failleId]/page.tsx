@@ -122,7 +122,7 @@ export default function PageFaille() {
       <section className="relative h-[300px] flex-none overflow-hidden rounded-card bg-pervenche">
         {photo && vue === "photo" ? (
           f.vignette ? (
-            <PhotoDuPoint src={photo} vignette={f.vignette} alt={`${f.titre} sur votre vidéo, encadré avec sa cote`} />
+            <PhotoDuPoint src={photo} vignette={f.vignette} alt={`${f.titre} sur votre vidéo, encadré avec sa cote`} coteConfirmee={cote?.confirmee ? `${f.titre.toLowerCase()} ${cote.largeur_cm} × ${cote.longueur_cm} cm` : null} />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element -- URL signée de courte durée, hors du loader d'images
             <img src={photo} alt={`Votre ${piece?.nom?.toLowerCase() ?? "pièce"} filmée : les éléments repérés sont encadrés`} className="h-full w-full bg-nuit object-contain" />
@@ -244,10 +244,10 @@ export default function PageFaille() {
  * Photo d'un point : sa tranche dans la planche de vignettes empilées (une par point), en pleine largeur
  * et cadrée sur l'élément. Les unités `cqw`/`cqh` sont celles du cadre : la tranche garde ses proportions.
  */
-function PhotoDuPoint({ src, vignette, alt }: { src: string; vignette: NonNullable<Faille["vignette"]>; alt: string }) {
+function PhotoDuPoint({ src, vignette, alt, coteConfirmee }: { src: string; vignette: NonNullable<Faille["vignette"]>; alt: string; coteConfirmee?: string | null }) {
   const r = vignette.hauteur / vignette.largeur;
   const tranche = `calc(100cqw * ${r})`;
-  const [, y1, , y2] = vignette.boite ?? [0, 0.25, 1, 0.75];
+  const [x1, y1, , y2] = vignette.boite ?? [0, 0.25, 1, 0.75];
   // Élément plus haut que le cadre : on montre son sommet et son libellé ; sinon on le centre.
   const haut = (y2 - y1) * r > 0.6 ? Math.max(0, y1 - 0.06) : null;
   const decalage = haut != null ? `calc(100cqw * ${-(haut * r).toFixed(4)})` : `calc(50cqh - 100cqw * ${(((y1 + y2) / 2) * r).toFixed(4)})`;
@@ -256,6 +256,22 @@ function PhotoDuPoint({ src, vignette, alt }: { src: string; vignette: NonNullab
       <div className="absolute left-0 w-full overflow-hidden" style={{ height: tranche, top: `clamp(min(0px, calc(100cqh - ${tranche})), ${decalage}, 0px)` }}>
         {/* eslint-disable-next-line @next/next/no-img-element -- URL signée de courte durée, hors du loader d'images */}
         <img src={src} alt={alt} className="absolute top-0 left-0 w-full max-w-none" style={{ transform: `translateY(-${(vignette.index * 100) / vignette.total}%)` }} />
+        {/* La photo porte l'estimation de la vidéo ; une fois la cote confirmée, son étiquette est recouverte par la cote confirmée. */}
+        {coteConfirmee && (
+          <span
+            className="absolute box-border bg-[#FF8A00] leading-none whitespace-nowrap text-black"
+            style={{
+              left: `${(x1 * 100).toFixed(2)}%`,
+              top: `calc(100cqw * ${r} * ${y1.toFixed(4)} - 100cqw * 0.074)`,
+              height: "calc(100cqw * 0.074)",
+              fontSize: "calc(100cqw * 0.038)",
+              padding: "calc(100cqw * 0.017)",
+              minWidth: "calc(100cqw * 0.36)",
+            }}
+          >
+            {coteConfirmee}
+          </span>
+        )}
       </div>
     </div>
   );

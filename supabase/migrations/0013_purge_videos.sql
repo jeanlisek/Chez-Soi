@@ -1,4 +1,4 @@
--- 0011_purge_videos.sql
+-- 0013_purge_videos.sql
 -- Conservation des vidéos du logement : un mois après l'envoi (décision du CDO, 19/11/2026).
 -- Une vidéo ne sert plus après l'analyse : le modèle 3D, l'image annotée, les points et leurs cotes
 -- sont gardés à part (bucket modeles3d, tables failles et analyses).

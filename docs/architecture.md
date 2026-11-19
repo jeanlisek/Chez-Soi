@@ -1,6 +1,6 @@
 # Architecture
 
-Référence : Architecture technique v3 (Briac, 17/11), résumée dans [`CLAUDE.md`](../CLAUDE.md). Cette page décrit les circuits tels qu'ils tournent en production au 18/11.
+Référence : Architecture technique v3 (Briac, 17/11), résumée dans [`CLAUDE.md`](../CLAUDE.md). Cette page décrit les circuits tels qu'ils tournent en production au 19/11.
 
 ## Principe : c'est l'application qui écrit en base
 
@@ -30,4 +30,11 @@ n8n orchestre les appels au Space Hugging Face, mais n'a aucune clé Supabase. I
 
 ## Agent H
 
-Circuit sans attente côté Vercel : une route crée la session, les webhooks signés déclenchent les réponses aux outils (`get_mesures`, `get_contrat`), et `demander_validation` n'est répondu qu'après le clic de l'utilisateur. Détail et règles dans `CLAUDE.md` et `agents/README.md`. Branchement dans l'application : PR #40.
+Circuit sans attente côté Vercel :
+
+1. `POST /api/agent/run` crée la session sur l'agent maison figé (`nom:N`) de l'usage, avec la page de départ et la tâche préparées depuis la base, et écrit `runs_agent`.
+2. H appelle `/api/webhooks/hai` (signature vérifiée, doublons ignorés dans `webhooks_recus`). La route répond tout de suite, puis relit `/changes` : coupe-circuit sur les pages vues, réponses à `get_mesures` et `get_contrat`, enregistrement de `demander_validation` dans `validations`.
+3. `demander_validation` n'est répondu qu'après le clic de l'utilisateur (`POST /api/agent/tools`). `POST /api/agent/steer` envoie une consigne pendant le run.
+4. En fin de session, la réponse est revalidée (Zod et contrôle métier) et `runs_agent` complété. Usage 1 : le code télécharge le PDF des conditions générales sur les domaines officiels de l'assureur et vérifie lui-même la référence.
+
+Branchés dans l'application : usages 1 et 2. Usage 3 : agent `chez-soi-demarches:1` testé par script (4 runs sur 4), route encore à brancher (`/api/agent/run` renvoie 501 pour cet usage). Résultats mesurés : [`resultats.md`](resultats.md). Règles et détail : `CLAUDE.md` et `agents/README.md`.

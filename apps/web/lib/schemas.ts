@@ -48,7 +48,8 @@ export const getContratSortieSchema = z.object({
     .object({
       duree_max_jours: z.number(),
       protections: z.array(z.string()),
-      clause: z.string(),
+      /** `obligations_contrat.clause` peut être vide en base : sans intitulé, la page reste la référence. */
+      clause: z.string().nullish(),
       page: z.number(),
     })
     .optional(),
@@ -65,7 +66,8 @@ export const getContratSortieSchema = z.object({
         valeur: z.number().optional(),
         unite: z.string().optional(),
         texte: z.string(),
-        clause: z.string(),
+        /** Peut manquer : la RPC retire les valeurs nulles. */
+        clause: z.string().nullish(),
         page: z.number(),
         source: z.enum(["cg", "cp"]),
       }),

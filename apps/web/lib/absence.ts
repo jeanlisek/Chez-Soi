@@ -1,4 +1,4 @@
-import type { AbsenceEntree, AbsenceSortie } from "./schemas";
+import type { AbsenceACalculer, AbsenceSortie } from "./schemas";
 
 /**
  * Fenêtre d'inscription à l'Opération tranquillité vacances, d'après service-public.gouv.fr
@@ -25,15 +25,17 @@ function versDate(nombreDeJours: number): string {
 
 /**
  * Compare une absence au seuil d'inoccupation du contrat et à la fenêtre OTV. Calcul pur,
- * sans base ni réseau : `/api/absence` l'appelle, et l'usage 3 n'est préparé que si l'un
- * des deux est utile.
+ * sans base ni réseau : `/api/absence` l'appelle avec les clauses lues sur le contrat.
+ * L'OTV et l'information de l'assureur sont proposées à tous (décision de Jean-Li, 18/11),
+ * avec ou sans contrat, dans la fenêtre OTV ou non.
  *
  * - Durée = nombre de nuits (retour − départ). Jeanne : 15/12 → 19/01 = 35 jours.
  * - `depasse_seuil` : vrai si la durée dépasse strictement `duree_max_jours`. `null` sans
  *   contrat (parcours B) ou sans clause d'inoccupation retrouvée.
  * - `delai_otv_ok` : vrai si aujourd'hui est dans la fenêtre d'inscription.
+ * - Information de l'assureur : « exige » si le seuil est dépassé, sinon « recommande ».
  */
-export function evaluerAbsence(entree: AbsenceEntree, aujourdhui: string): AbsenceSortie {
+export function evaluerAbsence(entree: AbsenceACalculer, aujourdhui: string): AbsenceSortie {
   const depart = jours(entree.depart_le);
   const retour = jours(entree.retour_le);
   if (retour < depart) throw new Error("retour_le est avant depart_le.");
@@ -63,7 +65,9 @@ export function evaluerAbsence(entree: AbsenceEntree, aujourdhui: string): Absen
       delai_ok: delaiOtvOk,
       trop_tot: maintenant < ouverture,
     },
-    informer_assureur: depasseSeuil === true,
-    preparer_usage_3: depasseSeuil === true || delaiOtvOk,
+    clauses_absence: entree.absence ?? [],
+    informer_assureur: true,
+    informer_assureur_niveau: depasseSeuil === true ? "exige" : "recommande",
+    preparer_usage_3: true,
   };
 }

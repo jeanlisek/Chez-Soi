@@ -165,20 +165,27 @@ export const controleDocumentSchema = z.object({
 export type ControleDocument = z.infer<typeof controleDocumentSchema>;
 /* ---------- Usage 3 (démarches) : absence et réponse finale de l'agent ---------- */
 
-const dateIso = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date attendue au format AAAA-MM-JJ");
+/** Date `AAAA-MM-JJ` qui existe (« 2026-02-30 » est refusée). */
+const dateIso = z.iso.date("date attendue au format AAAA-MM-JJ");
 
 /**
- * Entrée de `POST /api/absence` (issue #14). `inoccupation` est le bloc renvoyé par
- * `get_contrat_champs(logement, ['inoccupation'])` ; absent en parcours B (sans contrat).
- * Tant que le client Supabase n'est pas écrit, l'appelant le fournit.
+ * Entrée de `POST /api/absence` (issue #14) : le logement et les dates, rien d'autre. Les
+ * clauses (`inoccupation`, `absence`) sont lues côté serveur par
+ * `get_contrat_champs(logement, ['inoccupation', 'absence'])` ; une clause envoyée par le
+ * client est ignorée.
  */
 export const absenceEntreeSchema = z.object({
-  logement_id: z.string().optional(),
+  logement_id: z.uuid(),
   depart_le: dateIso,
   retour_le: dateIso,
-  inoccupation: getContratSortieSchema.shape.inoccupation,
 });
 export type AbsenceEntree = z.infer<typeof absenceEntreeSchema>;
+
+/** Ce que `evaluerAbsence` compare : les dates, et les clauses lues sur le contrat (aucune en parcours B). */
+export type AbsenceACalculer = Pick<AbsenceEntree, "depart_le" | "retour_le"> & {
+  inoccupation?: GetContratSortie["inoccupation"];
+  absence?: GetContratSortie["absence"];
+};
 
 export const absenceSortieSchema = z.object({
   duree_jours: z.number(),
@@ -197,8 +204,17 @@ export const absenceSortieSchema = z.object({
     delai_ok: z.boolean(),
     trop_tot: z.boolean(),
   }),
-  informer_assureur: z.boolean(),
-  preparer_usage_3: z.boolean(),
+  /** Clauses du contrat liées à l'absence, sans seuil de durée (franchise, protections…). */
+  clauses_absence: getContratSortieSchema.shape.absence.unwrap(),
+  /**
+   * Toujours vrai (décision de Jean-Li, 18/11) : l'information de l'assureur est proposée à
+   * tous. « exige » quand une clause d'inoccupation est dépassée (clause et page), sinon
+   * « recommande » (pas de contrat, pas de clause, ou seuil non dépassé).
+   */
+  informer_assureur: z.literal(true),
+  informer_assureur_niveau: z.enum(["exige", "recommande"]),
+  /** Toujours vrai : l'usage 3 est proposé à tous, OTV ouverte ou non (`otv` dit quand s'inscrire). */
+  preparer_usage_3: z.literal(true),
 });
 export type AbsenceSortie = z.infer<typeof absenceSortieSchema>;
 

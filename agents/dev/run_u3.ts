@@ -140,9 +140,9 @@ async function main(): Promise<void> {
   // Ce que /api/absence calcule pour cette absence (même fonction).
   const contrat = assureur.contrat ? getContratSortieSchema.parse(assureur.contrat) : null;
   const aujourdhui = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date());
-  const absence = evaluerAbsence({ ...fixture.absence, inoccupation: contrat?.inoccupation }, aujourdhui);
+  const absence = evaluerAbsence({ ...fixture.absence, inoccupation: contrat?.inoccupation, absence: contrat?.absence }, aujourdhui);
   console.log(
-    `Absence ${fixture.absence.depart_le} → ${fixture.absence.retour_le} : ${absence.duree_jours} jours, seuil ${absence.seuil_jours ?? "aucun"} → informer l'assureur : ${absence.informer_assureur ? "oui" : "non"} ; fenêtre OTV ${absence.otv.ouverture_le} → ${absence.otv.limite_le} (${absence.otv.delai_ok ? "ouverte" : absence.otv.trop_tot ? "pas encore ouverte" : "fermée"}).`,
+    `Absence ${fixture.absence.depart_le} → ${fixture.absence.retour_le} : ${absence.duree_jours} jours, seuil ${absence.seuil_jours ?? "aucun"} → informer l'assureur : ${absence.informer_assureur_niveau === "exige" ? "exigé par le contrat" : "recommandé"} ; fenêtre OTV ${absence.otv.ouverture_le} → ${absence.otv.limite_le} (${absence.otv.delai_ok ? "ouverte" : absence.otv.trop_tot ? "pas encore ouverte" : "fermée"}).`,
   );
   if (drapeau("verifier-absence")) {
     console.log(JSON.stringify(absence, null, 2));

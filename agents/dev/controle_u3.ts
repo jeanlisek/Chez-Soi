@@ -41,6 +41,12 @@ function formesDate(iso: string): string[] {
   return [iso, `${jour}/${mois}/${annee}`, `${jour}/${mois}`, `${j} ${nomMois}`, `${j}er ${nomMois}`];
 }
 
+/** Vrai si `morceau` figure dans `texte` sans chiffre collé avant ni après (« 1 decembre » ≠ « 21 decembre », « 35 » ≠ « 135 »). */
+export function contientBorne(texte: string, morceau: string): boolean {
+  const echappe = morceau.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?<!\\d)${echappe}(?!\\d)`).test(texte);
+}
+
 /**
  * L'agent ne doit rien envoyer : liens sur les sites officiels, arrêt demandé avant envoi,
  * récapitulatif qui reprend les dates, la durée et le seuil, sans donnée personnelle (l'agent
@@ -77,14 +83,14 @@ export function controlerSortieUsage3(sortie: SortieUsage3, attendu: AttenduUsag
     ["retour", attendu.retour_le],
   ] as const;
   for (const [quoi, iso] of dates) {
-    if (!formesDate(iso).some((forme) => texte.includes(forme))) {
+    if (!formesDate(iso).some((forme) => contientBorne(texte, forme))) {
       ecarts.push(`recapitulatif : date de ${quoi} (${iso}) absente`);
     }
   }
-  if (!texte.includes(String(attendu.duree_jours))) {
+  if (!contientBorne(texte, String(attendu.duree_jours))) {
     ecarts.push(`recapitulatif : durée (${attendu.duree_jours} jours) absente`);
   }
-  if (attendu.seuil_jours !== null && !texte.includes(String(attendu.seuil_jours))) {
+  if (attendu.seuil_jours !== null && !contientBorne(texte, String(attendu.seuil_jours))) {
     ecarts.push(`recapitulatif : seuil d'inoccupation (${attendu.seuil_jours} jours) absent`);
   }
   // Une clause des conditions particulières (fictives pour Jeanne) doit être présentée comme

@@ -4,6 +4,21 @@ Le prompt définitif concerne tous les objets du logement. Le banc reproductible
 le cas fictif du sous-tapis 60 × 160 cm ; les contrôles de couverture ne sont pas des
 règles universelles pour les meubles ou les équipements électriques.
 
+## Frontière avec l’application
+
+Le lanceur local utilise `schema_u2.ts` (`sortieUsage2BancSchema`) et trois outils,
+dont `lire_fiche_produit`. L’app continue à utiliser `sortieUsage2Schema` de `main`
+et les deux outils de `chez-soi-acheteur:1` : `get_mesures`, `demander_validation`.
+La #32 ne modifie plus le format de réponse de l’app et ne lui ajoute aucun handler.
+
+Les runs 38/39 ne sont pas des essais depuis l’app. Les trois citations du banc ne
+prouvent aucune amélioration sans le lecteur ; même avec lui, Flash a déformé le
+nom et `citation_compatibilite`. Le format de production conserve sa seule
+`citation_decoupe` optionnelle. Avant toute promotion du schéma expérimental :
+comparaison en Flash, mêmes cas et arrêt, depuis l’app avec ses deux outils, puis
+décision explicite sur le handler et la révision H. Aucun nouvel essai H n’est
+nécessaire pour vérifier cette séparation de code.
+
 ## Agent et skill
 
 Référence équipe confirmée par Aurélie et accessible le 19/11 :

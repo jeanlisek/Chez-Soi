@@ -94,13 +94,17 @@ Tels quels : `apps/web/lib/hai.ts`, `dev/boucle.ts` (quota, création, suivi, ca
 `agents/prompts/u2_recommandation.md` est générique pour les objets du logement ;
 `agents/dev/run_u2.ts` injecte la fixture tapis uniquement pour les essais.
 Le JSON reste plat, notamment `citation_decoupe?: string`, compatible PR #20.
+Le schéma expérimental `bench/schema_u2.ts` est utilisé uniquement par le lanceur
+local. `apps/web/lib/schemas.ts` reste identique à `main` : l’app garde son format
+et les deux outils de l’agent publié. La #32 ne branche pas un nouvel outil serveur.
 Le banc séquentiel et les preuves indépendantes sont décrits dans `bench/README.md`.
-Référence équipe : `chez-soi-acheteur:2`. Copie autorisée dans le compte de Bastian :
-`chez-soi-acheteur:1`, même skill `verifier-dimension:1` mais organisation distincte.
-Les mesures de cette copie doivent l’indiquer explicitement.
+Référence équipe actuelle : `chez-soi-acheteur:1` avec `verifier-dimension:1`,
+dans Default, organisation de Jean-Li. Les mesures historiques du 18/11 utilisaient
+une copie personnelle, ressource distincte malgré le même nom ; elles l’indiquent.
 
 Le banc du 18/11 (10 Flash + 10 Pro, prompt archivé) est conservé dans
 `bench/resultats/2026-11-18-bastian/`. Les validations d’amélioration sont séparées.
-Le custom tool de développement `lire_fiche_produit` lit les fiches publiques
-autorisées après les mesures ; son handler Python est à porter dans le client de
-production si ce parcours est retenu. Il ne change pas `citation_decoupe?: string`.
+Le custom tool de développement `lire_fiche_produit` reste un outil de banc : il
+lit les fiches publiques autorisées après les mesures. Son raccordement serveur,
+la publication d’une nouvelle révision et un essai depuis l’app sont une décision
+séparée. Aucun gain des trois citations sans cet outil n’est établi par les essais.

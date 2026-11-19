@@ -304,3 +304,10 @@ prouvées, nom et autre citation altérés) ; second run Pro 39 en échec (neuf 
 d’outil de mesure incorrects, aucun ajout, annulation de supervision). Rapports
 séparés dans `agents/bench/resultats/2026-11-19-t11-equipe*/`. Quota final nul.
 Conserver Flash pour la démo ; plan B public du run 35 inchangé.
+
+Relecture #32 du 19/11 : `sortieUsage2Schema` de l’app reste exactement celui de
+`main`. Les champs expérimentaux (trois citations et catégories d’objets) vivent
+dans `agents/bench/schema_u2.ts`, importé seulement par le lanceur et ses tests.
+`lire_fiche_produit` reste un outil local de banc, absent de l’agent et des routes
+de production. Aucun gain du nouveau schéma sans lecteur n’est mesuré. Un essai
+depuis l’app est requis avant de modifier son contrat ou publier un nouvel agent.

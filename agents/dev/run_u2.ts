@@ -19,17 +19,16 @@ import {
   demanderValidationSortieSchema,
   getMesuresEntreeSchema,
   getMesuresSortieSchema,
-  sortieUsage2Schema,
   versJsonSchema,
   type DemanderValidationSortie,
   type GetMesuresSortie,
   type SchemaZod,
-  type SortieUsage2,
 } from "../../apps/web/lib/schemas";
 import { executerRun, type ContexteOutil, type OutilLocal } from "./boucle";
 import { controlerSortieUsage2 } from "./controle";
 import { ecartsCitationFiche } from "./fiche";
 import { creerPilotage } from "./pilotage";
+import { sortieUsage2BancSchema, type SortieUsage2Banc } from "../bench/schema_u2";
 
 const RACINE = path.resolve(__dirname, "../..");
 const FAILLE_ID = "faille-demo-tapis-01";
@@ -155,15 +154,15 @@ async function main(): Promise<void> {
 
   const pilotage = creerPilotage(option("steer"), Number(option("steer-apres-etape") ?? 3));
   console.log(`Usage 2 · sous-tapis 60 × 160 cm · site : ${site} · agent : ${option("agent") ?? HAI_AGENT}`);
-  const resultat = await executerRun<SortieUsage2>({
+  const resultat = await executerRun<SortieUsage2Banc>({
     usage: "u2",
     agent: option("agent") ?? HAI_AGENT,
     prompt,
     modele: option("modele"),
     surEtatActif: pilotage.surEtatActif,
     outils,
-    schemaSortie: sortieUsage2Schema,
-    formatReponse: versJsonSchema(sortieUsage2Schema),
+    schemaSortie: sortieUsage2BancSchema,
+    formatReponse: versJsonSchema(sortieUsage2BancSchema),
     controlerSortie: controlerSortieUsage2,
     site,
     urlDepart: urlSite.href,

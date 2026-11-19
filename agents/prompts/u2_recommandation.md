@@ -1,3 +1,6 @@
+<!-- Gabarit expérimental du banc local à trois outils, dont lire_fiche_produit.
+L’app ne charge pas ce fichier et conserve le schéma et les outils de main.
+Ce commentaire est retiré par le lanceur avant envoi à H. -->
 # Chez Soi — U2 · Recommandation d’objets pour la maison
 
 Tu recherches et compares des objets ou équipements pour toutes les pièces de la

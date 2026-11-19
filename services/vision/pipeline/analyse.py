@@ -16,7 +16,7 @@ import numpy as np
 from .cotes import agreger_cotes, dimensions_frontales, dimensions_sur_le_mur, rectangle_au_sol
 from .detection import SEUIL_COTES, SEUIL_PRESENCE, TERME_REFERENCE, TERMES_COTES, TERMES_PRESENCE, touche_le_bord
 from .export import (
-    Faille, annoter_image, ecrire_failles, exporter_glb, libelle_cote, libelle_partiel, vers_repere_glb,
+    Faille, annoter_image, ecrire_failles, exporter_glb, libelle_cote, libelle_partiel, relief_texture, vers_repere_glb,
 )
 from .frames import extraire_images
 from .reconstruction import centre_dans_la_vue, nuage_fusionne
@@ -35,6 +35,9 @@ BORNES_CM = {
 _DIMENSIONS = ("largeur_cm", "longueur_cm", "hauteur_cm")
 _MIN_POINTS = 400
 LARGEUR_IMAGE_ANNOTEE = 1080
+LARGEUR_VIGNETTE = 720  # une vignette par point dans la planche `image_annotee.jpg`
+NB_VIGNETTES_MAX = 24
+NB_RELIEFS_MAX = 12  # surfaces texturées dans modele.glb (environ 1,5 Mo chacune)
 
 
 MESSAGES_A_CONFIRMER = {
@@ -120,6 +123,57 @@ def suivre_instances(vues: list[tuple[int, str]], ecart_max: int = 3) -> list[in
     return numeros
 
 
+# Deux objets du même type à moins de cette distance (m) dans le modèle sont le même objet, revu plus tard.
+RAYON_MEME_OBJET_M = {"tapis": 0.5, "porte": 0.6, "fenetre": 0.6}
+# Éléments qui se mesurent : vus dans une seule image d'une vidéo, ce sont le plus souvent de fausses détections.
+ELEMENTS_A_CONFIRMER_PAR_DEUX_VUES = {"tapis", "porte", "fenetre"}
+NB_IMAGES_MIN_POUR_EXIGER_DEUX_VUES = 8
+
+
+def fusionner_instances_proches(mesures: list[MesureVue]) -> None:
+    """Réunit les instances d'un même type dont les centres sont proches dans le repère commun.
+
+    `suivre_instances` sépare les objets par continuité dans la vidéo : un tapis revu dix images plus tard
+    devenait un second tapis. Ici la position 3D tranche. Sans `centre_monde`, rien ne change.
+    """
+    centres: dict[tuple[str, int], np.ndarray] = {}
+    for cle in {(m.element, m.instance) for m in mesures}:
+        vus = [m.centre_monde for m in mesures if (m.element, m.instance) == cle and m.centre_monde is not None]
+        if vus:
+            centres[cle] = np.median(np.asarray(vus, float), axis=0)
+    cible = {cle: cle[1] for cle in centres}
+    for element, rayon in RAYON_MEME_OBJET_M.items():
+        instances = sorted(i for e, i in centres if e == element)
+        for a in instances:
+            for b in instances:
+                if a < b and cible[(element, b)] == b and np.linalg.norm(centres[(element, a)] - centres[(element, b)]) <= rayon:
+                    cible[(element, b)] = cible[(element, a)]
+    for mesure in mesures:
+        mesure.instance = cible.get((mesure.element, mesure.instance), mesure.instance)
+
+
+def ecarter_vues_uniques(mesures: list[MesureVue], nb_images: int) -> list[MesureVue]:
+    """Sur une vidéo, retire les éléments mesurables vus dans une seule image ET coupés par le cadre.
+
+    Un élément vu une seule fois mais en entier est gardé : sur les vidéos réelles, le regroupement entre
+    images échoue souvent et de vrais éléments (une fenêtre filmée de face) n'ont qu'une vue.
+    """
+    if nb_images < NB_IMAGES_MIN_POUR_EXIGER_DEUX_VUES:
+        return mesures
+    vues: dict[tuple[str, int], set[str]] = defaultdict(set)
+    entieres: set[tuple[str, int]] = set()
+    for mesure in mesures:
+        vues[(mesure.element, mesure.instance)].add(mesure.image)
+        if not mesure.coupe:
+            entieres.add((mesure.element, mesure.instance))
+    return [
+        m for m in mesures
+        if m.element not in ELEMENTS_A_CONFIRMER_PAR_DEUX_VUES
+        or len(vues[(m.element, m.instance)]) >= 2
+        or (m.element, m.instance) in entieres
+    ]
+
+
 def _masquees(entieres: list[MesureVue], coupees: list[MesureVue]) -> list[MesureVue]:
     """Vues « entières » en réalité masquées par un obstacle : une vue coupée du même objet en montre davantage."""
     return [
@@ -198,6 +252,86 @@ def construire_failles(mesures: list[MesureVue], piece: str | None, facteur: flo
             },
         ))
     return failles
+
+
+def planche_par_point(failles: list, vues: dict[str, dict], libelle) -> np.ndarray | None:
+    """Une vignette par point, empilées de haut en bas : l'image clé du point, avec ce seul élément encadré.
+
+    L'image annotée unique montrait une seule vue de la pièce : la page d'un tapis pouvait afficher la fenêtre.
+    Chaque faille reçoit `position_3d["vignette"]` (index, total, largeur, hauteur, boite) : l'app affiche sa tranche.
+    Un seul fichier, pour que la copie vers le stockage (n8n) ne change pas. None s'il n'y a rien à montrer.
+    """
+    vignettes: list[np.ndarray] = []
+    servies: list = []
+    boites: list[list[float]] = []
+    taille: tuple[int, int] | None = None
+    for faille in failles:
+        vue = vues.get(faille.position_3d.get("image_cle"))
+        if vue is None:
+            continue
+        instance = faille.position_3d.get("instance")
+        detection = next(
+            (d for d, m in zip(vue["detections"], vue["mesures"]) if m.element == faille.element and m.instance == instance),
+            None,
+        )
+        image = cv2.imread(str(vue["chemin"]))
+        if detection is None or image is None:
+            continue
+        annotee = annoter_image(
+            image, [{"libelle": libelle(faille), "boite_px": detection.boite_px, "masque": detection.masque}], LARGEUR_IMAGE_ANNOTEE
+        )
+        if taille is None:
+            taille = (LARGEUR_VIGNETTE, round(annotee.shape[0] * LARGEUR_VIGNETTE / annotee.shape[1]))
+        vignettes.append(cv2.resize(annotee, taille, interpolation=cv2.INTER_AREA))
+        hauteur, largeur = image.shape[:2]
+        x1, y1, x2, y2 = detection.boite_px
+        # Boîte en fractions de la vignette : l'app cadre l'affichage sur l'élément.
+        boites.append([round(x1 / largeur, 4), round(y1 / hauteur, 4), round(x2 / largeur, 4), round(y2 / hauteur, 4)])
+        servies.append(faille)
+        if len(vignettes) == NB_VIGNETTES_MAX:
+            break
+    if not vignettes or taille is None:
+        return None
+    for index, faille in enumerate(servies):
+        faille.position_3d["vignette"] = {
+            "index": index, "total": len(servies), "largeur": taille[0], "hauteur": taille[1], "boite": boites[index],
+        }
+    return np.vstack(vignettes)
+
+
+def reliefs_par_vue_cle(failles: list, vues: dict[str, dict], reconstruit, indices: dict[str, int], facteur: float) -> dict:
+    """Une « photo en relief » par image clé (voir `relief_texture`), dans le repère commun du modèle.
+
+    Chaque faille reçoit `position_3d["relief"]` : le nœud du .glb à afficher, la position de la caméra qui a filmé
+    et le point à regarder. L'app ouvre la 3D depuis cette caméra, là où la vue ressemble à la photo.
+    """
+    reliefs: dict = {}
+    for faille in failles:
+        nom = faille.position_3d.get("image_cle")
+        if nom not in indices or nom not in vues or faille.position_3d.get("repere") != "modele.glb":
+            continue
+        i = indices[nom]
+        noeud = f"vue_{i:03d}"
+        if noeud not in reliefs:
+            if len(reliefs) >= NB_RELIEFS_MAX:
+                continue
+            image = cv2.imread(str(vues[nom]["chemin"]))
+            texture = cv2.cvtColor(image, cv2.COLOR_BGR2RGB) if image is not None else reconstruit.couleurs[i]
+            # La photo d'origine n'est la bonne texture que si elle a les proportions de la carte de points.
+            h, w = reconstruit.points[i].shape[:2]
+            if abs(texture.shape[0] / texture.shape[1] - h / w) > 0.02 * h / w:
+                texture = reconstruit.couleurs[i]
+            relief = relief_texture(vers_repere_glb(reconstruit.points[i] * facteur), np.ascontiguousarray(texture))
+            if relief is None:
+                continue
+            reliefs[noeud] = relief
+        camera = vers_repere_glb(reconstruit.poses[i][:3, 3] * facteur)
+        faille.position_3d["relief"] = {
+            "noeud": noeud,
+            "camera": [round(float(c), 3) for c in camera],
+            "cible": faille.position_3d["centre"],
+        }
+    return reliefs
 
 
 def choisir_vue_de_reference(vues: dict[str, list[tuple[str, bool, int]]]) -> str:
@@ -347,6 +481,11 @@ def analyser_images(
                     reconstruit.points[indices[nom]], _zone(detection, vue["points"].shape[:2])
                 )
 
+        # La position 3D réunit un objet revu plus tard dans la vidéo, au lieu d'en compter deux.
+        fusionner_instances_proches(mesures)
+    # Un tapis, une porte ou une fenêtre vus dans une seule image d'une vidéo : presque toujours une erreur.
+    mesures = ecarter_vues_uniques(mesures, len(images))
+
     facteur_a4 = facteur_echelle_a4(mesures)
     facteur = facteur_a4 if (calibrer_a4 and facteur_a4) else 1.0
     failles = construire_failles(mesures, piece, facteur)
@@ -380,7 +519,11 @@ def analyser_images(
         nom = choisir_vue_de_reference({n: resume(v) for n, v in vues.items()})
         vue = vues[nom]
         bgr = cv2.imread(str(vue["chemin"]))
-        cv2.imwrite(str(sortie / "image_annotee.jpg"), annoter_image(bgr, annotations_de(vue), LARGEUR_IMAGE_ANNOTEE))
+        planche = planche_par_point(failles, vues, _libelle)
+        cv2.imwrite(
+            str(sortie / "image_annotee.jpg"),
+            planche if planche is not None else annoter_image(bgr, annotations_de(vue), LARGEUR_IMAGE_ANNOTEE),
+        )
         image_annotee = "image_annotee.jpg"
         if reconstruit is None:
             # Sans reconstruction, le modèle 3D est la seule vue de référence.
@@ -388,10 +531,17 @@ def analyser_images(
             for faille in failles:
                 if faille.position_3d["image_cle"] == nom:
                     faille.position_3d["repere"] = "modele.glb"
+    reliefs: dict[str, object] = {}
     if reconstruit is not None:
-        nuage, couleurs = nuage_fusionne(reconstruit.points * facteur, reconstruit.couleurs)
+        reliefs = reliefs_par_vue_cle(failles, vues, reconstruit, indices, facteur)
+        # Modèle montré à l'utilisateur : densité régulière (1 point par cube de 1 cm), points isolés retirés.
+        # Avec des reliefs, le nuage n'est plus que la vue de repli : il est allégé pour tenir dans 50 Mo.
+        nuage, couleurs = nuage_fusionne(
+            reconstruit.points * facteur, reconstruit.couleurs, max_points=400_000 if reliefs else 900_000,
+            voxel_m=0.01, nettoyer=True,
+        )
     if nuage is not None:
-        exporter_glb(vers_repere_glb(nuage), couleurs, sortie / "modele.glb")
+        exporter_glb(vers_repere_glb(nuage), couleurs, sortie / "modele.glb", reliefs)
         modele_3d = "modele.glb"
 
     ecrire_failles(failles, sortie / "failles.json", logement_id, modele_3d)

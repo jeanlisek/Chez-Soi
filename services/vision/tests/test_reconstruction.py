@@ -55,3 +55,16 @@ def test_les_autres_depots_torch_hub_ne_sont_pas_detournes():
     charger("autre/depot", "modele", pretrained=True)
 
     assert appels == [("autre/depot", {"pretrained": True})]
+
+
+def test_nuage_fusionne_garde_un_point_par_voxel_et_retire_les_points_isoles():
+    grille = np.stack(np.meshgrid(np.arange(20), np.arange(20), [0.0], indexing="ij"), -1).reshape(-1, 3) * 0.05 + 0.004
+    doublons = grille + 0.001  # la même surface revue par une autre vue, décalée d'un millimètre
+    isole = np.array([[9.0, 9.0, 9.0]])
+    points = np.concatenate([grille, doublons, isole])[None]
+    couleurs = np.full(points.shape, 100, np.uint8)
+
+    nuage, teintes = nuage_fusionne(points, couleurs, max_points=10_000, voxel_m=0.01, nettoyer=True)
+
+    assert len(nuage) == len(teintes) == len(grille)
+    assert nuage.max() < 2.0

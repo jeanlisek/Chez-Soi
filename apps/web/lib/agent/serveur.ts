@@ -153,13 +153,26 @@ export async function traiterSession(admin: Admin, hai: ClientHai, sessionId: st
       if (motif) coupe = { motif, source, url: nettoyerUrl(url) };
     }
   }
-  if (coupe && !run.coupe_circuit && !estEtatTerminal(changements.status)) {
-    await hai.annulerSession(sessionId).catch(() => undefined);
+  // Le coupe-circuit est écrit AVANT l'annulation : si H ne répond pas, le run reste marqué
+  // et l'annulation est retentée au prochain webhook ou au prochain GET (lireRun). Tant que
+  // la session n'est pas terminale, on ne répond plus à aucun outil (relecture de Briac, #40).
+  // Une page interdite vue par une session déjà terminée est enregistrée aussi, pour l'audit.
+  const dejaCoupe = Boolean(run.coupe_circuit);
+  if (coupe && !dejaCoupe) {
     await admin
       .from("runs_agent")
-      .update({ coupe_circuit: coupe as Json, annulee_par_script: true, motif_fin: "coupe_circuit" })
+      .update({ coupe_circuit: coupe as Json, motif_fin: "coupe_circuit" })
       .eq("session_id", sessionId);
-    return `coupe-circuit : ${coupe.motif}`;
+  }
+  if ((coupe || dejaCoupe) && !estEtatTerminal(changements.status)) {
+    try {
+      await hai.annulerSession(sessionId);
+      await admin.from("runs_agent").update({ annulee_par_script: true }).eq("session_id", sessionId);
+    } catch (erreur) {
+      console.error("[agent] annulation après coupe-circuit impossible, nouvel essai au prochain appel", sessionId, erreur);
+      return "coupe-circuit : annulation à retenter";
+    }
+    return `coupe-circuit : ${coupe?.motif ?? "session déjà coupée"}`;
   }
 
   // 2. Outils en attente.
@@ -200,7 +213,7 @@ export async function traiterSession(admin: Admin, hai: ClientHai, sessionId: st
         fin: changements.finished_at ?? new Date().toISOString(),
         nb_etapes: changements.metrics?.steps ?? null,
         cout_usd: changements.metrics?.total_cost ?? null,
-        motif_fin: run.coupe_circuit ? "coupe_circuit" : "terminee",
+        motif_fin: coupe || dejaCoupe ? "coupe_circuit" : "terminee",
         sortie_finale: (evaluation?.brut ?? changements.answer ?? null) as Json,
         schema_valide: evaluation?.schema_valide ?? null,
         erreurs_schema: evaluation?.erreurs_schema ?? null,

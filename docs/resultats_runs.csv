@@ -1,0 +1,41 @@
+run,date,usage,workflow,site,agent,modele,cadre,scenario,resultat,duree_s,main_s,cout_usd,session,preuve
+1,2026-11-18,2,W1,ikea.com/fr/fr,h/web-surfer-flash,flash,equipe,,Partiel,189.5,240,0.038,9a0b4d9b,agents/bench/runs
+2,2026-11-18,2,W1,ikea.com/fr/fr,h/web-surfer-flash,flash,equipe,,Succès,82.3,240,0.032,a4b8c71c,agents/bench/runs
+3,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:2,flash,equipe,,Succès,47.2,240,0.022,462b0477,agents/bench/runs
+4,2026-11-18,1,W4,maif.fr,chez-soi-sourcing:1,flash,equipe,,Succès,177.9,360,0.126,1f5833d7,agents/bench/runs
+5,2026-11-18,1,W4,maif.fr,chez-soi-sourcing:2,flash,equipe,,Succès,137.3,360,0.076,6737e71f,agents/bench/runs (replay public)
+6,2026-11-18,3,W2,service-public.gouv.fr + maif.fr,chez-soi-demarches:1,flash,equipe,,Succès,77.3,900,0.041,8fc0ec9f,agents/bench/runs
+7,2026-11-18,2,W1,ikea.com/fr/fr,h/web-surfer-flash,flash,equipe,sans skill,Partiel,69.9,240,0.031,0ca51c6d,agents/bench/runs
+8,2026-11-18,1,W4,v2.acheel.com,chez-soi-sourcing:2,flash,equipe,CG non publiées,Succès,52.9,360,0.032,d89ef3b7,agents/bench/runs
+9,2026-11-18,1,W4,maif.fr,chez-soi-sourcing:2,flash,equipe,,Succès,136.9,360,0.088,6afb1a73,agents/bench/runs
+10,2026-11-18,3,W2,service-public.gouv.fr + maif.fr,chez-soi-demarches:1,flash,equipe,,Succès,116.2,900,0.075,263bd7fe,agents/bench/runs
+11,2026-11-18,3,W2,service-public.gouv.fr + maif.fr,chez-soi-demarches:1,flash,equipe,,Succès,62.7,900,0.040,3e5f955f,agents/bench/runs
+12,2026-11-18,3,W2,service-public.gouv.fr + maif.fr,chez-soi-demarches:1,flash,equipe,,Succès,53.6,900,0.045,cd1fd612,agents/bench/runs
+13,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,banc,ikea-reference,Partiel,65.7,,0.034,66fcafb3,PR #32
+14,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,banc,ikea-reference,Partiel,56.5,,0.023,8e714d7c,PR #32
+15,2026-11-18,2,W1,decoweb.com,chez-soi-acheteur:1 (copie),flash,banc,decoweb-secours,Partiel,103.7,,0.052,b76b3778,PR #32
+16,2026-11-18,2,W1,decoweb.com,chez-soi-acheteur:1 (copie),flash,banc,decoweb-secours,Partiel,56.1,,0.037,271cffb8,PR #32
+17,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,banc,pilotage-sans-decoupe,Partiel,126.3,,0.067,828c8b13,PR #32
+18,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,banc,pilotage-sans-decoupe,Partiel,63.1,,0.022,5627b1a5,PR #32
+19,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,banc,pilotage-budget-3,Partiel,90.4,,0.045,fc7d9caf,PR #32
+20,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,banc,pilotage-budget-3,Partiel,100.2,,0.049,e3475dbe,PR #32
+21,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,banc,budget-impossible,Partiel,65.2,,0.028,d0a8409d,PR #32
+22,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,banc,budget-impossible,Partiel,45.7,,0.023,e0f5d206,PR #32
+23,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,banc,ikea-reference,Partiel,85.3,,0.079,fb9383b8,PR #32
+24,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,banc,ikea-reference,Échec,,,0.377,d2ad68bf,PR #32
+25,2026-11-18,2,W1,decoweb.com,chez-soi-acheteur:1 (copie),pro,banc,decoweb-secours,Partiel,113.2,,0.099,3d131fb9,PR #32
+26,2026-11-18,2,W1,decoweb.com,chez-soi-acheteur:1 (copie),pro,banc,decoweb-secours,Partiel,98.9,,0.085,050a5305,PR #32
+27,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,banc,pilotage-sans-decoupe,Partiel,162.2,,0.157,7f3426e2,PR #32
+28,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,banc,pilotage-sans-decoupe,Partiel,125.5,,0.121,4b968598,PR #32
+29,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,banc,pilotage-budget-3,Partiel,86.8,,0.078,e6f1961d,PR #32
+30,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,banc,pilotage-budget-3,Partiel,104.2,,0.093,06df8c0e,PR #32
+31,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,banc,budget-impossible,Partiel,52.0,,0.029,2f31a24b,PR #32
+32,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,banc,budget-impossible,Partiel,24.1,,0.016,3991b03d,PR #32
+33,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,hors_banc,validation-lecture-textuelle,Partiel,35.8,,0.017,5a93112a,PR #32
+34,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),pro,hors_banc,validation-lecture-textuelle,Partiel,133.6,,0.063,3ca647b5,PR #32
+35,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,hors_banc,pilotage-point-relais,Succès,81.9,,0.028,dfb8e4d2,replay public
+36,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,hors_banc,validation-lecture-textuelle,Partiel,44.4,,0.021,396030a9,PR #32
+37,2026-11-18,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1 (copie),flash,hors_banc,validation-lecture-textuelle,Partiel,39.9,,0.017,3ca34593,PR #32
+38,2026-11-19,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1,flash,t11,moins de 50 €,Partiel,63.8,,0.037,acbe0b56,PR #32
+39,2026-11-19,2,W1,ikea.com/fr/fr,chez-soi-acheteur:1,pro,t11,moins de 50 €,Échec,165.2,,0.118,63e5056a,PR #32
+40,2026-11-19,2,W1,ikea.com/fr/fr,chez-soi-acheteur:2,flash,t11,moins de 50 €,Partiel,57.7,,0.029,e806f94c,PR #32

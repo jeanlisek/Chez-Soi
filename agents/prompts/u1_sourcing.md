@@ -1,3 +1,6 @@
 # Usage 1 · Sourcing
 
-> Amorce : prompt à rédiger. Lecture seule : retrouver les conditions générales sur le site de l'assureur et renvoyer leur URL.
+> Amorce du 16/11, gardée pour l'historique. La consigne en service est ailleurs :
+>
+> - instructions permanentes de l'agent `chez-soi-sourcing` : [`../definitions/chez-soi-sourcing.instructions.md`](../definitions/chez-soi-sourcing.instructions.md) ;
+> - consigne de session et contrôle de la réponse : `apps/web/lib/agent/usages.ts` (usage 1).

@@ -1,3 +1,6 @@
 # Usage 3 · Démarches
 
-> Amorce : prompt définitif à rédiger (issue #6). Le prompt provisoire, testé en local, est `agents/dev/prompt_u3_provisoire.md` (issue #14) : préparer l'information de l'assureur et l'OTV sans connexion ni envoi, puis s'arrêter sur `demander_validation` (`action: "envoi"`).
+> Amorce du 16/11, gardée pour l'historique. La consigne en service est ailleurs :
+>
+> - instructions permanentes de l'agent `chez-soi-demarches` : [`../definitions/chez-soi-demarches.instructions.md`](../definitions/chez-soi-demarches.instructions.md) ;
+> - prompt de session testé sur 4 runs : [`../dev/prompt_u3_provisoire.md`](../dev/prompt_u3_provisoire.md). Il rejoint `apps/web/lib/agent/usages.ts` quand l'usage 3 est branché dans l'application.

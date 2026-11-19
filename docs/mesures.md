@@ -1,6 +1,6 @@
 # Mesures
 
-> Mesures de l'agent (outcome, error_code, dimension vérifiée) issues de `runs_agent` : à rédiger.
+> Cette page mesure la précision du service vision. Les mesures de l'agent H (taux de réussite, durée, coût, cas d'échec) sont dans [`resultats.md`](resultats.md).
 
 ## Précision des cotes du service vision
 

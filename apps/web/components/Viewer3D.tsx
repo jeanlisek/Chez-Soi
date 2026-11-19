@@ -20,6 +20,8 @@ export type Viewer3DProps = {
   tourner?: boolean;
   apres?: boolean;
   className?: string;
+  /** Position de l'élément dans le modèle (.glb, en mètres) : la vue le vise et le signale. */
+  repere?: { position: [number, number, number]; libelle: string } | null;
 };
 
 /** Valeur au centile `q` (0 à 1) d'un axe du nuage, sur un échantillon d'au plus 40 000 points. */
@@ -86,7 +88,7 @@ function preparerNuage(scene: Object3D): { geometrie: BufferGeometry; centre: Ve
  * première image de la vidéo (caméra à l'origine, en mètres, y vers le haut). On retrouve donc le
  * cadrage du début de la vidéo, puis on tourne autour du centre de la pièce.
  */
-function Modele({ url, tourner }: { url: string; tourner: boolean }) {
+function Modele({ url, tourner, repere }: { url: string; tourner: boolean; repere?: Viewer3DProps["repere"] }) {
   const { scene } = useGLTF(url);
   const camera = useThree((etat) => etat.camera);
   const nuage = useMemo(() => preparerNuage(scene), [scene]);
@@ -103,9 +105,13 @@ function Modele({ url, tourner }: { url: string; tourner: boolean }) {
     return m;
   }, []);
 
+  // Avec un élément repéré, la vue vise l'élément ; sinon le centre de la pièce.
+  const cible = useMemo(() => (repere ? new Vector3(...repere.position) : (nuage?.centre ?? null)), [repere, nuage]);
+
   useEffect(() => {
-    if (!nuage) return;
-    const { centre, rayon } = nuage;
+    if (!nuage || !cible) return;
+    const { rayon } = nuage;
+    const centre = cible;
     // Trop près du centre (vidéo filmée en tournant sur place) : on recule d'un pas pour voir la pièce.
     if (centre.length() < 0.8) camera.position.set(centre.x, centre.y + 0.2, centre.z + Math.max(1.2, rayon));
     else camera.position.set(0, 0, 0);
@@ -114,7 +120,7 @@ function Modele({ url, tourner }: { url: string; tourner: boolean }) {
     camera.far = Math.max(50, rayon * 10);
     camera.lookAt(centre);
     camera.updateProjectionMatrix();
-  }, [nuage, camera]);
+  }, [nuage, cible, camera]);
 
   useEffect(() => () => {
     nuage?.geometrie.dispose();
@@ -125,9 +131,17 @@ function Modele({ url, tourner }: { url: string; tourner: boolean }) {
   return (
     <>
       <points geometry={nuage.geometrie} material={materiau} />
+      {repere && (
+        <Html position={repere.position} center zIndexRange={[5, 0]}>
+          <div className="pointer-events-none flex flex-col items-center gap-1">
+            <span className="rounded-full bg-nuit px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-white">{repere.libelle}</span>
+            <span className="h-9 w-9 rounded-full border-[3px] border-[#FF8A00] bg-[#FF8A00]/25" />
+          </div>
+        </Html>
+      )}
       <OrbitControls
         makeDefault
-        target={nuage.centre}
+        target={cible ?? nuage.centre}
         enablePan={false}
         minDistance={0.3}
         maxDistance={Math.max(4, nuage.rayon * 3)}
@@ -213,6 +227,7 @@ export function Viewer3D({
   tourner = false,
   apres = false,
   className,
+  repere,
 }: Viewer3DProps) {
   // Pièce schématique (pas de modèle, ou modèle illisible) : ses propres contrôles.
   const schematique = (
@@ -238,7 +253,7 @@ export function Viewer3D({
         <Suspense fallback={null}>
           {modeleUrl ? (
             <RepliModele repli={schematique}>
-              <Modele url={modeleUrl} tourner={tourner} />
+              <Modele url={modeleUrl} tourner={tourner} repere={repere} />
             </RepliModele>
           ) : (
             schematique

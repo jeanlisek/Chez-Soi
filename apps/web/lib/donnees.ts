@@ -39,6 +39,14 @@ const LIBELLES_ELEMENT: Record<string, string> = {
   marche: "Marche d'escalier",
 };
 
+/** Centre de l'élément dans le modèle 3D, seulement s'il est exprimé dans le repère du .glb. */
+function repere3d(position: unknown): [number, number, number] | null {
+  const p = position as { centre?: unknown; repere?: unknown } | null;
+  const c = p?.centre;
+  if (p?.repere !== "modele.glb" || !Array.isArray(c) || c.length !== 3 || !c.every((v) => typeof v === "number" && Number.isFinite(v))) return null;
+  return [c[0], c[1], c[2]];
+}
+
 /**
  * Charge un logement pour l'interface. « exemple » sert le logement fictif de Marc et Jeanne,
  * visible sans compte. Les autres sont lus dans Supabase au nom de l'utilisateur connecté :
@@ -159,6 +167,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     return {
       id: f.id,
       piece_id: piece?.id ?? slug(f.piece ?? "logement"),
+      repere_3d: repere3d(f.position_3d),
       titre: LIBELLES_ELEMENT[f.element] ?? f.element.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()),
       element: f.element,
       risque: f.risque,

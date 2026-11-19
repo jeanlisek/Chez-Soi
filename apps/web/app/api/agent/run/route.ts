@@ -6,13 +6,13 @@ import { creerRun, lireRun } from "@/lib/agent/serveur";
 
 const entreeSchema = z.object({
   logement_id: z.uuid(),
-  usage: z.number().int().min(1).max(3),
+  usage: z.number().int().min(1).max(4),
   /** Une session par action (usages 2 et 3). L'écran Plan d'action envoie la liste : on lance la première. Usage 1 : aucune. */
   action_ids: z.array(z.uuid()).default([]),
 });
 
 /**
- * POST /api/agent/run : crée une session H pour une action du logement (usage 1, 2 ou 3) et
+ * POST /api/agent/run : crée une session H pour une action du logement (usage 1, 2, 3 ou 4) et
  * écrit sa ligne `runs_agent`. La suite arrive par le webhook H (`/api/webhooks/hai`).
  * Une seule session à la fois par appel : 429 si le quota de l'équipe est plein.
  */

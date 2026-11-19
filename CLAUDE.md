@@ -28,13 +28,14 @@ Drive de l'équipe (pour les humains) : https://drive.google.com/drive/folders/1
 | Montrer | Parcours, plan 3D, validation, mode absence | Next.js 15 (App Router), TypeScript, Tailwind, shadcn/ui, three, @react-three/fiber, @react-three/drei | Vercel |
 | Socle | Données, stockage, auth, orchestration | Supabase (Postgres, pgvector, Storage, Auth, RLS), n8n (workflows versionnés en JSON), GitHub | Supabase Cloud, n8n (`n8n.apps.joliment.fr`) |
 
-### Les 3 usages de l'agent H
+### Les 4 usages de l'agent H
 
 | Usage | Entrée | Ce que fait l'agent | Arrêt | Environnement |
 |---|---|---|---|---|
 | 1 · Sourcing | `get_contrat` (assureur, formule, réf. CG) | Retrouve les conditions générales sur le site de l'assureur et renvoie leur URL. Le backend télécharge le PDF puis le passe dans le pipeline contrat. | Lecture seule | Navigateur cloud, sans connexion |
 | 2 · Objets | `get_mesures` (cotes confirmées, profil) | Compare les objets sur plusieurs sites, vérifie la dimension (skill `verifier_dimension`), met le produit compatible au panier | Panier affiché puis `demander_validation` | Navigateur cloud |
 | 3 · Démarches | dates d'absence, `get_contrat` (inoccupation) s'il y a un contrat | Préremplit l'information de l'assureur et l'Opération tranquillité vacances | Avant envoi, `demander_validation` | Navigateur de l'utilisateur, connecté par lui (voir points ouverts) |
+| 4 · Artisans | Travaux du plan (contre-mesure, élément, cote confirmée), commune (code postal et ville, jamais la rue), contraintes de chantier | Trouve jusqu'à 3 artisans proches avec labels et coordonnées affichés, rédige un message de devis | Lecture seule : ne contacte personne, aucun formulaire | Navigateur cloud, sans connexion |
 
 L'usage 1 ne tourne qu'en parcours A (avec contrat) et seulement si les conditions générales n'ont pas été déposées.
 

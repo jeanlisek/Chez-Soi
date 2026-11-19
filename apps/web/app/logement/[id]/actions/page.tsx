@@ -29,6 +29,7 @@ export default function PageActions() {
   const [onglet, setOnglet] = useState<Onglet>("priorite");
   const [message, setMessage] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
+  const [artisan, setArtisan] = useState<string | null>(null);
 
   const actions = [...logement.actions].sort((a, b) => a.priorite - b.priorite);
   const visibles = actions.filter((a) =>
@@ -70,6 +71,29 @@ export default function PageActions() {
     router.push(`${base}/agent`);
   };
 
+  // Usage 4 : des artisans près de la commune pour des travaux que l'agent ne peut pas acheter.
+  // Lecture seule : l'agent ne contacte personne. Une session tout de suite, suivie sur son écran.
+  const trouverArtisan = async (actionId: string) => {
+    if (logement.exemple) {
+      setMessage("Sur votre propre logement, l'agent cherche des artisans près de chez vous pour ces travaux.");
+      return;
+    }
+    setMessage(null);
+    setArtisan(actionId);
+    const r = await fetch("/api/agent/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ logement_id: logement.id, usage: 4, action_ids: [actionId] }),
+    }).catch(() => null);
+    const corps = r ? ((await r.json().catch(() => null)) as { session_id?: string; message?: string } | null) : null;
+    setArtisan(null);
+    if (!r?.ok || !corps?.session_id) {
+      setMessage(corps?.message ?? "La recherche d'artisans n'a pas pu démarrer. Réessayez dans un instant.");
+      return;
+    }
+    router.push(`${base}/artisans?session=${encodeURIComponent(corps.session_id)}`);
+  };
+
   return (
     <Screen nav="plan" className="gap-3">
       <Header left={<BackButton href={`${base}/plan`} />} title="Plan d'action" right={<RoundButton icon="filter" label="Filtrer" />} />
@@ -103,7 +127,19 @@ export default function PageActions() {
                   <Signal kind={a.niveau} />
                 </div>
                 {a.usage === null ? (
-                  <p className={cx("text-xs leading-[17px]", c.sub)}>À faire vous-même ou avec un artisan : l&apos;agent ne s&apos;en charge pas.</p>
+                  <div className="flex flex-col gap-2">
+                    <p className={cx("text-xs leading-[17px]", c.sub)}>Travaux à confier à un artisan : l&apos;agent cherche qui peut les faire près de chez vous, sans contacter personne.</p>
+                    {a.faille_id && (
+                      <button
+                        type="button"
+                        onClick={() => void trouverArtisan(a.id)}
+                        disabled={artisan !== null}
+                        className="h-[38px] rounded-full bg-white/80 text-[13px] font-bold text-nuit disabled:opacity-50"
+                      >
+                        {artisan === a.id ? "Lancement…" : "Trouver un artisan"}
+                      </button>
+                    )}
+                  </div>
                 ) : !lancable(a) ? (
                   <p className={cx("text-xs leading-[17px]", c.sub)}>
                     {f?.cote ? (

@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { CheminsAutorises } from "../../../../agents/dev/boucle";
 import { controlerSortieUsage1, controlerSortieUsage2, evaluerSortie, type Evaluation } from "../../../../agents/dev/controle";
-import { sortieUsage1Schema, sortieUsage2Schema, versJsonSchema } from "@/lib/schemas";
+import { sortieUsage1Schema, sortieUsage2Schema, sortieUsage3Schema, versJsonSchema, type SortieUsage3 } from "@/lib/schemas";
 import type { Database } from "@/lib/supabase/types";
 
 import { verifierCgUsage1 } from "./contrat_cg";
@@ -145,7 +145,61 @@ const usage2: DefinitionUsage = {
   },
 };
 
-export const USAGES: Partial<Record<1 | 2 | 3, DefinitionUsage>> = { 1: usage1, 2: usage2 };
+/* ---------- Usage 3 : démarches d'absence (préparer sans connexion, arrêt avant tout envoi) ---------- */
+
+const DOMAINES_OTV = ["service-public.gouv.fr", "service-public.fr", "interieur.gouv.fr"];
+
+/** Écarts de la réponse de l'usage 3 : démarche OTV sur un site de l'État, récapitulatif présent, arrêt demandé. */
+export function controlerSortieUsage3(sortie: SortieUsage3): string[] {
+  const ecarts: string[] = [];
+  if (!sortie.otv_trouve) ecarts.push("démarche OTV non trouvée");
+  else {
+    let hote = "";
+    try {
+      hote = new URL(sortie.otv_url_demarche ?? "").hostname.toLowerCase();
+    } catch {
+      hote = "";
+    }
+    if (!DOMAINES_OTV.some((d) => hote === d || hote.endsWith(`.${d}`))) ecarts.push("otv_url_demarche hors d'un site officiel de l'État");
+  }
+  if (!sortie.recapitulatif?.trim()) ecarts.push("récapitulatif absent");
+  if (!sortie.validation_demandee) ecarts.push("demander_validation (action envoi) non appelé");
+  return ecarts;
+}
+
+const usage3: DefinitionUsage = {
+  usage: 3,
+  agent: "chez-soi-demarches:1",
+  formatReponse: versJsonSchema(sortieUsage3Schema),
+  // Démarches du logement entier : les dates viennent de la dernière ligne `absences` (écrite par /api/absence).
+  action: null,
+  preparer: async (admin, logementId) => {
+    const { data: absence } = await admin
+      .from("absences")
+      .select("depart_le, retour_le")
+      .eq("logement_id", logementId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!absence) throw new ErreurRoute(409, "Aucune absence enregistrée pour ce logement : indiquez d'abord les dates.");
+    const duree = Math.round((Date.parse(absence.retour_le) - Date.parse(absence.depart_le)) / 86_400_000);
+    return {
+      site: "www.service-public.gouv.fr",
+      urlDepart: "https://www.service-public.gouv.fr/particuliers/vosdroits/F34634",
+      consigne: [
+        `L'occupant du logement ${logementId} s'absente du ${absence.depart_le} au ${absence.retour_le} (${duree} jours). Un proche fera lui-même les démarches : prépare-les pour qu'il n'ait plus qu'à se connecter, relire et envoyer. Tu n'as aucun identifiant, tu ne te connectes nulle part et tu n'envoies rien.`,
+        `1. Appelle d'abord get_contrat avec logement_id = "${logementId}" et champs = ["assureur", "inoccupation", "absence"]. S'il n'y a pas de contrat ou pas de clause d'inoccupation, dis-le tel quel, sans inventer de seuil.`,
+        "2. Sur service-public.gouv.fr, trouve la page officielle de la démarche « Opération tranquillité vacances ». Relève comment se connecter, les informations et pièces demandées et le délai d'inscription, tels qu'affichés. Ne clique pas sur le bouton qui ouvre le service en ligne (page de connexion) : donne l'adresse de la page officielle.",
+        "3. Avec un contrat, trouve sur le site officiel de l'assureur comment le prévenir d'une absence (contact, téléphone, espace adhérent), sans entrer dans aucun espace client. Précise si l'information est exigée par le contrat (clause, page) ou facultative. Sans contrat : rédige un court message prêt à envoyer et mets assureur_trouve à false.",
+        "4. Rédige le récapitulatif à relire : dates, durée, seuil du contrat et protections à mettre en place s'il y en a, démarches et liens.",
+        "5. Appelle demander_validation avec action « envoi », un résumé d'une ou deux phrases et l'adresse de la page officielle de l'OTV. Puis plus aucune action, et la réponse finale au format demandé.",
+      ].join("\n"),
+    };
+  },
+  evaluer: async (_admin, _run, reponse) => evaluerSortie(reponse, sortieUsage3Schema, controlerSortieUsage3) as Evaluation<unknown>,
+};
+
+export const USAGES: Partial<Record<1 | 2 | 3, DefinitionUsage>> = { 1: usage1, 2: usage2, 3: usage3 };
 
 export function definitionUsage(usage: number): DefinitionUsage | null {
   return USAGES[usage as 1 | 2 | 3] ?? null;

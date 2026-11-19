@@ -1,0 +1,10 @@
+{
+  "_note": "Agent maison de l'usage 3 (issue #14), créé sur H par `npm run agent:creer -- ../../agents/definitions/chez-soi-demarches.json --publier`. Même base que h/web-surfer-flash révision 2. `outils` est remplacé par les déclarations de agents/schemas/tools/ à l'envoi. Le prompt et le format de réponse restent passés à chaque session.",
+  "name": "chez-soi-demarches",
+  "description": "Agent web de Chez Soi : avant une absence, prépare l'information de l'assureur et l'inscription à l'Opération tranquillité vacances (liens officiels, informations demandées, récapitulatif), puis s'arrête pour validation. Ne se connecte jamais et n'envoie jamais rien.",
+  "environments": ["h/browser"],
+  "model": "holo4-35b-a3b",
+  "skills": ["h/company", "h/user-collaboration", "h/answering", "h/planning"],
+  "instructions_fichier": "chez-soi-demarches.instructions.md",
+  "outils": ["get_contrat", "demander_validation"]
+}

@@ -48,9 +48,30 @@ export const getContratSortieSchema = z.object({
     .object({
       duree_max_jours: z.number(),
       protections: z.array(z.string()),
-      clause: z.string(),
+      /** `obligations_contrat.clause` peut être vide en base : sans intitulé, la page reste la référence. */
+      clause: z.string().nullish(),
       page: z.number(),
     })
+    .optional(),
+  /**
+   * Clauses liées à l'absence sans durée d'inoccupation (migration 0010, PR #34) : franchise,
+   * prévention… `source` vaut `cg` pour une citation réelle des conditions générales, `cp`
+   * pour les conditions particulières (fictives pour la persona de démo).
+   */
+  absence: z
+    .array(
+      z.object({
+        type: z.string(),
+        element: z.string().optional(),
+        valeur: z.number().optional(),
+        unite: z.string().optional(),
+        texte: z.string(),
+        /** Peut manquer : la RPC retire les valeurs nulles. */
+        clause: z.string().nullish(),
+        page: z.number(),
+        source: z.enum(["cg", "cp"]),
+      }),
+    )
     .optional(),
 });
 
@@ -144,6 +165,80 @@ export const controleDocumentSchema = z.object({
   erreur: z.string().nullable(),
 });
 export type ControleDocument = z.infer<typeof controleDocumentSchema>;
+/* ---------- Usage 3 (démarches) : absence et réponse finale de l'agent ---------- */
+
+/** Date `AAAA-MM-JJ` qui existe (« 2026-02-30 » est refusée). */
+const dateIso = z.iso.date("date attendue au format AAAA-MM-JJ");
+
+/**
+ * Entrée de `POST /api/absence` (issue #14) : le logement et les dates, rien d'autre. Les
+ * clauses (`inoccupation`, `absence`) sont lues côté serveur par
+ * `get_contrat_champs(logement, ['inoccupation', 'absence'])` ; une clause envoyée par le
+ * client est ignorée.
+ */
+export const absenceEntreeSchema = z.object({
+  logement_id: z.uuid(),
+  depart_le: dateIso,
+  retour_le: dateIso,
+});
+export type AbsenceEntree = z.infer<typeof absenceEntreeSchema>;
+
+/** Ce que `evaluerAbsence` compare : les dates, et les clauses lues sur le contrat (aucune en parcours B). */
+export type AbsenceACalculer = Pick<AbsenceEntree, "depart_le" | "retour_le"> & {
+  inoccupation?: GetContratSortie["inoccupation"];
+  absence?: GetContratSortie["absence"];
+};
+
+export const absenceSortieSchema = z.object({
+  duree_jours: z.number(),
+  seuil_jours: z.number().nullable(),
+  /** `null` sans contrat ou sans clause d'inoccupation retrouvée. */
+  depasse_seuil: z.boolean().nullable(),
+  protections: z.array(z.string()),
+  clause: z.string().nullable(),
+  page: z.number().nullable(),
+  otv: z.object({
+    ouverture_le: dateIso,
+    /** Limite la plus stricte (logement qui dépend de la police : 3 jours avant le départ). */
+    limite_le: dateIso,
+    /** Limite si le logement dépend de la gendarmerie : la veille du départ. */
+    limite_gendarmerie_le: dateIso,
+    delai_ok: z.boolean(),
+    trop_tot: z.boolean(),
+  }),
+  /** Clauses du contrat liées à l'absence, sans seuil de durée (franchise, protections…). */
+  clauses_absence: getContratSortieSchema.shape.absence.unwrap(),
+  /**
+   * Toujours vrai (décision de Jean-Li, 18/11) : l'information de l'assureur est proposée à
+   * tous. « exige » quand une clause d'inoccupation est dépassée (clause et page), sinon
+   * « recommande » (pas de contrat, pas de clause, ou seuil non dépassé).
+   */
+  informer_assureur: z.literal(true),
+  informer_assureur_niveau: z.enum(["exige", "recommande"]),
+  /** Toujours vrai : l'usage 3 est proposé à tous, OTV ouverte ou non (`otv` dit quand s'inscrire). */
+  preparer_usage_3: z.literal(true),
+});
+export type AbsenceSortie = z.infer<typeof absenceSortieSchema>;
+
+/**
+ * Réponse finale de l'usage 3. Schéma PLAT (leçon de l'usage 2) : listes en texte, une
+ * ligne par élément. L'agent n'envoie rien : il rend les liens et un récapitulatif que
+ * l'utilisateur relit, puis envoie lui-même après sa propre connexion.
+ */
+export const sortieUsage3Schema = z.object({
+  otv_trouve: z.boolean().describe("Vrai si la démarche officielle d'inscription à l'OTV a été trouvée."),
+  otv_url_demarche: z.string().optional().describe("Adresse de la page officielle qui permet de faire la démarche en ligne."),
+  otv_connexion_requise: z.string().optional().describe("Comment l'utilisateur doit se connecter (par exemple FranceConnect), tel qu'affiché."),
+  otv_informations_demandees: z.string().optional().describe("Informations et pièces que le formulaire demande, une par ligne, telles qu'affichées."),
+  otv_delai: z.string().optional().describe("Délai d'inscription affiché sur la page officielle, tel quel."),
+  assureur_trouve: z.boolean().describe("Vrai si le moyen de prévenir l'assureur d'une absence a été trouvé sur son site."),
+  assureur_url: z.string().optional().describe("Adresse de la page de l'assureur qui explique comment le prévenir (contact, espace client)."),
+  assureur_moyen: z.string().optional().describe("Moyen de prévenir l'assureur (espace client, téléphone, courrier…), tel qu'affiché."),
+  recapitulatif: z.string().optional().describe("Récapitulatif à relire par l'utilisateur : dates, durée, seuil du contrat, protections à mettre en place, démarches et liens."),
+  validation_demandee: z.boolean().describe("Vrai si demander_validation a été appelé avec action envoi."),
+  remarque: z.string().optional().describe("Écart, doute ou raison d'un échec."),
+});
+export type SortieUsage3 = z.infer<typeof sortieUsage3Schema>;
 
 /** JSON Schema à passer à H, dérivé du schéma Zod (une seule source de vérité). */
 export function versJsonSchema(schema: z.ZodType): Record<string, unknown> {

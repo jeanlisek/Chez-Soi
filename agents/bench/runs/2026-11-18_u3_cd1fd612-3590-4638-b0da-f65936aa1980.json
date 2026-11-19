@@ -1,0 +1,142 @@
+{
+  "session_id": "cd1fd612-3590-4638-b0da-f65936aa1980",
+  "usage": "u3",
+  "agent": "chez-soi-demarches:1",
+  "agent_revision": 1,
+  "site": "www.service-public.gouv.fr + www.maif.fr",
+  "etat_final": "completed",
+  "outcome": null,
+  "error_code": null,
+  "erreur": null,
+  "motif_fin": "terminee",
+  "annulee_par_script": false,
+  "coupe_circuit": null,
+  "debut": "2026-11-18T14:31:33.709235Z",
+  "fin": "2026-11-18T14:32:27.358512Z",
+  "duree_s": 53.6,
+  "nb_etapes": 12,
+  "tokens": {
+    "entree": 300439,
+    "cache": 196416,
+    "sortie": 3728,
+    "raisonnement": 2193,
+    "par_modele": [
+      {
+        "modele": "holo4-35b-a3b",
+        "entree": 300439,
+        "cache": 196416,
+        "sortie": 3728,
+        "raisonnement": 2193
+      }
+    ]
+  },
+  "cout_usd": 0.04455537999999999,
+  "decision_validation": "refuse",
+  "appels_outils": [
+    {
+      "outil": "get_contrat",
+      "args": {
+        "champs": [
+          "assureur",
+          "inoccupation",
+          "absence"
+        ],
+        "logement_id": "logement-demo-jeanne-01"
+      },
+      "reponse": {
+        "assureur": "MAIF",
+        "formule": "Raqvam",
+        "absence": [
+          {
+            "type": "franchise",
+            "element": "vol",
+            "valeur": 1500,
+            "unite": "EUR",
+            "texte": "Franchise vol de 1 500 € (tranches de tarification H à J).",
+            "clause": "Garantie particulière en cas de vol, A, article 4 : franchise applicable en cas de vol",
+            "page": 18,
+            "source": "cg"
+          },
+          {
+            "type": "franchise",
+            "element": "vol",
+            "valeur": 135,
+            "unite": "EUR",
+            "texte": "Franchise vol ramenée à 135 € si les protections des conditions particulières sont mises en place et activées pendant l'absence (tranches H à J).",
+            "clause": "Garantie particulière en cas de vol, B (vols autres que dans un véhicule), article 7.2",
+            "page": 19,
+            "source": "cg"
+          },
+          {
+            "type": "prevention",
+            "element": "serrure",
+            "valeur": 3,
+            "unite": "points",
+            "texte": "Porte d'entrée équipée d'une serrure 3 points, fermée à clé pendant l'absence.",
+            "clause": "Conditions particulières (fictives) : moyens de protection",
+            "page": 1,
+            "source": "cp"
+          }
+        ]
+      },
+      "erreur": null,
+      "duree_s": 0
+    },
+    {
+      "outil": "demander_validation",
+      "args": {
+        "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F34634",
+        "action": "envoi",
+        "resume": "Récapitulatif des démarches préparées : inscription OTV (lien officiel service-public.gouv.fr) et contact MAIF (facultatif, car aucune clause d'inoccupation dans le contrat). Le fils doit se connecter via FranceConnect sur le site officiel pour l'OTV et peut contacter MAIF au 09 72 72 15 15 pour vérifier les protections.",
+        "produit": "Récapitulatif OTV + contact MAIF",
+        "montant_eur": 0
+      },
+      "reponse": {
+        "decision": "refuse",
+        "message": "Refusé par l'utilisateur. Ne fais plus aucune action dans le navigateur, n'envoie rien, et rends ta réponse finale maintenant."
+      },
+      "erreur": null,
+      "duree_s": 0
+    }
+  ],
+  "sortie_finale": {
+    "remarque": "L'utilisateur a refusé la validation. Aucune action n'a été effectuée dans le navigateur.",
+    "otv_delai": "Inscription possible 45 jours à l'avance, au plus tard 3 jours avant le départ si police, ou la veille du départ si gendarmerie",
+    "otv_trouve": true,
+    "assureur_url": "https://www.maif.fr/particuliers/nous-contacter",
+    "recapitulatif": "**Dates d'absence :** départ le 15/12/2026, retour le 19/01/2027 (35 jours).\n\n**Seuil d'inoccupation :** Aucune durée d'inoccupation dans les conditions générales. Le contrat ne prévoit pas de clause obligeant à prévenir l'assureur en cas d'absence prolongée.\n\n**Clauses liées à l'absence :**\n- Franchise vol de 1 500 € (tranches H à J) — Conditions générale, page 18.\n- Franchise vol ramenée à 135 € si les protections des conditions particulières sont mises en place et activées pendant l'absence — Conditions générale, page 19.\n- Prévention : porte d'entrée équipée d'une serrure 3 points, fermée à clé pendant l'absence — Conditions particulières, page 1.\n\n**Protections exigées :** Serrure 3 points (fermée à clé) — Conditions particulières, page 1.\n\n**Opération tranquillité vacances (OTV) :**\n- Lien officiel : https://www.service-public.gouv.fr/particuliers/vosdroits/F34634\n- Connexion requise : FranceConnect\n- Informations/pièches : aucun justificatif nécessaire pour l'inscription en ligne.\n- Délai : 45 jours à l'avance, au plus tard 3 jours avant le départ (police) ou la veille (gendarmerie).\n\n**Assureur (MAIF) :**\n- La déclaration n'est **pas obligatoire** : le contrat ne prévoit pas de clause d'inoccupation.\n- Contact (facultatif, pour vérifier les protections à activer) : 09 72 72 15 15 ou 0800 875 875 (MAIF Assistance).",
+    "assureur_moyen": "Téléphone : 09 72 72 15 15 (Particuliers) — 0800 875 875 (MAIF Assistance, appel gratuit depuis un poste fixe)",
+    "assureur_trouve": true,
+    "otv_url_demarche": "https://www.service-public.gouv.fr/particuliers/vosdroits/F34634",
+    "validation_demandee": true,
+    "otv_connexion_requise": "FranceConnect",
+    "otv_informations_demandees": "Aucun justificatif nécessaire pour l'inscription sur Internet (pas de pièces à fournir)"
+  },
+  "schema_valide": true,
+  "erreurs_schema": [],
+  "ecarts_metier": [],
+  "pages_vues": [
+    "https://www.service-public.gouv.fr/",
+    "https://www.maif.fr/",
+    "https://www.maif.fr/particuliers/nous-contacter"
+  ],
+  "actions_agent": {
+    "click_web": 3,
+    "get_contrat": 1,
+    "web_search": 2,
+    "web_fetch": 1,
+    "go_to_web": 2,
+    "scroll_web": 2,
+    "demander_validation": 1,
+    "answer": 1
+  },
+  "observations_api": {
+    "appels_sans_id": 0,
+    "attente_outils_s": 0,
+    "appels_encore_listes_apres_reponse": 0,
+    "renvois_de_resultat": 0,
+    "reponse_presente_apres_annulation": null,
+    "approbations_natives_vues": 0,
+    "outcome_brut": null
+  }
+}

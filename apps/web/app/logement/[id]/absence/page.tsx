@@ -34,6 +34,8 @@ export default function PageAbsence() {
   const otvDebut = ajouterJours(depart, -45);
   const otvFin = ajouterJours(depart, zone === "police" ? -3 : -1);
   const prenom = logement.occupant.libelle;
+  // Les clauses extraites finissent chacune par un point : on les enchaîne proprement dans une seule phrase.
+  const protections = (contrat?.inoccupation?.protections ?? []).map((x) => x.trim().replace(/[.;]+$/, "").toLowerCase()).join(" ; ");
 
   // L'information de l'assureur est proposée à tous (décision du 18/11) : obligation du contrat si
   // une clause d'inoccupation est dépassée (avec sa page), sinon simple recommandation.
@@ -46,13 +48,13 @@ export default function PageAbsence() {
 
   const demarches: { icon: IconName; titre: string; detail: string; tone: string; sub: string }[] = [
     { icon: "shield", titre: assureur, detail: detailAssureur, tone: depasse ? "bg-nuit text-white" : "bg-white", sub: depasse ? "text-[#C9D6EE]" : "text-ink-muted" },
-    { icon: "police", titre: "Tranquillité vacances", detail: `Du ${formaterDate(otvDebut)} au ${formaterDate(otvFin)} (${zone === "police" ? "police" : "gendarmerie"})`, tone: "bg-pervenche", sub: "text-ink-soft" },
+    { icon: "police", titre: "Tranquillité vacances", detail: `À demander entre le ${formaterDate(otvDebut)} et le ${formaterDate(otvFin)} (${zone === "police" ? "police" : "gendarmerie"})`, tone: "bg-pervenche", sub: "text-ink-soft" },
     { icon: "mail", titre: "Garde du courrier", detail: "En option, pour une boîte qui ne déborde pas", tone: "bg-white", sub: "text-ink-muted" },
   ];
 
   return (
     <Screen nav="absence" className="gap-3">
-      <Header left={<BackButton href={`${base}/plan`} />} title="Mode absence" right={<RoundButton icon="bell" label="Rappels" />} />
+      <Header left={<BackButton href={`${base}/plan`} />} title="Mode absence" />
       {logement.exemple && <ExempleTag />}
 
       <section className="relative h-[168px] flex-none overflow-hidden rounded-card bg-lilas p-5">
@@ -82,7 +84,7 @@ export default function PageAbsence() {
           <div className="flex items-start gap-2.5 rounded-xl2 border-[1.5px] border-attention-icon bg-attention-bg px-3.5 py-3 text-attention-text">
             <Triangle size={22} />
             <p className="text-[13px] leading-[19px]">
-              <b>Le contrat limite l&apos;absence à {seuil} jours.</b> Au-delà : {contrat.inoccupation!.protections.join(", ").toLowerCase()}. Clause p. {contrat.inoccupation!.page}.
+              <b>Le contrat limite l&apos;absence à {seuil} jours.</b> Au-delà : {protections}. Clause p. {contrat.inoccupation!.page}.
             </p>
           </div>
         ) : (
@@ -92,7 +94,7 @@ export default function PageAbsence() {
         <p className="rounded-xl2 bg-veille-bg px-3.5 py-3 text-[13px] text-veille-text">Sans contrat déposé, prévenir votre assureur reste recommandé pour une absence longue. L&apos;Opération Tranquillité Vacances est ouverte à tous.</p>
       )}
 
-      <SectionTitle aside="Usage 3">Démarches de l&apos;agent</SectionTitle>
+      <SectionTitle aside={`${demarches.length} démarches`}>À faire avant le départ</SectionTitle>
       <ul className="flex flex-col gap-2">
         {demarches.map((d) => (
           <li key={d.titre} className={cx("flex items-center gap-3 rounded-[30px] p-2.5", d.tone)}>
@@ -101,18 +103,18 @@ export default function PageAbsence() {
               <b className="text-[15px]">{d.titre}</b>
               <span className={cx("text-xs leading-4", d.sub)}>{d.detail}</span>
             </span>
-            {pret ? <Signal kind="attention">À relire</Signal> : <span className="flex-none rounded-full bg-[#EEF0F6] px-2.5 py-1 text-[11px] font-bold text-nuit">Prêt</span>}
+            {pret ? <Signal kind="attention">À relire</Signal> : <span className="flex-none rounded-full bg-[#EEF0F6] px-2.5 py-1 text-[11px] font-bold text-nuit">À faire</span>}
           </li>
         ))}
       </ul>
 
       {pret && (
         <p className="rounded-xl2 bg-succes-bg px-3.5 py-3 text-[13px] font-semibold text-succes-text">
-          Récapitulatif prêt. Connectez-vous vous-même sur service-public.gouv.fr, relisez et envoyez. Rien n&apos;a été envoyé.
+          Récapitulatif prêt : absence du {formaterDate(depart)} au {formaterDate(retour)} ({jours} jours){contrat?.assureur ? `, assureur ${contrat.assureur}` : ""}, demande de Tranquillité vacances à déposer avant le {formaterDate(otvFin)}. Connectez-vous vous-même sur service-public.gouv.fr, relisez et envoyez. Rien n&apos;a été envoyé.
         </p>
       )}
 
-      <Note>L&apos;agent prépare les formulaires sans identifiant (ni FranceConnect, ni espace client). Vous vous connectez, relisez et envoyez vous-même.</Note>
+      <Note>Dans cette version, Chez Soi calcule les échéances et prépare le récapitulatif. Le préremplissage des formulaires par l&apos;agent n&apos;est pas encore actif. Dans tous les cas, vous vous connectez, relisez et envoyez vous-même.</Note>
 
       <ActionBar withNav>
         {pret ? (
@@ -121,7 +123,7 @@ export default function PageAbsence() {
             <Icon name="arrow" size={18} />
           </a>
         ) : (
-          <Pill onClick={() => setPret(true)}>Je suis connecté, préparer</Pill>
+          <Pill onClick={() => setPret(true)}>Préparer le récapitulatif</Pill>
         )}
       </ActionBar>
     </Screen>

@@ -9,6 +9,11 @@ import { BackButton, Header, Pill, RoundButton, Screen, Signal, cx } from "@/com
 import { useParcours } from "@/lib/demo/etat";
 import { libelleSource } from "@/lib/domaine";
 
+import { confirmerCote } from "../../actions-serveur";
+
+/** Tapis repéré sans cote estimée par la vision : point de départ que l'utilisateur ajuste. */
+const COTE_PAR_DEFAUT = { largeur_cm: 60, longueur_cm: 90, confirmee: false };
+
 const Viewer3D = dynamic(() => import("@/components/Viewer3D").then((m) => m.Viewer3D), {
   ssr: false,
   loading: () => <div className="h-full w-full animate-pulse bg-pervenche" />,
@@ -27,12 +32,33 @@ export default function PageFaille() {
   const [tourner, setTourner] = useState(false);
   const [apres, setApres] = useState(false);
   const [ar, setAr] = useState<string | null>(null);
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
 
   if (!f) return null;
   const piece = logement.pieces.find((p) => p.id === f.piece_id);
-  const cote = etat.cotes[f.id];
+  // Vrai logement : un tapis reste mesurable même si la vision n'a pas estimé sa cote.
+  const cote = etat.cotes[f.id] ?? (!logement.exemple && f.element === "tapis" ? COTE_PAR_DEFAUT : undefined);
   const setCote = (k: "largeur_cm" | "longueur_cm", v: number) =>
     maj({ cotes: { ...etat.cotes, [f.id]: { ...cote!, [k]: Math.max(10, v), confirmee: false } } });
+
+  /** Vrai logement : la cote est écrite en base avant d'être dite « confirmée » (lue par get_mesures). */
+  const confirmer = async () => {
+    if (!cote) return;
+    setErreur(null);
+    if (!logement.exemple) {
+      setEnvoi(true);
+      const r = await confirmerCote({ logement_id: logement.id, faille_id: f.id, largeur_cm: cote.largeur_cm, longueur_cm: cote.longueur_cm }).catch(
+        () => ({ ok: false as const, message: "Cote non enregistrée." }),
+      );
+      setEnvoi(false);
+      if (!r.ok) {
+        setErreur(r.message ?? "Cote non enregistrée.");
+        return;
+      }
+    }
+    maj({ cotes: { ...etat.cotes, [f.id]: { ...cote, confirmee: true } } });
+  };
 
   const testerAr = async () => {
     const xr = (navigator as Navigator & { xr?: { isSessionSupported: (m: string) => Promise<boolean> } }).xr;
@@ -93,10 +119,10 @@ export default function PageFaille() {
         )}
       </div>
 
-      {cote && f.cote && (
+      {cote && (
         <section className={cx("flex flex-col gap-2 rounded-[26px] border-2 bg-white px-3.5 py-3", cote.confirmee ? "border-succes-border" : "border-attention-icon")}>
           <div className="flex items-center justify-between">
-            <b className="text-sm">{f.cote.libelle}</b>
+            <b className="text-sm">{f.cote?.libelle ?? "Dimensions à mesurer"}</b>
             {cote.confirmee ? <Signal kind="succes">Confirmée</Signal> : <Signal kind="attention">À confirmer</Signal>}
           </div>
           {([["largeur_cm", "Largeur"], ["longueur_cm", "Longueur"]] as const).map(([k, label]) => (
@@ -114,10 +140,13 @@ export default function PageFaille() {
 
       <div className="mt-auto">
         {cote && !cote.confirmee ? (
-          <Pill onClick={() => maj({ cotes: { ...etat.cotes, [f.id]: { ...cote, confirmee: true } } })}>
-            <Icon name="check" size={18} />
-            Je confirme {cote.largeur_cm} × {cote.longueur_cm} cm
-          </Pill>
+          <>
+            {erreur && <p role="alert" className="mb-2 text-center text-[13px] font-semibold text-ink-muted">{erreur}</p>}
+            <Pill onClick={confirmer} disabled={envoi}>
+              <Icon name="check" size={18} />
+              {envoi ? "Enregistrement…" : `Je confirme ${cote.largeur_cm} × ${cote.longueur_cm} cm`}
+            </Pill>
+          </>
         ) : (
           <Pill href={`${base}/actions`}>
             <Cursor size={16} />

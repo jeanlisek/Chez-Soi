@@ -60,3 +60,45 @@ export async function enregistrerProfil(entree: z.input<typeof profilSchema>): P
   if (admin) await calculerPlan(admin, d.logement_id).catch(() => undefined);
   return { ok: true };
 }
+
+const coteSchema = z.object({
+  logement_id: z.uuid(),
+  faille_id: z.uuid(),
+  largeur_cm: z.number().min(10).max(1000),
+  longueur_cm: z.number().min(10).max(1000),
+});
+
+/**
+ * Écrit la cote confirmée par l'utilisateur (écran Faille). C'est l'entrée de l'usage 2 :
+ * `get_mesures` refuse une faille sans `cote_confirmee_cm`. Le logement est vérifié sous RLS,
+ * puis la faille est mise à jour côté serveur, seulement si elle appartient à ce logement.
+ * Le plan est recalculé : le libellé de la contre-mesure reprend les dimensions.
+ */
+export async function confirmerCote(entree: z.input<typeof coteSchema>): Promise<{ ok: boolean; message?: string }> {
+  const c = coteSchema.safeParse(entree);
+  if (!c.success) return { ok: false, message: "Dimensions invalides." };
+  const supabase = await clientServeur();
+  const admin = clientAdmin();
+  if (!supabase || !admin) return { ok: false, message: "Service non configuré." };
+  const d = c.data;
+
+  const { data: logement } = await supabase.from("logements").select("id").eq("id", d.logement_id).maybeSingle();
+  if (!logement) return { ok: false, message: "Logement introuvable." };
+
+  const { data: faille, error } = await admin
+    .from("failles")
+    .update({
+      largeur_cm: d.largeur_cm,
+      longueur_cm: d.longueur_cm,
+      cote_confirmee_cm: Math.min(d.largeur_cm, d.longueur_cm),
+      cotes_confirmees_le: new Date().toISOString(),
+    })
+    .eq("id", d.faille_id)
+    .eq("logement_id", d.logement_id)
+    .select("id")
+    .maybeSingle();
+  if (error || !faille) return { ok: false, message: "Cote non enregistrée." };
+
+  await calculerPlan(admin, d.logement_id).catch(() => undefined);
+  return { ok: true };
+}

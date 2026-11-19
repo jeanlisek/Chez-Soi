@@ -149,6 +149,12 @@ export async function enregistrerExtraction(
   if (e.assureur?.trim()) maj.assureur = e.assureur.trim();
   if (e.formule?.trim()) maj.formule = e.formule.trim();
   if (e.reference_cg?.trim()) maj.reference_cg = e.reference_cg.trim();
+  // Rattachement au référentiel des assureurs : l'usage 1 y lit les domaines officiels.
+  if (e.assureur?.trim()) {
+    const { data: assureurs } = await admin.from("assureurs").select("id, nom");
+    const assureurId = trouverAssureur(e.assureur, assureurs ?? []);
+    if (assureurId) maj.assureur_id = assureurId;
+  }
   const { error: errC } = await admin.from("contrats").update(maj as never).eq("id", contrat.id);
   if (errC) throw new Error(`contrats : ${errC.message}`);
 
@@ -156,4 +162,32 @@ export async function enregistrerExtraction(
   await completerEmbeddings(admin, contrat.id).catch(() => 0);
 
   return { obligations: lignes.length, rejetees, noeuds: noeuds.length, aretes };
+}
+
+/** Lettres et chiffres seulement, sans accents ni majuscules : « Altima Assurances » → « altimaassurances ». */
+function cleAssureur(nom: string): string {
+  return nom
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+/**
+ * Assureur du référentiel (`assureurs`) qui correspond au nom lu dans le contrat. Égalité
+ * d'abord ; sinon l'un des deux noms contient l'autre (« Altima » et « Altima Assurances »),
+ * à condition que le plus court fasse au moins 4 caractères et qu'un seul assureur réponde.
+ * Dans le doute, `null` : le contrat reste sans rattachement et l'usage 1 le dit.
+ */
+export function trouverAssureur(nomLu: string, assureurs: { id: string; nom: string }[]): string | null {
+  const lu = cleAssureur(nomLu);
+  if (!lu) return null;
+  const exact = assureurs.find((a) => cleAssureur(a.nom) === lu);
+  if (exact) return exact.id;
+  const proches = assureurs.filter((a) => {
+    const cle = cleAssureur(a.nom);
+    const [court, long] = cle.length <= lu.length ? [cle, lu] : [lu, cle];
+    return court.length >= 4 && long.includes(court);
+  });
+  return proches.length === 1 ? proches[0].id : null;
 }

@@ -39,7 +39,7 @@ export default function PageProfil() {
   // Ouvert depuis « Compte et profil » : on y revient après l'enregistrement, au lieu de reprendre le parcours.
   const depuisCompte = useSearchParams().get("depuis") === "compte";
   const suivant = depuisCompte ? `/logement/${logement.id}/compte` : `/logement/${logement.id}/contrat`;
-  const setO = (p: Partial<Occupant>) => (cible ? setLocal({ ...o, ...p }) : maj({ occupant: { ...o, ...p } }));
+  const setO = (p: Partial<Occupant>) => (cible ? setLocal((avant) => ({ ...avant, ...p })) : maj({ occupant: { ...o, ...p } }));
   const accord = Boolean(o.consentement_art9_le);
   // Les échelles et les points de vigilance se lisent selon l'âge (date de naissance facultative).
   const age = ageDe(o.naissance) ?? o.age;
@@ -72,12 +72,14 @@ export default function PageProfil() {
       occupant_id: cible && cible !== "nouveau" ? cible : undefined,
       nouveau: cible === "nouveau",
     });
-    setEnvoi(false);
     if (r.ok) {
+      // Le bouton reste bloqué jusqu'au changement d'écran : un second appui créerait un doublon.
       router.push(suivant);
       router.refresh();
+      return;
     }
-    else setErreur(r.message ?? "Profil non enregistré.");
+    setEnvoi(false);
+    setErreur(r.message ?? "Profil non enregistré.");
   };
 
   return (

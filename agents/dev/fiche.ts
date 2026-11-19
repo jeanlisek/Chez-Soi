@@ -122,3 +122,48 @@ export function ecartCitation(verification: VerificationCitation): string | null
       return `citation_decoupe non vérifiable sur la fiche (${verification.erreur ?? "page illisible"}) : aucune preuve de découpe, produit à REFUSER`;
   }
 }
+
+/* ---------- Nom du produit (run 40 du 19/11 : « pour tissus » au lieu de « pour tapis ») ---------- */
+
+/** Fiche produit IKEA France en https, comme la liste blanche de l'usage 2. Rien d'autre n'est relu. */
+export function estFicheAutorisee(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && (u.hostname === "www.ikea.com" || u.hostname === "ikea.com") && u.pathname.startsWith("/fr/fr/p/");
+  } catch {
+    return false;
+  }
+}
+
+/** Nom du produit tel que la fiche l'affiche : `og:title` (ou `<title>`), sans « - IKEA ». */
+export function nomDepuisHtml(html: string): string | null {
+  const brut =
+    /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i.exec(html)?.[1] ??
+    /<title>([^<]+)<\/title>/i.exec(html)?.[1];
+  if (!brut) return null;
+  const nom = texteDeLaPage(brut).replace(/\s*-\s*IKEA\s*$/i, "").replace(/\s+/g, " ").trim();
+  return nom || null;
+}
+
+/** Nom lu sur la fiche, ou `null` si elle est hors liste blanche ou illisible (on garde alors celui de l'agent). */
+export async function lireNomSurFiche(url: string): Promise<string | null> {
+  if (!estFicheAutorisee(url)) return null;
+  try {
+    const reponse = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (ChezSoi controle)", "Accept-Language": "fr-FR,fr;q=0.9" },
+      signal: AbortSignal.timeout(6_000),
+    });
+    if (!reponse.ok || !estFicheAutorisee(reponse.url || url)) return null;
+    return nomDepuisHtml(await reponse.text());
+  } catch {
+    return null;
+  }
+}
+
+/** Écart métier si le nom rendu par l'agent n'est pas celui de la fiche (casse, accents et ponctuation ignorés). */
+export function ecartNom(nomAgent: string | undefined, nomFiche: string | null): string | null {
+  if (!nomAgent || !nomFiche) return null;
+  return mots(nomAgent).join(" ") === mots(nomFiche).join(" ")
+    ? null
+    : `produit : « ${nomAgent} » n'est pas le nom de la fiche « ${nomFiche} »`;
+}

@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { lireNomSurFiche } from "../../../../agents/dev/fiche";
 import type { AppelOutilHai, ResultatOutilHai } from "@/lib/hai";
 import {
   demanderValidationEntreeSchema,
@@ -89,12 +90,15 @@ async function getContrat(admin: Admin, run: RunPourOutils, args: unknown): Prom
 async function enregistrerValidation(admin: Admin, run: RunPourOutils, appel: AppelOutilHai): Promise<void> {
   const demande = demanderValidationEntreeSchema.parse(appel.args ?? {});
   if (!run.action_id) throw new Error("Run sans action : validation impossible.");
+  // Nom montré à l'utilisateur : celui de la fiche, relue par le code, plutôt que la recopie de
+  // l'agent (run 40 du 19/11 : « pour tissus » au lieu de « pour tapis »). Fiche illisible : nom de l'agent.
+  const produit = (demande.url ? await lireNomSurFiche(demande.url) : null) ?? demande.produit;
   await admin.from("validations").upsert(
     {
       action_id: run.action_id,
       session_id: run.session_id,
       call_id: appel.id ?? `${appel.tool_name}:${JSON.stringify(appel.args ?? {})}`,
-      resume: [demande.resume, demande.produit, demande.montant_eur !== undefined ? `${demande.montant_eur} €` : null, demande.url]
+      resume: [demande.resume, produit, demande.montant_eur !== undefined ? `${demande.montant_eur} €` : null, demande.url]
         .filter(Boolean)
         .join(" · "),
     },

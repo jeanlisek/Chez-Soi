@@ -118,6 +118,7 @@ demander_validation { action: "panier" | "envoi", resume, produit?, montant_eur?
 - Résultat d'une session : `outcome` (success, partial, infeasible, blocked) ou `error_code`. Les deux vont dans `runs_agent`, puis dans l'onglet Mesures agent. L'outcome est une auto-évaluation : on vérifie la dimension nous-mêmes. Une valeur d'`outcome` hors de ces quatre s'écrit `null` (la colonne `runs_agent.outcome` la refuserait) et la valeur brute est gardée dans `observations_api.outcome_brut`. Conversion d'un run en ligne de `runs_agent` : `versLigneRunsAgent` (`apps/web/lib/runs_agent.ts`).
 - Budget : **3 sessions simultanées** (offre gratuite). En démo, les usages sont enchaînés, jamais lancés en parallèle. Sous-agents (manager + 2) seulement si rien d'autre ne tourne. En développement : une session par personne au maximum, annoncée dans le canal de l'équipe.
 - Figer la démo sur une révision d'agent (`nom:N`).
+- Usage 2 : le code relit la fiche produit IKEA (`agents/dev/fiche.ts`), en local comme dans l'app. La citation de découpe doit y figurer mot pour mot (règle stricte de Bastian : approchée = produit à REFUSER) ; un nom différent de la fiche est signalé dans `ecarts_metier`, et l'écran Validation affiche le nom de la fiche. La réponse brute de l'agent n'est jamais modifiée.
 
 ## Modèle de données (Supabase)
 

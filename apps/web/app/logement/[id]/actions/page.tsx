@@ -34,16 +34,20 @@ export default function PageActions() {
   const visibles = actions.filter((a) =>
     onglet === "contrat" ? a.source.force === "contrat" : onglet === "priorite" ? a.groupe === "priorite" : a.groupe === "plus_tard",
   );
-  const missions = actions.filter((a) => a.usage !== null && etat.missions[a.id] === "agent" && a.groupe === "priorite");
+  // L'agent lit la cote avec get_mesures : sur un vrai logement, un objet ne peut lui être confié
+  // qu'une fois la cote de son point confirmée. Les missions de tous les onglets comptent.
+  const faillePour = (a: (typeof actions)[number]) => logement.failles.find((f) => f.id === a.faille_id);
+  const lancable = (a: (typeof actions)[number]) =>
+    a.usage !== null && (logement.exemple || a.usage !== 2 || faillePour(a)?.cote?.statut === "confirmee");
+  const missions = actions.filter((a) => lancable(a) && etat.missions[a.id] === "agent");
   const compte = (o: Onglet) =>
     o === "contrat" ? actions.filter((a) => a.source.force === "contrat").length : actions.filter((a) => a.groupe === o).length;
 
   const lancer = async () => {
     let sessionId: string | null = null;
     if (!logement.exemple) {
-      // L'agent lit la cote avec get_mesures : seules les missions dont la cote est confirmée
-      // peuvent partir. Une session par action : la route lance la première de la liste.
-      const pretes = missions.filter((a) => logement.failles.find((f) => f.id === a.faille_id)?.cote?.statut === "confirmee");
+      // Une session par action : la route lance la première de la liste (objets d'abord).
+      const pretes = missions.filter((a) => a.usage === 2);
       if (pretes.length === 0) {
         setMessage("Confirmez d'abord les dimensions sur l'écran du point concerné : l'agent en a besoin pour choisir le produit.");
         return;
@@ -84,7 +88,8 @@ export default function PageActions() {
       ) : (
         <ul className="flex flex-col gap-3">
           {visibles.map((a, i) => {
-            const ag = a.usage !== null && etat.missions[a.id] === "agent";
+            const ag = lancable(a) && etat.missions[a.id] === "agent";
+            const f = faillePour(a);
             const c = CARTE[Math.min(i, 2)];
             const rang = onglet === "priorite" ? i + 1 : a.priorite;
             return (
@@ -99,6 +104,17 @@ export default function PageActions() {
                 </div>
                 {a.usage === null ? (
                   <p className={cx("text-xs leading-[17px]", c.sub)}>À faire vous-même ou avec un artisan : l&apos;agent ne s&apos;en charge pas.</p>
+                ) : !lancable(a) ? (
+                  <p className={cx("text-xs leading-[17px]", c.sub)}>
+                    {f?.cote ? (
+                      <>
+                        L&apos;agent choisit le produit d&apos;après la cote :{" "}
+                        <a href={`${base}/faille/${f.id}`} className="font-bold text-nuit underline">confirmez-la sur l&apos;écran du point</a> pour le lui confier.
+                      </>
+                    ) : (
+                      "Pas de cote à vérifier pour ce produit : l'agent ne sait pas encore le choisir, à acheter vous-même pour l'instant."
+                    )}
+                  </p>
                 ) : (
                 <div className="grid grid-cols-2 gap-1 rounded-full bg-white/60 p-1" role="radiogroup" aria-label={`Qui s'occupe de : ${a.titre}`}>
                   <button type="button" role="radio" aria-checked={ag} onClick={() => maj({ missions: { ...etat.missions, [a.id]: "agent" } })} className={cx("h-[38px] rounded-full text-[13px] font-bold", ag ? "bg-nuit text-white" : "")}>

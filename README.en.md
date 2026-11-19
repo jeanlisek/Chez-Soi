@@ -83,7 +83,7 @@ What the API taught us, in short: no native guard stops a click on "Order" (henc
 
 | Layer | Role | Technology |
 |---|---|---|
-| See | Metric depth, detection, segmentation, 3D reconstruction | **Hugging Face** Space (FastAPI, L4 GPU): MoGe-2 (MIT), Grounding DINO base (Apache 2.0), SAM 2.1 (Apache 2.0), MapAnything Apache variant (Apache 2.0); revisions pinned in [`services/vision/modeles.py`](services/vision/modeles.py) |
+| See | Metric depth, detection, segmentation, 3D reconstruction | **Hugging Face** Space (FastAPI, L4 GPU): MoGe-2 (MIT), Grounding DINO base (Apache 2.0), SAM 2.1 (Apache 2.0), SigLIP base (Apache 2.0) to check each point, MapAnything Apache variant (Apache 2.0); revisions pinned in [`services/vision/modeles.py`](services/vision/modeles.py) |
 | Read | Insurance contract | pypdf, then `Qwen/Qwen2.5-72B-Instruct` (Qwen licence) through HF Inference Providers; every quote is found in the PDF before it is kept |
 | Decide | Rules, knowledge graph, verdict, explanation | Postgres + pgvector (Supabase), `BAAI/bge-m3` embeddings (MIT), TypeScript, Zod; explanation by `openai/gpt-oss-120b` (Apache 2.0) through the **Vercel AI SDK** and HF Inference Providers |
 | Act | General terms, countermeasure to cart, absence tasks | **H Company** Agents API (see above) |
@@ -152,10 +152,10 @@ In production:
 - sign-in with an e-mail link (any address) or Google (Eugenia accounts only), home creation; Account screen to edit the profile, manage several occupants (the rule protecting the most vulnerable applies) and re-film a room;
 - guided capture (filming tips, import of an existing video, review before sending), analysis on the Space (automatic wake-up, retries), risk points and sizes stored, 3D model and annotated image of each room in private storage; a re-filmed room replaces its old points, except those whose size was confirmed;
 - risk point screen: photo cropped on the element and a "relief photo" of the filmed surface; on the vision side, an object seen in several frames is counted once;
-- three-step profile, occupants' consent revocable at any time (abilities erased without consent); detection extended to locks, stairs, lights and smoke detectors, spotted without a size;
+- three-step profile, occupants' consent revocable at any time (abilities erased without consent); detection extended to locks, stairs, lights and smoke detectors, spotted without a size; each detected point is re-checked by SigLIP and dropped if it looks more like a known confusion (a shower head taken for a detector, a cupboard handle for a lock);
 - action plan computed from the rules, with the graph to recognise elements and an LLM-written explanation checked by code;
 - end-to-end contract reading, tested with fictitious special conditions;
-- H agent inside the app for all three uses: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker. On 19 Nov in production: use 2 end to end on `chez-soi-acheteur:2` (130 s, 9 steps, steering sent, stop at the cart on `demander_validation`), use 1 from the Contract screen, and a first real use 3 run after it was wired (#86).
+- H agent inside the app for all three uses: session creation, tool answers through signed webhooks, on-screen tracking, user approval, circuit breaker. For use 2, the approval screen shows the product name re-read from the IKEA page, not the one copied by the agent, and a quote missing from the page is flagged "to refuse" in `runs_agent`. On 19 Nov in production: use 2 end to end on `chez-soi-acheteur:2` (130 s, 9 steps, steering sent, stop at the cart on `demander_validation`), use 1 from the Contract screen, and a first real use 3 run after it was wired (#86).
 
 Known limits:
 

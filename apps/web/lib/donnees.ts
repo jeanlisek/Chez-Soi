@@ -291,6 +291,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
     adresse: l.adresse ?? null,
     type: l.type ?? "Logement",
     etage: l.etage == null ? "—" : l.etage === 0 ? "RDC" : `${l.etage}e`,
+    ascenseur: l.ascenseur ?? null,
     statut:
       l.statut_occupation === "proprietaire" ? "Propriétaire" : l.statut_occupation === "locataire" ? "Locataire" : l.statut_occupation === "heberge" ? "Hébergé" : "—",
     zone_otv: l.zone_otv === "gendarmerie" ? "gendarmerie" : "police",

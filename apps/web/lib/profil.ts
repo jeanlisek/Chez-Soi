@@ -56,3 +56,121 @@ export function niveau(contraintes: string[] | undefined, cle: "vue" | "audition
 export function avecNiveau(contraintes: string[] | undefined, cle: "vue" | "audition", n: number): string[] {
   return [...(contraintes ?? []).filter((c) => !c.startsWith(`${cle}:`)), `${cle}:${n}`];
 }
+
+/* ---------- Brouillon du profil (écrans Profil et Compte, maquette de Hoang-Kim) ---------- */
+
+export const TYPES_LOGEMENT = ["Studio", "T2", "T3", "T4", "T5 +", "Maison"];
+export const ETAGES = ["RDC", "1er", "2e", "3e", "4e +"];
+export const STATUTS = ["Propriétaire", "Locataire", "Hébergé"];
+
+export type OccupantBrouillon = {
+  /** Clé locale stable (l'identifiant en base n'existe pas encore pour un nouvel habitant). */
+  cle: string;
+  id?: string;
+  prenom: string;
+  nom: string;
+  naissance: string;
+  deplacement: number;
+  vue: number;
+  audition: number;
+  /** Points de vigilance (identifiants de `vigilance()`), sans les niveaux de vue et d'audition. */
+  vigilance: string[];
+  autre: string;
+};
+
+export type Brouillon = {
+  adresse: string;
+  type: string;
+  etage: string;
+  statut: string;
+  ascenseur: boolean;
+  occupants: OccupantBrouillon[];
+  /** Accord RGPD art. 9 (AAAA-MM-JJ), commun aux habitants ; null tant qu'il n'est pas donné. */
+  accordLe: string | null;
+};
+
+let compteur = 0;
+export const nouvelOccupant = (): OccupantBrouillon => ({
+  cle: `nouveau-${Date.now()}-${compteur++}`,
+  prenom: "",
+  nom: "",
+  naissance: "",
+  deplacement: 0,
+  vue: 0,
+  audition: 0,
+  vigilance: [],
+  autre: "",
+});
+
+type OccupantSource = {
+  id?: string;
+  libelle: string;
+  deplacement: number;
+  vue_reduite: boolean;
+  audition_reduite: boolean;
+  troubles_memoire?: boolean;
+  consentement_art9_le: string | null;
+  nom?: string | null;
+  naissance?: string | null;
+  contraintes?: string[];
+  autre?: string | null;
+};
+
+/** Brouillon initial à partir du logement chargé (étage « RDC », « 1e »… ramené aux choix de la maquette). */
+export function brouillonDepuis(l: { adresse?: string | null; type: string; etage: string; statut: string; ascenseur?: boolean | null; occupant: OccupantSource; occupants?: OccupantSource[] }): Brouillon {
+  const occ = l.occupants?.length ? l.occupants : [l.occupant];
+  const n = l.etage === "RDC" ? 0 : parseInt(l.etage, 10);
+  return {
+    adresse: l.adresse ?? "",
+    type: TYPES_LOGEMENT.includes(l.type) ? l.type : l.type === "T5+" ? "T5 +" : "",
+    etage: Number.isNaN(n) ? "" : ETAGES[Math.min(n, 4)],
+    statut: STATUTS.includes(l.statut) ? l.statut : "",
+    ascenseur: Boolean(l.ascenseur),
+    accordLe: occ.find((o) => o.consentement_art9_le)?.consentement_art9_le?.slice(0, 10) ?? null,
+    occupants: occ.map((o, i) => ({
+      cle: o.id ?? `occupant-${i}`,
+      id: o.id,
+      prenom: o.libelle === "l'occupant" ? "" : o.libelle,
+      nom: o.nom ?? "",
+      naissance: o.naissance ?? "",
+      deplacement: o.deplacement,
+      vue: niveau(o.contraintes, "vue", o.vue_reduite),
+      audition: niveau(o.contraintes, "audition", o.audition_reduite),
+      vigilance: (o.contraintes ?? []).filter((c) => !c.includes(":")).concat(o.troubles_memoire && !(o.contraintes ?? []).includes("memoire") ? ["memoire"] : []),
+      autre: o.autre ?? "",
+    })),
+  };
+}
+
+export const nomComplet = (o: OccupantBrouillon) => [o.prenom, o.nom].filter(Boolean).join(" ") || "Sans prénom";
+
+export function resumeOccupant(o: OccupantBrouillon) {
+  const age = ageDe(o.naissance);
+  if (age === undefined) return "Date de naissance à renseigner";
+  const t = trancheDe(age);
+  const dep = ECHELLE_DEPLACEMENT[t][o.deplacement];
+  return `${age} an${age > 1 ? "s" : ""} · ${TRANCHE_LABEL[t]}${dep ? ` · ${dep.toLowerCase()}` : " · à compléter"}`;
+}
+
+export const occupantComplet = (o: OccupantBrouillon) => Boolean(o.prenom.trim()) && ageDe(o.naissance) !== undefined;
+export const basesCompletes = (b: Brouillon) => {
+  const p = b.occupants[0];
+  return Boolean(p && p.prenom.trim() && p.nom.trim() && ageDe(p.naissance) !== undefined && b.adresse.trim());
+};
+export const logementComplet = (b: Brouillon) => Boolean(b.type && b.etage && b.statut);
+
+const STATUT_BASE = { Propriétaire: "proprietaire", Locataire: "locataire", Hébergé: "heberge" } as const;
+
+/** Conversion du brouillon vers l'action serveur `enregistrerProfilComplet` (écrans Profil et Compte). */
+export function versEnregistrement(logementId: string, b: Brouillon) {
+  return {
+    logement_id: logementId,
+    adresse: b.adresse,
+    type: b.type,
+    etage: b.etage ? ETAGES.indexOf(b.etage) : null,
+    statut_occupation: b.statut in STATUT_BASE ? STATUT_BASE[b.statut as keyof typeof STATUT_BASE] : null,
+    ascenseur: b.ascenseur,
+    accord_le: b.accordLe ?? "",
+    occupants: b.occupants.map((o) => ({ id: o.id, prenom: o.prenom, nom: o.nom, naissance: o.naissance, deplacement: o.deplacement, vue: o.vue, audition: o.audition, vigilance: o.vigilance, autre: o.autre })),
+  };
+}

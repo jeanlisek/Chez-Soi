@@ -6,11 +6,11 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { Cursor, Icon } from "@/components/cs/icons";
-import { BackButton, Header, OptionsMenu, Pill, RoundButton, Screen, Signal, cx, useToast } from "@/components/cs/ui";
+import { BackButton, Header, OptionsMenu, Pill, RoundButton, Screen, Sheet, Signal, cx, useToast } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { libelleSource, type Faille } from "@/lib/domaine";
 
-import { confirmerCote } from "../../actions-serveur";
+import { confirmerCote, retirerPoint } from "../../actions-serveur";
 
 /** Tapis repéré sans cote estimée par la vision : point de départ que l'utilisateur ajuste. */
 const COTE_PAR_DEFAUT = { largeur_cm: 60, longueur_cm: 90, confirmee: false };
@@ -37,6 +37,9 @@ export default function PageFaille() {
   // La photo annotée (vue de la vidéo, objet encadré) est ce qu'on reconnaît tout de suite ; la 3D reste à un geste.
   const [vue, setVue] = useState<"photo" | "3d">("photo");
   const [erreur, setErreur] = useState<string | null>(null);
+
+  const [signaler, setSignaler] = useState(false);
+  const [retrait, setRetrait] = useState(false);
 
   const toast = useToast();
   const router = useRouter();
@@ -91,10 +94,28 @@ export default function PageFaille() {
     }
   };
 
+  // « Signaler une erreur de détection » : le point repéré par la vision est faux (le sol pris pour un tapis…).
+  const retirer = async () => {
+    if (logement.exemple) {
+      setSignaler(false);
+      return toast.show("Merci, on vérifie ce point");
+    }
+    setRetrait(true);
+    const r = await retirerPoint(logement.id, f.id);
+    if (!r.ok) {
+      setRetrait(false);
+      setSignaler(false);
+      return toast.show(r.message ?? "Point non retiré");
+    }
+    router.push(`${base}/plan`);
+    router.refresh();
+  };
+
   return (
     <Screen className="gap-3">
       <Header left={<BackButton href={`${base}/plan`} />} title={piece?.nom ?? "Faille"} right={<OptionsMenu label="Options du point" items={[
         { label: "Partager avec un proche", icon: "share", onClick: () => void partager() },
+        { label: "Signaler une erreur de détection", icon: "police", onClick: () => setSignaler(true) },
         { label: "Voir le plan d'action", icon: "list", onClick: () => router.push(`${base}/actions`) },
       ]} />} />
 
@@ -207,6 +228,13 @@ export default function PageFaille() {
           </Pill>
         )}
       </div>
+      <Sheet open={signaler} onClose={() => setSignaler(false)} title="Erreur de détection ?">
+        <p className="text-sm leading-5 text-ink-soft">
+          Ce n&apos;est pas {f.titre.toLowerCase().startsWith("tapis") ? "un tapis" : "ce que l'analyse a cru voir"} ? Le point est retiré du plan, avec son action. Une nouvelle vidéo de la pièce peut le faire revenir s&apos;il est bien là.
+        </p>
+        <Pill onClick={() => void retirer()} disabled={retrait}>{retrait ? "Retrait…" : "Retirer ce point"}</Pill>
+        <button type="button" onClick={() => setSignaler(false)} className="h-10 text-sm font-bold">Annuler</button>
+      </Sheet>
       {toast.node}
     </Screen>
   );

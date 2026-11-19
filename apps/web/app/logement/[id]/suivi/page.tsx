@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { Cursor, Icon } from "@/components/cs/icons";
-import { ExempleTag, Illus, Logo, Screen, cx } from "@/components/cs/ui";
+import { ExempleTag, Illus, RoundButton, Screen, cx, useToast } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import type { Faille } from "@/lib/domaine";
 
@@ -44,14 +44,34 @@ export default function PageSuivi() {
     return [p.id, p.nom, "à surveiller", "bg-veille-bg text-veille-text"] as const;
   });
 
+  // Partage du plan, sans adresse ni donnée de santé : l'avancement et les points à traiter.
+  const toast = useToast();
+  const partager = async () => {
+    const lignes = logement.failles.filter((f) => statut(f) !== "regle").map((f) => {
+      const piece = logement.pieces.find((p) => p.id === f.piece_id)?.nom;
+      return `- ${f.titre}${piece ? ` (${piece})` : ""}`;
+    });
+    const texte = [`Chez Soi · Logement de ${prenom}`, `${n("regle")} sur ${statuts.length} réglé, ${n("en_traitement")} en traitement par l'agent.`, ...(lignes.length ? ["À traiter :", ...lignes.slice(0, 12)] : [])].join("\n");
+    try {
+      if (navigator.share) await navigator.share({ title: `Chez Soi · Logement de ${prenom}`, text: texte });
+      else {
+        await navigator.clipboard.writeText(texte);
+        toast.show("Plan copié, à coller dans un message");
+      }
+    } catch {
+      // Partage annulé par l'utilisateur.
+    }
+  };
+
   return (
-    <Screen nav="suivi" className="gap-3">
+    <Screen nav="accueil" className="gap-3">
       <div className="flex items-center gap-3">
-        <Logo size={52} />
-        <span className="flex flex-1 flex-col">
+        <RoundButton icon="back" label="Retour à l'accueil" href={`${base}/plan`} />
+        <span className="flex min-w-0 flex-1 flex-col">
           <b className="text-[17px]">Suivi</b>
-          <span className="text-[13px] text-ink-muted">Logement de {prenom}</span>
+          <span className="truncate text-[13px] text-ink-muted">Logement de {prenom}</span>
         </span>
+        <RoundButton icon="share" label="Partager le plan avec un proche" onClick={() => void partager()} />
       </div>
       {logement.exemple && <ExempleTag />}
 
@@ -104,6 +124,7 @@ export default function PageSuivi() {
           Recommencer la démo
         </button>
       )}
+      {toast.node}
     </Screen>
   );
 }

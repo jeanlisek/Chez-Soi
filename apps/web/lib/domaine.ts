@@ -126,6 +126,7 @@ export type Logement = {
   adresse?: string | null;
   type: string;
   etage: string;
+  ascenseur?: boolean | null;
   statut: string;
   zone_otv: "police" | "gendarmerie";
   /** Parcours A avec contrat, B sans. */

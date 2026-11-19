@@ -151,6 +151,8 @@ def calculer(video_url: str, sortie: Path, logement_id: str, piece: str | None,
     try:
         return analyser_video(video, sortie, logement_id, piece,
                               reconstruction=os.environ.get("VISION_RECONSTRUCTION") == "1",
+                              # Serrure, escalier, plafonnier, interrupteur, détecteur de fumée : repérés sans cote.
+                              presence=os.environ.get("VISION_PRESENCE", "1") == "1",
                               pieces=[Piece(p.nom, p.debut_s, p.fin_s) for p in pieces or []] or None)
     finally:
         video.unlink(missing_ok=True)  # la vidéo ne reste pas sur le service

@@ -9,7 +9,7 @@ python3 scripts/resultats.py
 Où trouver la preuve de chaque run :
 
 - runs 1 à 12 : sortie brute et contrôle dans [`agents/bench/runs/`](../agents/bench/runs/) (un JSON par session) ;
-- runs 13 à 40 : réponses brutes, captures et actions dans la PR #32 (banc Flash/Pro de Bastian), non fusionnée au 19/11 au soir ;
+- runs 13 à 40 : réponses brutes, captures et actions dans [`agents/bench/resultats/`](../agents/bench/resultats/) (banc Flash/Pro de Bastian, PR #32) ;
 - runs 5 et 35 : replay public H Company (liens plus bas).
 
 ## Ce que « Succès » veut dire

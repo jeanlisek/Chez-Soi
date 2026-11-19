@@ -194,6 +194,6 @@ Jean-Li Sek (CEO), Briac Turquety (CTO, CDO), Aurélie Périchon (CAIO), Bastian
 
 [1] Santé publique France, "Hospitalisations et mortalité en lien avec une chute chez les personnes de 65 ans et plus en France. Données 2015-2024", national bulletin, 12 March 2026, updated 16 March 2026. Primary source. [Online]. Available: https://www.santepubliquefrance.fr/traumatismes/chute/bulletin-national/hospitalisations-et-mortalite-en-lien-avec-une-chute-chez-les-personnes-de-65-ans-et-plus-en-france
 
-[2] SSMSI, statistical report "Insécurité et délinquance en 2025", cited by DegroupTest, "Bonne nouvelle : les cambriolages ont reculé en 2025, mais les grandes villes restent plus exposées". Secondary source. [Online]. Available: https://www.degrouptest.com/actualite/cambriolages-recul-2025-ssmsi-disparites-regionales
+[2] SSMSI, "Insécurité et délinquance en 2025 : bilan statistique et atlas départemental", Interstats, French Ministry of the Interior, 9 July 2026. Primary source. [Online]. Available: https://www.interieur.gouv.fr/Interstats/Actualites/Insecurite-et-delinquance-en-2025-bilan-statistique-et-atlas-departemental. The 211,600 figure is quoted by DegroupTest (secondary source): https://www.degrouptest.com/actualite/cambriolages-recul-2025-ssmsi-disparites-regionales
 
 [3] Hugging Face, "GPU Spaces", Hub documentation, hardware pricing (1x Nvidia L4: USD 0.80 per hour), accessed 19 November 2026. [Online]. Available: https://huggingface.co/docs/hub/main/spaces-gpus

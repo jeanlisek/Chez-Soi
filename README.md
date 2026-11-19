@@ -124,7 +124,7 @@ La fiche distingue les secours vérifiés du clip app, dont la disponibilité re
 
 **2. Avec un compte (5 minutes).**
 
-1. Se connecter par lien e-mail, avec n'importe quelle adresse. La connexion Google n'accepte que les comptes `@eugeniaschool.com` : l'application Google est limitée à l'organisation Google d'Eugenia. Le logement est créé et le parcours commence au profil.
+1. Se connecter par lien e-mail, avec n'importe quelle adresse (vérifié avec une adresse hors Eugenia). La connexion Google n'accepte que les comptes `@eugeniaschool.com` : l'application Google est limitée à l'organisation Google d'Eugenia. Le logement est créé et le parcours commence au profil.
 2. Remplir le profil, puis déposer la vidéo d'une pièce (MP4 ou MOV, 50 Mo au plus). Le Space se réveille à l'ouverture de l'écran ; l'analyse prend quelques minutes.
 3. Facultatif : déposer un contrat d'assurance habitation en PDF. Les clauses retenues apparaissent avec leur page. Le même écran peut lancer l'agent qui retrouve les conditions générales sur le site de l'assureur.
 4. Ouvrir le plan d'action, confirmer la cote d'un point, puis lancer l'agent. L'écran suit la vraie session H et demande la validation avant tout engagement. Approuver ne commande rien.
@@ -160,11 +160,10 @@ En production :
 - profil en trois étapes, accord des habitants retirable à tout moment (capacités effacées sans accord) ; détection étendue aux serrures, escaliers, éclairages et détecteurs de fumée, repérés sans cote ; chaque point détecté est revérifié par SigLIP et retiré s'il ressemble davantage à une confusion connue (pomme de douche prise pour un détecteur, poignée de placard pour une serrure) ;
 - plan d'action calculé sur les règles, avec le graphe pour reconnaître les éléments et une explication rédigée par un LLM puis contrôlée par du code ;
 - lecture du contrat de bout en bout, testée avec des conditions particulières fictives ;
-- agent H dans l'application pour les trois usages : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Pour l'usage 2, l'écran de validation affiche le nom du produit relu sur la fiche IKEA, pas celui recopié par l'agent, et une citation absente de la fiche est notée « à refuser » dans `runs_agent`. Le 19/11 en production : usage 2 de bout en bout sur `chez-soi-acheteur:2` (130 s, 9 étapes, pilotage envoyé, arrêt au panier sur `demander_validation`), usage 1 depuis l'écran Contrat, et un premier run réel de l'usage 3 après son branchement (#86).
+- agent H dans l'application pour les trois usages : création de la session, réponses aux outils par webhook signé, suivi à l'écran, validation par l'utilisateur, coupe-circuit. Pour l'usage 2, l'écran de validation affiche le nom du produit relu sur la fiche IKEA, pas celui recopié par l'agent, et une citation absente de la fiche est notée « à refuser » dans `runs_agent`. Le 19/11 en production : usage 2 de bout en bout sur `chez-soi-acheteur:2` (130 s, 9 étapes, pilotage envoyé, arrêt au panier sur `demander_validation`), usage 1 depuis l'écran Contrat, et l'usage 3 depuis le mode absence, arrêté sur `demander_validation` (#86, #97).
 
 Limites connues :
 
-- usage 3 : au premier run réel après son branchement, l'agent a rendu sa réponse sans passer par `demander_validation` ; la consigne le rappelle désormais, pas encore revérifié par un nouveau run (rien ne peut partir : l'agent ne se connecte pas et le coupe-circuit coupe toute page de connexion) ;
 - sur un vrai logement, la date de départ de l'absence n'est pas encore saisissable (15/12 par défaut) ; seule la durée se règle ;
 - l'usage 2 recopie mal certaines fiches produit : le contrôle des citations le détecte et refuse le produit ;
 - le Space se met en veille après 30 minutes : le premier appel attend son réveil ;

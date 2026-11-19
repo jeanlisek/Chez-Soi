@@ -9,8 +9,9 @@ scipy>=1.11
 torch>=2.4
 torchvision>=0.19
 transformers>=4.56
-# Tokeniseur de SigLIP (vérification des points).
+# Tokeniseur de SigLIP (vérification des points) : sentencepiece et protobuf.
 sentencepiece>=0.2
+protobuf>=4.25,<7  # exigé par SiglipTokenizer (BSD 3-Clause)
 huggingface_hub>=0.25
 trimesh>=4.4
 # Dépendances utiles de MapAnything et d'uniception (installés sans dépendances : voir requirements-modeles.txt).

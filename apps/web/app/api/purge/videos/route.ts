@@ -8,7 +8,7 @@ import { clientAdmin } from "@/lib/supabase/server";
  * Appelée chaque jour par le cron Vercel (`apps/web/vercel.json`), qui envoie l'en-tête
  * `Authorization: Bearer <CRON_SECRET>`. Sans ce secret, la route refuse tout.
  * Seule la vidéo d'origine part : modèle 3D, image annotée, points et cotes restent.
- * La liste vient de `videos_a_purger` (migration 0011), la suppression de l'API Storage.
+ * La liste vient de `videos_a_purger` (migration 0013), la suppression de l'API Storage.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

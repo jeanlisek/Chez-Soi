@@ -34,6 +34,38 @@ function sansRequete(texte: string): string {
 
 /* ---------- Création d'un run ---------- */
 
+const CONTRE_MESURE_ABSENCE = "Préparer l'Opération tranquillité vacances et l'information de l'assureur";
+
+/**
+ * Action de l'usage 3, rattachée à la dernière absence du logement : réutilisée si elle existe déjà
+ * (un run relancé ne crée pas de doublon), sinon créée. Sans absence, même refus que `preparer`.
+ */
+async function actionDeLAbsence(admin: Admin, logementId: string): Promise<NonNullable<ActionRun>> {
+  const { data: absence } = await admin
+    .from("absences")
+    .select("id")
+    .eq("logement_id", logementId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!absence) throw new ErreurRoute(409, "Aucune absence enregistrée pour ce logement : indiquez d'abord les dates.");
+  const { data: existante } = await admin
+    .from("actions")
+    .select("id")
+    .eq("absence_id", absence.id)
+    .eq("usage", 3)
+    .limit(1)
+    .maybeSingle();
+  if (existante) return { id: existante.id, faille_id: null, absence_id: absence.id };
+  const { data: creee, error } = await admin
+    .from("actions")
+    .insert({ absence_id: absence.id, usage: 3, contre_mesure: CONTRE_MESURE_ABSENCE })
+    .select("id")
+    .single();
+  if (error || !creee) throw new ErreurRoute(500, "Impossible de rattacher l'absence à une action.");
+  return { id: creee.id, faille_id: null, absence_id: absence.id };
+}
+
 /**
  * Crée une session H pour le logement de l'utilisateur. Vérifie, dans l'ordre : l'usage, le
  * logement (RLS : l'utilisateur ne voit que le sien), l'action quand l'usage en exige une
@@ -67,6 +99,10 @@ export async function creerRun(params: {
     const origine = (definition.action === "faille" ? data?.failles : data?.absences) as { logement_id?: string } | null;
     if (!data || origine?.logement_id !== logementId) throw new ErreurRoute(404, "Action introuvable pour ce logement.");
     action = { id: data.id, faille_id: data.faille_id, absence_id: data.absence_id };
+  } else if (definition.usage === 3) {
+    // `validations.action_id` est obligatoire : sans action, `demander_validation` (action « envoi »)
+    // échouait et l'agent finissait sans validation (run du 19/11). L'action vient de la dernière absence.
+    action = await actionDeLAbsence(admin, logementId);
   }
   const preparation = await definition.preparer(admin, logementId, action);
 

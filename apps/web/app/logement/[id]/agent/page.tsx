@@ -2,13 +2,19 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
-import { Cursor } from "@/components/cs/icons";
-import { ActionBar, BackButton, Chip, Header, Illus, Pill, RoundButton, Screen, Signal, cx } from "@/components/cs/ui";
+import { useRouter } from "next/navigation";
+
+import { CircleCheck, Cursor, Icon, type IconName } from "@/components/cs/icons";
+import { ActionBar, BackButton, Chip, Header, Illus, OptionsMenu, Pill, RoundButton, Screen, Sheet, Signal, cx, useToast } from "@/components/cs/ui";
 import { runTermine, useRunAgent } from "@/lib/agent/client";
 import { ETAPES_AGENT_EXEMPLE } from "@/lib/demo/logement-exemple";
 import { useParcours } from "@/lib/demo/etat";
 
 const CONSIGNES = ["sans découpe", "livraison rapide", "lavable"];
+
+// Ce que l'agent peut faire et ce qu'il ne fait jamais (arrêt garanti par `demander_validation`).
+const DROITS = ["Lire les fiches produit et comparer les prix", "Vérifier une dimension sur la fiche, avec la citation", "Préparer un panier, puis s'arrêter"];
+const INTERDITS = ["payer ou passer commande", "envoyer un message ou un formulaire", "signer ou se connecter à votre place"];
 
 /**
  * Écran 9 · Agent. Logement exemple : replay du run réel du 18/11 (IKEA France, PR #9),
@@ -25,6 +31,9 @@ export default function PageAgent() {
   const [pause, setPause] = useState(false);
   const [texte, setTexte] = useState("");
   const [alerte, setAlerte] = useState<string | null>(null);
+  const [feuille, setFeuille] = useState<"droits" | "navigateur">();
+  const router = useRouter();
+  const toast = useToast();
 
   // Vrai logement : l'état vient de la session H, jamais d'une animation.
   const reel = !logement.exemple;
@@ -99,9 +108,22 @@ export default function PageAgent() {
     void piloter(texte);
   };
 
+  // Relancer et arrêter ne pilotent que le replay : une vraie session se relance depuis le plan d'action.
+  const options: { label: string; icon: IconName; onClick: () => void; danger?: boolean }[] = [
+    { label: "Ce que l'agent a le droit de faire", icon: "shield", onClick: () => setFeuille("droits") },
+    ...(!reel && !aucun
+      ? [
+          { label: "Voir le navigateur du replay", icon: "eye" as const, onClick: () => setFeuille("navigateur") },
+          { label: "Rejouer la recherche", icon: "refresh" as const, onClick: () => { setStep(0); setPause(false); setConsignes([]); maj({ run: "en_cours", decision: null }); toast.show("Recherche relancée"); } },
+          { label: "Arrêter l'agent", icon: "stop" as const, danger: true, onClick: () => { maj({ run: "aucun" }); router.push(`${base}/actions`); } },
+        ]
+      : []),
+    { label: "Retour au plan d'action", icon: "list", onClick: () => router.push(`${base}/actions`) },
+  ];
+
   return (
     <Screen nav="agent" className="gap-3">
-      <Header left={<BackButton href={`${base}/actions`} />} title="Agent Chez Soi" right={<RoundButton icon="menu" label="Plan d'action" href={`${base}/actions`} />} />
+      <Header left={<BackButton href={`${base}/actions`} />} title="Agent Chez Soi" right={<OptionsMenu label="Options de l'agent" items={options} />} />
 
       {aucun ? (
         <section className="flex flex-col items-center gap-3 rounded-card bg-pervenche p-6 text-center">
@@ -119,8 +141,8 @@ export default function PageAgent() {
             <span className="absolute top-[18px] right-[18px]">
               {echec ? <Signal kind="info">Arrêté</Signal> : fini && etat.run === "termine" ? <Signal kind="info">Terminé</Signal> : fini ? <Signal kind="attentionPlein" icon>Validation attendue</Signal> : pause ? <Signal kind="info">En pause</Signal> : <Signal kind="info" icon>En cours</Signal>}
             </span>
-            <Illus name="navigateur" width={126} className="absolute top-[62px] left-1/2 -translate-x-1/2" />
-            <p className="absolute top-[168px] left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap" aria-live="polite">
+            <Illus name="navigateur" width={126} className={cx("absolute top-[62px] left-1/2 -translate-x-1/2", !fini && !echec && !pause && "anim-float")} />
+            <p key={`${echec}-${fini}`} className="anim-in absolute top-[168px] left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap" aria-live="polite">
               {echec
                 ? coupe ? "Session coupée : page non autorisée." : "L'agent s'est arrêté sans proposition."
                 : fini ? "Proposition prête. Rien n'est acheté." : reel ? "Je cherche le produit sur IKEA" : "Je compare les sous-tapis pour le couloir"}
@@ -129,7 +151,7 @@ export default function PageAgent() {
             {!reel && (
               <div className="absolute inset-x-0 bottom-5 flex items-center justify-center gap-5">
                 <RoundButton icon={pause ? "play" : "pause"} label={pause ? "Reprendre" : "Mettre en pause"} size={54} onClick={() => setPause(!pause)} />
-                <RoundButton icon="eye" label="Voir le navigateur de l'agent" size={74} variant="nuit" className="border-[5px] border-white/70" />
+                <RoundButton icon="eye" label="Voir le navigateur de l'agent" size={74} variant="nuit" className="border-[5px] border-white/70" onClick={() => setFeuille("navigateur")} />
                 <RoundButton icon="stop" label="Arrêter l'agent" size={54} href={`${base}/actions`} onClick={() => maj({ run: "aucun" })} />
               </div>
             )}
@@ -191,6 +213,35 @@ export default function PageAgent() {
           )}
         </ActionBar>
       )}
+
+      <Sheet open={feuille === "droits"} onClose={() => setFeuille(undefined)} title="Ce que l'agent a le droit de faire">
+        <ul className="flex flex-col gap-2.5 text-sm leading-5">
+          {DROITS.map((x) => (
+            <li key={x} className="flex items-start gap-2.5"><CircleCheck size={20} />{x}</li>
+          ))}
+          {INTERDITS.map((x) => (
+            <li key={x} className="flex items-start gap-2.5">
+              <span className="mt-px flex h-5 w-5 flex-none items-center justify-center rounded-full bg-nuit text-white"><Icon name="close" size={12} strokeWidth={3} /></span>
+              Jamais : {x}
+            </li>
+          ))}
+        </ul>
+        <p className="rounded-xl2 bg-info-bg px-4 py-3 text-[13px] leading-[18px] font-semibold text-info-text">Avant toute action engageante, l&apos;agent s&apos;arrête et attend votre validation.</p>
+      </Sheet>
+
+      <Sheet open={feuille === "navigateur"} onClose={() => setFeuille(undefined)} title="Navigateur de l'agent">
+        <div className="overflow-hidden rounded-xl2 border border-line bg-white">
+          <div className="flex items-center gap-2 border-b border-line bg-creme px-3 py-2.5 text-xs font-semibold text-ink-muted">
+            <Icon name="lock" size={14} /><span className="truncate">ikea.com/fr · sous-tapis antidérapant</span>
+          </div>
+          <div className="relative flex h-[170px] items-center justify-center bg-pervenche-soft">
+            <Illus name="navigateur" width={110} className={cx(!fini && "anim-float")} />
+          </div>
+          <p key={courant} className="anim-in flex items-center gap-2 px-3.5 py-3 text-sm font-bold text-cobalt"><Cursor size={14} />{etapes[courant]}</p>
+        </div>
+        <p className="text-xs leading-[17px] text-ink-muted">Replay du run du 18/11. L&apos;agent ne voit jamais vos mots de passe ni vos moyens de paiement.</p>
+      </Sheet>
+      {toast.node}
     </Screen>
   );
 }

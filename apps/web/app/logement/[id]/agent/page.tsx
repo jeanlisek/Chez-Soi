@@ -125,6 +125,16 @@ export default function PageAgent() {
     toast.show("Recherche relancée");
   };
 
+  const arreter = async () => {
+    if (etat.sessionId) {
+      const r = await fetch("/api/agent/stop", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: etat.sessionId }) }).catch(() => null);
+      if (!r?.ok) return toast.show("L'agent n'a pas pu être arrêté, réessayez");
+    }
+    toast.show("Agent arrêté, rien n'a été envoyé");
+    maj({ run: "aucun", sessionId: null });
+    router.push(`${base}/actions`);
+  };
+
   const options: { label: string; icon: IconName; onClick: () => void; danger?: boolean }[] = [
     { label: "Ce que l'agent a le droit de faire", icon: "shield", onClick: () => setFeuille("droits") },
     ...(!reel && !aucun
@@ -134,6 +144,8 @@ export default function PageAgent() {
           { label: "Arrêter l'agent", icon: "stop" as const, danger: true, onClick: () => { maj({ run: "aucun" }); router.push(`${base}/actions`); } },
         ]
       : []),
+    // Vraie session en cours : l'arrêt annule la session chez H (elle libère une des 3 places).
+    ...(reel && !aucun && !termine && !echec ? [{ label: "Arrêter l'agent", icon: "stop" as const, danger: true, onClick: () => void arreter() }] : []),
     // Vraie session terminée (ou arrêtée) : on en ouvre une nouvelle pour les mêmes missions.
     ...(reel && !aucun && (termine || echec) ? [{ label: "Relancer la recherche", icon: "refresh" as const, onClick: () => void relancer() }] : []),
     { label: "Retour au plan d'action", icon: "list", onClick: () => router.push(`${base}/actions`) },
@@ -166,6 +178,11 @@ export default function PageAgent() {
                 : fini ? "Proposition prête. Rien n'est acheté." : reel ? "Je cherche le produit sur IKEA" : "Je compare les sous-tapis pour le couloir"}
             </p>
             {/* Pause, aperçu et arrêt ne pilotent que le replay : sur une vraie session, ils ne feraient rien chez H. */}
+            {reel && !fini && !echec && !termine && (
+              <div className="absolute inset-x-0 bottom-5 flex items-center justify-center">
+                <RoundButton icon="stop" label="Arrêter l'agent" size={54} onClick={() => void arreter()} />
+              </div>
+            )}
             {!reel && (
               <div className="absolute inset-x-0 bottom-5 flex items-center justify-center gap-5">
                 <RoundButton icon={pause ? "play" : "pause"} label={pause ? "Reprendre" : "Mettre en pause"} size={54} onClick={() => setPause(!pause)} />

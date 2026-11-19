@@ -5,7 +5,7 @@
 -- et datée (contrôlé par le trigger regles_controler_source).
 -- Les personas, leur logement et le contrat fictif sont dans seed_demo.sql : ils exigent
 -- que les comptes de démo existent d'abord dans auth.users.
--- Prérequis : migrations 0001 à 0006 (le graphe exige 0005, le vocabulaire elements exige 0006).
+-- Prérequis : migrations 0001 à 0008 (graphe : 0005, vocabulaire elements : 0006, assureurs : 0008).
 
 begin;
 
@@ -308,5 +308,30 @@ join public.graphe_noeuds nr
   on nr.type = 'Regle' and nr.contrat_id is null and nr.proprietes ->> 'code' = nc.proprietes ->> 'code_regle'
 where nc.type = 'ContreMesure' and nc.contrat_id is null
 on conflict (source_id, cible_id, relation) do nothing;
+
+-- Référentiel des assureurs (0008) : domaines officiels et page de départ de l'usage 1.
+-- Valeurs de agents/dev/fixtures/contrat_u1.json, vérifiées sans connexion le 18/11/2026.
+-- Rejouable : la clé est le nom (index assureurs_nom_idx).
+insert into public.assureurs (nom, domaines, url_depart, verifie_le, notes)
+values
+  ('MAIF', '{maif.fr}', 'https://www.maif.fr', '2026-11-18',
+   'Conditions générales Raqvam publiques (référence M2442).'),
+  ('Altima Assurances', '{altima-assurances.fr}', 'https://www.altima-assurances.fr', '2026-11-18',
+   'Conditions générales MRH publiques (référence 202007_298).'),
+  ('Acheel', '{acheel.com}', 'https://v2.acheel.com/insurance/property', '2026-11-18',
+   'Cas « non publié » : aucune condition générale accessible sans connexion.')
+on conflict (lower(btrim(nom))) do update
+  set domaines = excluded.domaines,
+      url_depart = excluded.url_depart,
+      verifie_le = excluded.verifie_le,
+      notes = excluded.notes;
+
+-- Contrats déjà lus : rattachement à l'assureur du référentiel quand le nom est identique.
+-- Les nouveaux contrats sont rattachés par l'application à la lecture (lib/contrat.ts).
+update public.contrats c
+set assureur_id = a.id
+from public.assureurs a
+where c.assureur_id is null
+  and lower(btrim(c.assureur)) = lower(btrim(a.nom));
 
 commit;

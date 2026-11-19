@@ -351,3 +351,15 @@ def test_un_objet_plus_grand_que_le_tapis_vu_en_entier_ne_l_absorbe_pas():
     fusionner_instances_proches(mesures)
 
     assert [m.instance for m in mesures] == [0, 0, 1, 0]
+
+
+def test_deux_fenetres_visibles_dans_la_meme_image_restent_deux_fenetres():
+    mesures = [
+        _vue_3d("image_010.jpg", 0, (0.0, 1.0, 3.0), element="fenetre"),
+        _vue_3d("image_010.jpg", 1, (0.5, 1.0, 3.0), element="fenetre"),   # à 50 cm, mais dans la même image
+        _vue_3d("image_020.jpg", 2, (0.05, 1.0, 3.0), element="fenetre"),  # la première, revue plus tard
+    ]
+
+    fusionner_instances_proches(mesures)
+
+    assert [m.instance for m in mesures] == [0, 1, 0]

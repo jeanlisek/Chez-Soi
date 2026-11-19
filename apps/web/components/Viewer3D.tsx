@@ -1,9 +1,9 @@
 "use client";
 
 import { Component, Suspense, useEffect, useMemo, type ReactNode } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, OrbitControls, RoundedBox, useGLTF } from "@react-three/drei";
-import { BufferAttribute, BufferGeometry, Points, PointsMaterial, Vector3, type Object3D } from "three";
+import { BufferAttribute, BufferGeometry, DoubleSide, MeshBasicMaterial, PerspectiveCamera, Points, PointsMaterial, Spherical, Vector3, type Mesh, type Object3D } from "three";
 
 /**
  * Plan 3D d'une pièce (three, @react-three/fiber, @react-three/drei).
@@ -22,6 +22,11 @@ export type Viewer3DProps = {
   className?: string;
   /** Position de l'élément dans le modèle (.glb, en mètres) : la vue le vise et le signale. */
   repere?: { position: [number, number, number]; libelle: string } | null;
+  /**
+   * « Photo en relief » du point : nœud du .glb (surface texturée d'une image de la vidéo), caméra qui a
+   * filmé et point regardé, dans le repère du modèle. Quand elle existe, elle remplace le nuage de points.
+   */
+  relief?: { noeud: string; camera: [number, number, number]; cible: [number, number, number] } | null;
 };
 
 /** Valeur au centile `q` (0 à 1) d'un axe du nuage, sur un échantillon d'au plus 40 000 points. */
@@ -152,6 +157,84 @@ function Modele({ url, tourner, repere }: { url: string; tourner: boolean; reper
   );
 }
 
+/** Amplitude de la rotation autour de la caméra d'origine : au-delà, on voit les trous derrière les objets. */
+const ECART_HORIZONTAL = 0.32; // radians, environ 18°
+const ECART_VERTICAL = 0.18;
+
+/** Surface texturée du nœud `noeud`, avec un matériau sans éclairage : on veut les couleurs de la photo. */
+function surfaceDuRelief(scene: Object3D, noeud: string): Mesh | null {
+  let trouve: Mesh | null = null;
+  scene.getObjectByName(noeud)?.traverse((o) => {
+    if (!trouve && (o as Mesh).isMesh) trouve = o as Mesh;
+  });
+  return trouve;
+}
+
+/**
+ * « Photo en relief » : la surface texturée d'une image de la vidéo, regardée depuis la caméra qui a filmé.
+ * De là, la vue ressemble à la photo ; on peut tourner d'une vingtaine de degrés pour sentir le volume,
+ * pas davantage (ce que la caméra n'a pas vu n'existe pas dans le modèle).
+ */
+function Relief({ url, relief, tourner, repere }: { url: string; relief: NonNullable<Viewer3DProps["relief"]>; tourner: boolean; repere?: Viewer3DProps["repere"] }) {
+  const { scene } = useGLTF(url);
+  const camera = useThree((etat) => etat.camera);
+  const surface = useMemo(() => surfaceDuRelief(scene, relief.noeud), [scene, relief.noeud]);
+  const materiau = useMemo(() => {
+    const origine = surface?.material as { map?: MeshBasicMaterial["map"] } | undefined;
+    return new MeshBasicMaterial({ map: origine?.map ?? null, side: DoubleSide, toneMapped: false });
+  }, [surface]);
+  const cible = useMemo(() => new Vector3(...relief.cible), [relief.cible]);
+  const depart = useMemo(() => new Spherical().setFromVector3(new Vector3(...relief.camera).sub(new Vector3(...relief.cible))), [relief.camera, relief.cible]);
+
+  useEffect(() => {
+    camera.position.set(...relief.camera);
+    camera.near = 0.05;
+    camera.far = 60;
+    // Champ resserré sur l'élément : la carte est plus large que haute, la vidéo l'inverse.
+    if (camera instanceof PerspectiveCamera) camera.fov = 50;
+    camera.lookAt(cible);
+    camera.updateProjectionMatrix();
+  }, [camera, relief.camera, cible]);
+
+  // « Tourner » : léger balancement autour de la caméra d'origine, dans les limites lisibles.
+  useFrame(({ clock }) => {
+    if (!tourner) return;
+    const t = clock.getElapsedTime();
+    const s = new Spherical(depart.radius, depart.phi + Math.sin(t * 0.5) * ECART_VERTICAL * 0.5, depart.theta + Math.sin(t * 0.8) * ECART_HORIZONTAL);
+    camera.position.setFromSpherical(s).add(cible);
+    camera.lookAt(cible);
+  });
+
+  useEffect(() => () => materiau.dispose(), [materiau]);
+
+  if (!surface) return <Modele url={url} tourner={tourner} repere={repere} />;
+  return (
+    <>
+      <mesh geometry={surface.geometry} material={materiau} />
+      {repere && (
+        <Html position={repere.position} center zIndexRange={[5, 0]}>
+          <div className="pointer-events-none flex flex-col items-center gap-1">
+            <span className="rounded-full bg-nuit px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-white">{repere.libelle}</span>
+            <span className="h-9 w-9 rounded-full border-[3px] border-[#FF8A00] bg-[#FF8A00]/25" />
+          </div>
+        </Html>
+      )}
+      <OrbitControls
+        makeDefault
+        target={cible}
+        enablePan={false}
+        enabled={!tourner}
+        minDistance={depart.radius * 0.5}
+        maxDistance={depart.radius * 1.25}
+        minAzimuthAngle={depart.theta - ECART_HORIZONTAL}
+        maxAzimuthAngle={depart.theta + ECART_HORIZONTAL}
+        minPolarAngle={Math.max(0.05, depart.phi - ECART_VERTICAL)}
+        maxPolarAngle={Math.min(Math.PI - 0.05, depart.phi + ECART_VERTICAL)}
+      />
+    </>
+  );
+}
+
 /** Si le .glb ne se charge pas (URL expirée, fichier absent), on revient à la pièce schématique. */
 class RepliModele extends Component<{ repli: ReactNode; children: ReactNode }, { erreur: boolean }> {
   state = { erreur: false };
@@ -228,6 +311,7 @@ export function Viewer3D({
   apres = false,
   className,
   repere,
+  relief,
 }: Viewer3DProps) {
   // Pièce schématique (pas de modèle, ou modèle illisible) : ses propres contrôles.
   const schematique = (
@@ -253,7 +337,7 @@ export function Viewer3D({
         <Suspense fallback={null}>
           {modeleUrl ? (
             <RepliModele repli={schematique}>
-              <Modele url={modeleUrl} tourner={tourner} repere={repere} />
+              {relief ? <Relief url={modeleUrl} relief={relief} tourner={tourner} repere={repere} /> : <Modele url={modeleUrl} tourner={tourner} repere={repere} />}
             </RepliModele>
           ) : (
             schematique

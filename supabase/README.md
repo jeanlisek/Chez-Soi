@@ -16,7 +16,7 @@ Projet Supabase `chez-soi`, organisation « Chez Soi », région Paris (eu-west-
 | `migrations/0008_agent_analyses_assureurs.sql` | `runs_agent.controle_document` (usage 1, PR #17) ; référentiel `assureurs` (domaines officiels) et `contrats.assureur_id` ; `webhooks_recus` (dédoublonnage par `X-H-Webhook-Delivery`) ; `analyses` (état de la vidéo et du contrat) ; `messages_agent` (pilotage) ; `actions` : `priorite`, `force`, `obligation_id`, `regle_id`, `explication` |
 | `migrations/0009_analyses_space.sql` | `analyses` alignée sur le Space vision (PR #18) : statut `termine` (et non `terminee`), `service_analyse_id` (l'`analyse_id` du Space, unique), `origine` (`pipeline` ou `precalcule`, obligatoire pour une vidéo terminée) |
 | `migrations/0010_obligations_absence.sql` | `obligations_contrat.liee_absence` et `source` (`cg` ou `cp`) ; `get_contrat_champs` accepte le champ `absence` : obligations liées à l'absence sans durée d'inoccupation (cas MAIF Raqvam, art. 7.2), citation retrouvée seulement, champ absent s'il n'y en a aucune |
-| `migrations/0011_purge_videos.sql` | `videos_a_purger(p_limite)` (service_role uniquement) : vidéos du bucket `videos` envoyées il y a plus d'un mois. La route `/api/purge/videos` (cron Vercel quotidien) les supprime par l'API Storage, car supprimer une ligne de `storage.objects` laisse le fichier |
+| `migrations/0013_purge_videos.sql` | `videos_a_purger(p_limite)` (service_role uniquement) : vidéos du bucket `videos` envoyées il y a plus d'un mois. La route `/api/purge/videos` (cron Vercel quotidien) les supprime par l'API Storage, car supprimer une ligne de `storage.objects` laisse le fichier |
 
 Une migration déjà appliquée ne se modifie jamais : on en ajoute une nouvelle.
 
@@ -71,7 +71,7 @@ npx supabase migration repair 0001 0002 0003 0004 0005 0006 0007 --status applie
 
 ## Conservation des vidéos
 
-Une vidéo est supprimée un mois après son envoi (décision du 19/11/2026). Chaque jour à 3 h UTC, le cron Vercel appelle `GET /api/purge/videos`, qui lit `videos_a_purger` puis supprime les fichiers par l'API Storage. Le modèle 3D, l'image annotée, les points et leurs cotes restent. L'écran Capture l'annonce à l'utilisateur. Prérequis : migration 0011 appliquée et `CRON_SECRET` défini dans Vercel (production).
+Une vidéo est supprimée un mois après son envoi (décision du 19/11/2026). Chaque jour à 3 h UTC, le cron Vercel appelle `GET /api/purge/videos`, qui lit `videos_a_purger` puis supprime les fichiers par l'API Storage. Le modèle 3D, l'image annotée, les points et leurs cotes restent. L'écran Capture l'annonce à l'utilisateur. Prérequis : migration 0013 appliquée et `CRON_SECRET` défini dans Vercel (production).
 
 Vérifier à la main : `select * from public.videos_a_purger(100);` dans l'éditeur SQL (aucune ligne avant le 16/12/2026 pour les vidéos du hackathon).
 

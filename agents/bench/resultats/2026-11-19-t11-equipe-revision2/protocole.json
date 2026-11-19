@@ -1,0 +1,46 @@
+{
+  "organisation": "équipe Jean-Li",
+  "projet": "Default",
+  "agent": "chez-soi-acheteur:2",
+  "skill": "verifier-dimension:2",
+  "parcours": "banc local, lecteur et schéma expérimental ; pas un run lancé depuis l’app",
+  "code_commit": "86ab6a365ca04e76265cd4609e4c4d72e89ec5f7",
+  "plan": {
+    "agent": "chez-soi-acheteur:2",
+    "skill": "verifier-dimension:2",
+    "prompt_sha256": "d469f583c311d1e20b7e02799ff2b9517112f2b3d2adeffad412a74bc1f5ba8d",
+    "essais": [
+      {
+        "cas": {
+          "id": "t11-sous-tapis-60x160-budget-50",
+          "site": "www.ikea.com/fr/fr",
+          "contraintes": "Cas T11 choisi par Jean-Li le 18/11 : sous-tapis antidérapant fin pour sol dur, sans surépaisseur ni bord qui rebique, en une pièce couvrant un tapis de 60 × 160 cm. Découpe autorisée seulement si une phrase exacte de la fiche de la variante retenue la prouve. Aucun pliage ni superposition. Le pilotage précisera le budget pendant la session. Aucune donnée personnelle, connexion, commande ni paiement.",
+          "attendu": "panier",
+          "steer": "Moins de 50 € TTC pour le produit, hors livraison. Garde toutes les contraintes du sous-tapis de 60 × 160 cm ; ne sacrifie pas la compatibilité pour le prix. Si aucun produit compatible ne convient, ne rien ajouter et expliquer le blocage.",
+          "steer_apres_etape": 3,
+          "budget_strict_eur": 50,
+          "decoupe_autorisee": true
+        },
+        "variante": "flash",
+        "modele": "holo4-35b-a3b",
+        "repetition": 1
+      }
+    ],
+    "a_blanc": false
+  },
+  "quota_avant": {
+    "scope": "org",
+    "limit": 3,
+    "active": 0,
+    "available": 3
+  },
+  "quota_apres": {
+    "scope": "org",
+    "limit": 3,
+    "active": 0,
+    "available": 3
+  },
+  "replay_public": null,
+  "statut_metier": "partiel",
+  "validation_humaine": false
+}

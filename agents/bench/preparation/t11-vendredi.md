@@ -14,6 +14,13 @@ La clé personnelle reste dans le `.env` local ignoré, permissions `600`, expir
 Jean-Li demande le 19/11 d’attendre son signal après son essai depuis l’app avant
 de lancer un run local sur la révision 2. Aucun nouveau Pro d’ici la démo.
 
+Créneau libéré par Jean-Li à 11h34 ; essai Flash annoncé puis réalisé à 14h41 :
+run 40, 57,7 s, 10 étapes, 0,02892024 $. STOPP ajouté à 5,99 € (confirmation à
+l’écran, panier complet non ouvert), mais nom et citation de découpe déformés :
+contrôle négatif, résultat partiel. Quota final 0/3, refus du banc et arrêt sûr.
+Rapport : `../resultats/2026-11-19-t11-equipe-revision2/rapport.md`.
+Ce run local à trois outils ne vaut pas un essai comparatif du format de l’app.
+
 ## Préparation sans session H
 
 Depuis la racine, avec Python 3 et les dépendances Node de `apps/web` installées :

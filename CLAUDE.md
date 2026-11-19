@@ -313,7 +313,11 @@ de production. Aucun gain du nouveau schéma sans lecteur n’est mesuré. Un es
 depuis l’app est requis avant de modifier son contrat ou publier un nouvel agent.
 
 Après #60 : l’app utilise `chez-soi-acheteur:2` avec `verifier-dimension:2`.
-Les runs 38/39 restent des mesures de la révision 1. Prochain essai Flash sur la
-révision 2 seulement après le signal de Jean-Li ; aucun nouveau Pro avant vendredi.
+Les runs 38/39 restent des mesures de la révision 1. Après libération du créneau
+par Jean-Li, run 40 Flash sur la révision 2 : 57,7 s, 10 étapes, 0,02892024 $.
+Ajout STOPP à 5,99 € confirmé, arrêt sûr, mais nom et citation de découpe altérés :
+résultat partiel et contrôle métier négatif. Rapport `agents/bench/resultats/2026-11-19-t11-equipe-revision2/`.
+Le banc utilise toujours ses trois outils et son format expérimental, distincts de
+l’app. Quota final nul, aucun nouveau replay de succès ; aucun Pro avant vendredi.
 Le test vidéo/GLB en production a été effectué par Jean-Li (message du 19/11 à 11h04),
 pas par Bastian : ne pas téléverser une autre vidéo pour le refaire sans nécessité.

@@ -17,7 +17,7 @@ import statistics
 import subprocess
 import sys
 
-from preuves import verifier_dimensions
+from preuves import normaliser, verifier_dimensions
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
@@ -76,6 +76,18 @@ def evaluer(run, cas, pilotage, lecteur=None):
         preuve = verifier_dimensions(sortie, cas['decoupe_autorisee'], format_plus_petit=cas.get('format_plus_petit', False), **({'lecteur': lecteur} if lecteur else {}))
         if not preuve['verifie']:
             erreurs.append(preuve['motif'])
+        # Une bonne citation de découpe ne valide pas un nom ou une autre citation réécrits.
+        lectures = [a.get('reponse') for a in appels if a.get('outil') == 'lire_fiche_produit'
+                    and not a.get('erreur') and isinstance(a.get('reponse'), dict)
+                    and a['reponse'].get('url') == sortie.get('lien')]
+        source = lectures[-1] if lectures else {}
+        if not source.get('nom_source'):
+            erreurs.append('Nom du produit non vérifiable dans la lecture de sa fiche')
+        elif normaliser(sortie.get('produit') or '') != normaliser(source['nom_source']):
+            erreurs.append('Nom du produit différent du nom source de la fiche')
+        compatibilite = sortie.get('citation_compatibilite')
+        if compatibilite and normaliser(compatibilite) not in normaliser(source.get('texte_fiche') or ''):
+            erreurs.append('Citation de compatibilité absente de la fiche lue')
     else:
         if sortie.get('trouve') is not False or sortie.get('au_panier') is not False or not sortie.get('remarque'):
             erreurs.append('Refus attendu non justifié ou ajout déclaré au panier')

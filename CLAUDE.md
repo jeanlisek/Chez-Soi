@@ -282,9 +282,15 @@ avec la skill d’Aurélie (PR #20). Banc : `python3 agents/bench/run_bench.py` 
 sans API) ; `--a-blanc --limite 1` construit une requête ; essais réels avec
 `--executer --canal-annonce --agent nom:N --skill-ref nom:N`, H_API_KEY chargé depuis
 le .env local. Détails dans `agents/bench/README.md`. Jamais de dérogation U2 au quota
-actif nul. La clé de Bastian ne voit pas l’organisation d’Aurélie ; copie autorisée
-`chez-soi-acheteur:1` et `verifier-dimension:1` dans son compte, références distinctes
-de celles de l’équipe malgré les noms identiques.
+actif nul. Depuis le 19/11, Bastian accède à `chez-soi-acheteur:1` et
+`verifier-dimension:1` de l’équipe dans Default (organisation de Jean-Li), lecture 200.
+Sa nouvelle clé est dans le `.env` local ignoré (permissions 600, expiration 21/11),
+jamais sur Slack ni GitHub ; cette restriction concerne le stockage, pas une liaison
+de la clé à un appareil par H. Les 25 runs du 18/11 utilisaient une copie personnelle,
+références distinctes de celles de l’équipe malgré les noms identiques.
+Depuis la PR #46 : les cotes au sol utilisent `largeur_cm` × `longueur_cm`,
+`hauteur_cm` reste une épaisseur optionnelle. Aucun âge ni donnée de santé dans
+les nouveaux prompts ou contraintes transmis à H.
 
 Le 18/11 : 20 runs comparatifs réels, conservés dans
 `agents/bench/resultats/2026-11-18-bastian/` (10 Flash + 10 Pro, prompt archivé ;

@@ -142,7 +142,7 @@ async function main(): Promise<void> {
   const prompt = gabarit
     .replace(/<!--[\s\S]*?-->/g, "")
     .replaceAll("{{SITE}}", site)
-    .replaceAll("{{CONTEXTE}}", "CAS DE TEST TAPIS UNIQUEMENT : rechercher un sous-tapis antidérapant fin, pour sol dur, pour un tapis de 60 × 160 cm en une pièce ; un format plus petit est admis uniquement si une consigne explicite le demande, pour la persona fictive Jeanne qui se déplace avec une canne. Dans cette fixture uniquement, hauteur_cm=160 représente la longueur au sol. Ne pas plier ni superposer. Les contraintes plus strictes du cas (ex. découpe interdite) s’appliquent.")
+    .replaceAll("{{CONTEXTE}}", "CAS DE TEST TAPIS UNIQUEMENT : rechercher un sous-tapis antidérapant fin, pour sol dur, pour un tapis de 60 × 160 cm en une pièce ; un format plus petit est admis uniquement si une consigne explicite le demande. Les cotes au sol sont largeur_cm=60 et longueur_cm=160 ; hauteur_cm désigne seulement l’épaisseur, inconnue et donc absente. Ne pas plier ni superposer. Les contraintes plus strictes du cas (ex. découpe interdite) s’appliquent.")
     .replaceAll("{{FAILLE_ID}}", FAILLE_ID)
     .replaceAll("{{CONTRAINTES}}", option("contraintes") ?? "Pas de budget initial ; appliquer les messages reçus pendant le run.")
     .trim();

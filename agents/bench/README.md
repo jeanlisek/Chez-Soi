@@ -6,10 +6,14 @@ règles universelles pour les meubles ou les équipements électriques.
 
 ## Agent et skill
 
-Référence équipe (PR #20) : `chez-soi-acheteur:2`, skill `verifier-dimension:1`.
-La clé de Bastian ne voit pas ces ressources. Avec son accord, une copie fidèle des
-fichiers de cette PR a été publiée dans son organisation : `chez-soi-acheteur:1`,
-`verifier-dimension:1`. Ce sont des ressources différentes malgré les mêmes noms.
+Référence équipe confirmée par Aurélie et accessible le 19/11 :
+`chez-soi-acheteur:1`, skill `verifier-dimension:1`, projet **Default** de
+l’organisation de Jean-Li. La nouvelle clé personnelle de Bastian reste dans son
+`.env` local ignoré, permissions `600`, et expire le 21/11. Le stockage est limité
+à son compte sur son Mac ; la clé elle-même n’est pas liée à un appareil par H.
+Les 25 runs du 18/11 ont utilisé une copie dans son organisation personnelle,
+également nommée `chez-soi-acheteur:1` : ce sont des ressources distinctes.
+Les nouveaux essais équipe ne sont donc pas ajoutés au comparatif historique.
 Le banc vérifie le raccordement avant toute création et fixe le modèle par surcharge,
 sans modifier la définition publiée ni la skill d’Aurélie.
 
@@ -45,6 +49,9 @@ Troisième consigne à essayer séparément : « Livraison en point relais uniqu
 ne pas ouvrir la commande ni fournir d’adresse. Si ce mode n’est pas prouvé avant
 le tunnel de commande, explique le blocage et ne présente pas la livraison comme acquise. »
 Le cas sans découpe admet un format plus petit uniquement sur demande explicite.
+Les nouvelles requêtes utilisent `largeur_cm` × `longueur_cm` au sol ;
+`hauteur_cm` est une épaisseur optionnelle. Seules les contraintes de l’objet
+sont transmises à H, sans âge ni données de santé des occupants.
 Un refus conforme n’établit pas à lui seul l’exhaustivité des recherches : revue du replay.
 
 ## Preuves et exports
@@ -101,3 +108,9 @@ Les réponses brutes ne sont jamais corrigées pour gonfler le taux de réussite
 ## Scénario T11 retenu
 
 La décision de Jean-Li du 18/11 est préparée dans `cas_t11.json` : sous-tapis 60 × 160 cm et pilotage « moins de 50 € ». Voir `preparation/t11-vendredi.md` pour l’accès à l’agent d’équipe et à la clé de l’app, les critères de réussite et le replay de secours. Ce cas est séparé des 20 comparatifs déjà mesurés ; sa préparation à blanc ne constitue pas un run réel réussi.
+
+Le premier essai réel sur l’agent de l’équipe (19/11) est dans
+`resultats/2026-11-19-t11-equipe/` : panier réel à 5,99 €, pilotage et arrêt vérifiés,
+mais nom et citation de compatibilité déformés. Le résultat reste partiel.
+Le banc contrôle désormais aussi ces champs contre la fiche lue, sans réécrire
+la sortie brute. Le replay de secours du run 35 reste inchangé.

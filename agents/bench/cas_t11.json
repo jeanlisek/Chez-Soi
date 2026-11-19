@@ -2,9 +2,9 @@
   {
     "id": "t11-sous-tapis-60x160-budget-50",
     "site": "www.ikea.com/fr/fr",
-    "contraintes": "Cas T11 choisi par Jean-Li le 18/11 : sous-tapis antidérapant fin pour sol dur, en une pièce couvrant un tapis de 60 × 160 cm, pour la persona fictive Jeanne qui utilise une canne. Découpe autorisée seulement si une phrase exacte de la fiche de la variante retenue la prouve. Aucun pliage ni superposition. Le pilotage précisera le budget pendant la session. Aucune donnée personnelle, connexion, commande ni paiement.",
+    "contraintes": "Cas T11 choisi par Jean-Li le 18/11 : sous-tapis antidérapant fin pour sol dur, sans surépaisseur ni bord qui rebique, en une pièce couvrant un tapis de 60 × 160 cm. Découpe autorisée seulement si une phrase exacte de la fiche de la variante retenue la prouve. Aucun pliage ni superposition. Le pilotage précisera le budget pendant la session. Aucune donnée personnelle, connexion, commande ni paiement.",
     "attendu": "panier",
-    "steer": "Moins de 50 € TTC pour le produit, hors livraison. Garde les contraintes du tapis de 60 × 160 cm et du profil de Jeanne ; ne sacrifie pas la compatibilité pour le prix. Si aucun produit compatible ne convient, ne rien ajouter et expliquer le blocage.",
+    "steer": "Moins de 50 € TTC pour le produit, hors livraison. Garde toutes les contraintes du sous-tapis de 60 × 160 cm ; ne sacrifie pas la compatibilité pour le prix. Si aucun produit compatible ne convient, ne rien ajouter et expliquer le blocage.",
     "steer_apres_etape": 3,
     "budget_strict_eur": 50,
     "decoupe_autorisee": true

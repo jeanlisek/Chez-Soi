@@ -114,6 +114,23 @@ class BancTests(unittest.TestCase):
     def test_pilotage_non_envoye_est_echec(self):
         self.assertIn('Pilotage non envoyé pendant le run', evaluer(self.run, self.cas[2], None)['erreurs'])
 
+    def test_citation_decoupe_correcte_ne_valide_pas_nom_et_compatibilite_inventes(self):
+        nom = 'STOPP Anti-dérapant pour tapis, 67.5x200 cm'
+        texte = f'{DIMENSIONS} {CITATION} Pour toutes les tailles de tapis.'
+        self.run['sortie_finale'] = dict(trouve=True, au_panier=True, produit=nom,
+            prix_eur=5.99, largeur_cm=67.5, longueur_cm=200, lien=URL,
+            delai_livraison='non indiquée avant commande', citation_dimensions=DIMENSIONS,
+            citation_decoupe=CITATION, citation_compatibilite='Pour toutes les tailles de tapis.')
+        self.run['appels_outils'].append(dict(outil='lire_fiche_produit', reponse=dict(
+            url=URL, nom_source=nom, texte_fiche=texte)))
+        lecteur = Mock(return_value=texte)
+        self.assertTrue(evaluer(self.run, self.cas[0], None, lecteur=lecteur)['conforme_automatique'])
+        self.run['sortie_finale']['produit'] = nom.replace('tapis', 'tissus')
+        self.run['sortie_finale']['citation_compatibilite'] = 'Pour toutes les tailles de tissus.'
+        erreurs = evaluer(self.run, self.cas[0], None, lecteur=lecteur)['erreurs']
+        self.assertIn('Nom du produit différent du nom source de la fiche', erreurs)
+        self.assertIn('Citation de compatibilité absente de la fiche lue', erreurs)
+
     def test_exports_cout_inconnu_jamais_zero(self):
         e = evaluer(self.run, self.cas[4], None)
         with tempfile.TemporaryDirectory() as d:

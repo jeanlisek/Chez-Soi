@@ -242,8 +242,10 @@ export function metierPour(element: string | null | undefined): string {
  * Ce que les travaux doivent permettre, tiré des capacités des occupants. Rien qui décrive une
  * personne : seulement des contraintes sur le chantier (même principe que get_mesures).
  */
-export function contraintesTravaux(occupants: { deplacement: number }[], locataire: boolean): string[] {
-  const max = Math.max(0, ...occupants.map((o) => o.deplacement));
+export function contraintesTravaux(occupants: { deplacement: number }[], locataire: boolean, element?: string | null): string[] {
+  // Le passage ne compte que pour les travaux qui le modifient (porte, escalier, seuil) : pas pour une serrure (run du 19/11).
+  const passage = ["porte", "porte_entree", "porte_interieure", "escalier", "seuil", "ressaut"].includes(element ?? "");
+  const max = passage ? Math.max(0, ...occupants.map((o) => o.deplacement)) : 0;
   const c: string[] = [];
   if (max >= 4) c.push("Les travaux doivent permettre le passage d'un fauteuil roulant : privilégie un artisan qui affiche le label Handibat ou une expérience de l'adaptation du logement.");
   else if (max === 3) c.push("Les travaux doivent permettre le passage d'un déambulateur : privilégie un artisan qui affiche le label Handibat ou une expérience de l'adaptation du logement.");
@@ -294,7 +296,7 @@ const usage4: DefinitionUsage = {
       f?.cote_confirmee_cm != null
         ? `Dimension confirmée : ${f.largeur_cm ?? f.cote_confirmee_cm} cm de large${f.hauteur_cm ? ` sur ${f.hauteur_cm} cm de haut` : ""}.`
         : "Aucune dimension confirmée : l'artisan mesurera sur place.";
-    const contraintes = contraintesTravaux(occupants ?? [], logement?.statut_occupation === "locataire");
+    const contraintes = contraintesTravaux(occupants ?? [], logement?.statut_occupation === "locataire", f?.element);
     return {
       site: "recherche web",
       urlDepart: `https://duckduckgo.com/?q=${encodeURIComponent(`${metierPour(f?.element).split(" (")[0]} ${commune}`)}`,

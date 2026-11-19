@@ -291,13 +291,13 @@ export function AgentTag({ children, tone = "nuit" }: { children: ReactNode; ton
 
 /* ---------- Barre de navigation ---------- */
 
-export type NavKey = "accueil" | "plan" | "agent" | "absence" | "suivi";
+export type NavKey = "accueil" | "plan" | "agent" | "absence" | "profil";
 const NAV: { key: NavKey; label: string; chemin: string; icon: IconName | "agent" }[] = [
   { key: "accueil", label: "Accueil", chemin: "plan", icon: "home" },
   { key: "plan", label: "Plan", chemin: "actions", icon: "list" },
   { key: "agent", label: "Agent", chemin: "agent", icon: "agent" },
   { key: "absence", label: "Absence", chemin: "absence", icon: "cal" },
-  { key: "suivi", label: "Suivi", chemin: "suivi", icon: "chart" },
+  { key: "profil", label: "Profil", chemin: "compte", icon: "user" },
 ];
 
 /** Une proposition de l'agent attend la décision de l'utilisateur (demander_validation). */

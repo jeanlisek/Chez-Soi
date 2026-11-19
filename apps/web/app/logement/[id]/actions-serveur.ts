@@ -130,3 +130,101 @@ export async function supprimerOccupant(logementId: string, occupantId: string):
   if (admin) await calculerPlan(admin, logementId).catch(() => undefined);
   return { ok: true };
 }
+
+const occupantCompletSchema = z.object({
+  id: z.uuid().optional(),
+  prenom: z.string().trim().min(1).max(40),
+  nom: z.string().trim().max(60),
+  naissance: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]),
+  deplacement: z.number().int().min(0).max(4),
+  vue: z.number().int().min(0).max(3),
+  audition: z.number().int().min(0).max(3),
+  vigilance: z.array(z.string().trim().min(1).max(30)).max(8),
+  autre: z.string().trim().max(300),
+});
+const profilCompletSchema = z.object({
+  logement_id: z.uuid(),
+  adresse: z.string().trim().max(200),
+  type: z.string().max(10),
+  etage: z.number().int().min(0).max(60).nullable(),
+  statut_occupation: z.enum(["proprietaire", "locataire", "heberge"]).nullable(),
+  ascenseur: z.boolean(),
+  /** Accord RGPD art. 9 (AAAA-MM-JJ) : obligatoire, sans lui rien n'est enregistré. */
+  accord_le: z.string().regex(/^\d{4}-\d{2}-\d{2}/),
+  occupants: z.array(occupantCompletSchema).min(1).max(12),
+});
+
+/**
+ * Enregistre le profil complet (écrans Profil et Compte) : le logement, puis chaque habitant
+ * (ajouté, modifié ou retiré), sous RLS. Capacités fonctionnelles seulement, jamais de diagnostic.
+ * Le plan est recalculé une seule fois à la fin.
+ */
+export async function enregistrerProfilComplet(entree: z.input<typeof profilCompletSchema>): Promise<{ ok: boolean; message?: string }> {
+  const p = profilCompletSchema.safeParse(entree);
+  if (!p.success) return { ok: false, message: "Profil incomplet : chaque habitant a besoin d'un prénom." };
+  const supabase = await clientServeur();
+  if (!supabase) return { ok: false, message: "Service non configuré." };
+  const d = p.data;
+
+  const { error: errLogement, data: logement } = await supabase
+    .from("logements")
+    .update({ adresse: d.adresse || null, type: d.type || null, etage: d.etage, statut_occupation: d.statut_occupation, ascenseur: d.ascenseur })
+    .eq("id", d.logement_id)
+    .select("id")
+    .maybeSingle();
+  if (errLogement || !logement) return { ok: false, message: "Logement non enregistré." };
+
+  const { data: existants } = await supabase.from("occupants").select("id").eq("logement_id", d.logement_id);
+  const ids = new Set((existants ?? []).map((o) => o.id));
+  const accord = new Date(d.accord_le).toISOString();
+  const gardes: string[] = [];
+  for (const o of d.occupants) {
+    const age = o.naissance ? new Date().getFullYear() - Number(o.naissance.slice(0, 4)) : undefined;
+    const ligne = {
+      logement_id: d.logement_id,
+      libelle: o.prenom,
+      nom: o.nom || null,
+      naissance: o.naissance || null,
+      deplacement: o.deplacement,
+      vue_reduite: o.vue >= 2,
+      audition_reduite: o.audition >= 2,
+      vigilance: o.vigilance.includes("memoire") ? ("troubles_cognitifs" as const) : age !== undefined && age < 12 ? ("jeune_enfant" as const) : ("adulte" as const),
+      contraintes: [...o.vigilance, `vue:${o.vue}`, `audition:${o.audition}`].slice(0, 12),
+      autre: o.autre || null,
+      consentement_art9_le: accord,
+    };
+    if (o.id && ids.has(o.id)) {
+      const { error } = await supabase.from("occupants").update(ligne).eq("id", o.id);
+      if (error) return { ok: false, message: `${o.prenom} : profil non enregistré.` };
+      gardes.push(o.id);
+    } else {
+      const { data, error } = await supabase.from("occupants").insert(ligne).select("id").single();
+      if (error || !data) return { ok: false, message: `${o.prenom} : profil non enregistré.` };
+      gardes.push(data.id);
+    }
+  }
+  const retires = [...ids].filter((id) => !gardes.includes(id));
+  if (retires.length) await supabase.from("occupants").delete().in("id", retires).eq("logement_id", d.logement_id);
+
+  const admin = clientAdmin();
+  if (admin) await calculerPlan(admin, d.logement_id).catch(() => undefined);
+  return { ok: true };
+}
+
+/**
+ * « Signaler une erreur de détection » (écran du point) : retire un point de la vision que
+ * l'utilisateur sait faux (le sol pris pour un tapis…). Le logement est vérifié sous RLS ;
+ * ses actions partent avec lui, puis le plan est recalculé.
+ */
+export async function retirerPoint(logementId: string, failleId: string): Promise<{ ok: boolean; message?: string }> {
+  if (!z.uuid().safeParse(logementId).success || !z.uuid().safeParse(failleId).success) return { ok: false, message: "Demande invalide." };
+  const supabase = await clientServeur();
+  const admin = clientAdmin();
+  if (!supabase || !admin) return { ok: false, message: "Service non configuré." };
+  const { data: logement } = await supabase.from("logements").select("id").eq("id", logementId).maybeSingle();
+  if (!logement) return { ok: false, message: "Logement introuvable." };
+  const { data, error } = await admin.from("failles").delete().eq("id", failleId).eq("logement_id", logementId).eq("source", "vision").select("id");
+  if (error || !data?.length) return { ok: false, message: "Point non retiré." };
+  await calculerPlan(admin, logementId).catch(() => undefined);
+  return { ok: true };
+}

@@ -14,6 +14,8 @@ export const LOGEMENT_EXEMPLE: Logement = {
   aidant: "Marc",
   occupant: {
     libelle: "Jeanne",
+    nom: "Martin",
+    naissance: "1947-03-02",
     age: 79,
     deplacement: 2,
     vue_reduite: false,
@@ -21,6 +23,7 @@ export const LOGEMENT_EXEMPLE: Logement = {
     troubles_memoire: false,
     consentement_art9_le: "2026-11-18",
   },
+  adresse: "12 rue des Tilleuls, 69003 Lyon",
   type: "T2",
   etage: "RDC",
   statut: "Propriétaire",

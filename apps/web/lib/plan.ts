@@ -539,7 +539,7 @@ export async function synchroniserDetecteurAbsent(admin: Admin, logementId: stri
   const declare = decl.data?.[0]?.valeur === "present";
   const attendu = Boolean(regle.data?.length) && !vuEnVideo && !declare;
   if (attendu && synthetiques.length === 0) {
-    await admin.from("failles").insert({
+    const { error } = await admin.from("failles").insert({
       logement_id: logementId,
       element: "detecteur_fumee",
       risque: "incendie",
@@ -547,6 +547,8 @@ export async function synchroniserDetecteurAbsent(admin: Admin, logementId: stri
       origine: ORIGINE_ABSENT_VIDEO,
       piece: null,
     } as never);
+    // Facultatif, mais jamais en silence : la première version échouait sur une contrainte (migration 0015).
+    if (error) console.error("[plan] point « détecteur non repéré » non créé", logementId, error.message);
   } else if (!attendu && synthetiques.length) {
     await admin.from("failles").delete().in("id", synthetiques.map((f) => f.id)).eq("origine", ORIGINE_ABSENT_VIDEO);
   }

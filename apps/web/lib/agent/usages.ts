@@ -72,12 +72,19 @@ const usage1: DefinitionUsage = {
   formatReponse: versJsonSchema(sortieUsage1Schema),
   action: null,
   preparer: async (admin, logementId) => {
-    const { assureur } = await contratEtAssureur(admin, logementId);
-    const urlDepart = assureur.url_depart ?? `https://www.${assureur.domaines[0]}`;
+    const { contrat, assureur } = await contratEtAssureur(admin, logementId);
+    // Les conditions générales ne sont souvent liées d'aucune page publique (MAIF : « accessibles à
+    // l'étape du devis ») : l'agent finissait dans l'espace client et le coupe-circuit l'arrêtait
+    // (run du 20/11). Départ par une recherche limitée au site officiel, qui trouve le PDF public.
+    const domaine = assureur.domaines[0];
+    const accueil = assureur.url_depart ?? `https://www.${domaine}`;
+    const requete = `site:${domaine} conditions générales ${contrat.reference_cg ?? ""} pdf`.replace(/\s+/g, " ");
+    const urlDepart = `https://duckduckgo.com/?q=${encodeURIComponent(requete)}`;
     return {
-      site: new URL(urlDepart).hostname,
+      site: domaine,
       urlDepart,
       consigne: [
+        `La page de départ est une recherche limitée au site officiel ${domaine}. N'ouvre que des résultats dont l'adresse est sur ${domaine}. Si elle ne donne rien, va sur ${accueil} et cherche une page de documents. N'ouvre jamais l'espace client, « Se connecter » ou « Mon espace » : les conditions générales sont publiques.`,
         `Retrouve, sur le site officiel de l'assureur, les conditions générales du contrat d'assurance habitation du logement ${logementId}, et renvoie leur adresse.`,
         `Appelle d'abord get_contrat avec logement_id = "${logementId}" et champs = ["assureur", "formule", "reference_cg"].`,
         "Rends ta réponse dès que tu as l'adresse des conditions générales. La fiche d'information est facultative : donne-la seulement si son lien est sur la même page. Dans reference_trouvee, le code de référence lu (jamais le nom du fichier). Si le document n'est pas public, trouve = false avec la raison.",
@@ -98,11 +105,22 @@ const usage1: DefinitionUsage = {
 
 /* ---------- Usage 2 : objets (arrêt au panier) ---------- */
 
-/** Site marchand de l'usage 2 selon l'élément : IKEA par défaut, Castorama pour ce qu'IKEA ne vend pas. */
-const SITE_IKEA = { site: "www.ikea.com/fr/fr", urlDepart: "https://www.ikea.com/fr/fr" };
-const SITE_PAR_ELEMENT: Record<string, { site: string; urlDepart: string }> = {
-  detecteur_fumee: { site: "www.castorama.fr", urlDepart: "https://www.castorama.fr/electricite/detecteur-de-fumee/cat_id_3163.cat" },
+/**
+ * Sites marchands comparés par l'usage 2, selon l'élément. Seuls IKEA et Castorama passent les trois
+ * conditions (essais du 20/11) : le navigateur de l'agent n'est pas bloqué (Leroy Merlin, ManoMano et
+ * Boulanger le bloquent), le panier ne demande ni compte ni magasin (Brico Dépôt et Bricomarché
+ * exigent de choisir un magasin, donc une localisation), et le code peut relire la fiche.
+ */
+type SiteMarchand = { nom: string; site: string; urlDepart: string };
+const IKEA: SiteMarchand = { nom: "IKEA", site: "www.ikea.com/fr/fr", urlDepart: "https://www.ikea.com/fr/fr" };
+const CASTORAMA: SiteMarchand = { nom: "Castorama", site: "www.castorama.fr", urlDepart: "https://www.castorama.fr" };
+const SITES_PAR_ELEMENT: Record<string, SiteMarchand[]> = {
+  // IKEA France ne vend pas de détecteur de fumée.
+  detecteur_fumee: [{ ...CASTORAMA, urlDepart: "https://www.castorama.fr/electricite/detecteur-de-fumee/cat_id_3163.cat" }],
 };
+export function sitesPourElement(element: string | null | undefined): SiteMarchand[] {
+  return SITES_PAR_ELEMENT[element ?? ""] ?? [IKEA, CASTORAMA];
+}
 
 const usage2: DefinitionUsage = {
   usage: 2,
@@ -124,7 +142,14 @@ const usage2: DefinitionUsage = {
       : { data: null };
     const element = (data?.failles as { element: string } | null)?.element;
     const libre = sansDimension(element);
-    const { site, urlDepart } = SITE_PAR_ELEMENT[element ?? ""] ?? SITE_IKEA;
+    const sites = sitesPourElement(element);
+    const { urlDepart } = sites[0];
+    const site = sites.map((x) => x.site).join(" et ");
+    // Deux sites : l'agent compare et ne met au panier qu'un seul produit, le moins cher qui convient.
+    const comparer =
+      sites.length > 1
+        ? ` Compare sur ${sites.map((x) => x.site).join(" puis sur ")} : regarde au moins un produit compatible sur chaque site, puis mets au panier un seul produit, le moins cher qui respecte les contraintes, sur le site où il est vendu. Dans remarque, indique le produit retenu sur l'autre site et son prix.`
+        : "";
     // Le type seul, sans les dimensions du libellé (« … 38 × 59 cm ») : données telles quelles, l'agent
     // les a prises pour le nom du produit et a écarté un sous-tapis plus grand à découper (run du 19/11).
     // Les cotes viennent de get_mesures et la règle de dimension de la skill verifier-dimension.
@@ -134,8 +159,8 @@ const usage2: DefinitionUsage = {
       urlDepart,
       consigne: [
         recherche
-          ? `Trouve sur le site ${site} un produit de ce type : « ${recherche} » (c'est une catégorie de produit, pas un nom exact), pour corriger la faille ${action?.faille_id} du logement. Mets-le au panier, puis arrête-toi et demande la validation. Ne propose pas un autre type de produit ; si le site n'en vend aucun de ce type, dis-le.${libre ? "" : " Un produit plus grand que la cote convient s'il respecte ta règle de découpe."}`
-          : `Trouve sur le site ${site} un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
+          ? `Trouve sur ${sites.length > 1 ? "les sites" : "le site"} ${site} un produit de ce type : « ${recherche} » (c'est une catégorie de produit, pas un nom exact), pour corriger la faille ${action?.faille_id} du logement.${comparer} Mets-le au panier, puis arrête-toi et demande la validation. Ne propose pas un autre type de produit ; si aucun site n'en vend de ce type, dis-le.${libre ? "" : " Un produit plus grand que la cote convient s'il respecte ta règle de découpe."}`
+          : `Trouve sur ${site} un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
         libre
           ? `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les contraintes de l'occupant. Ce produit n'a aucune dimension à respecter : ne vérifie aucune cote, laisse largeur_cm, longueur_cm et citation_decoupe vides, et choisis selon le type demandé et ces contraintes.`
           : `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,

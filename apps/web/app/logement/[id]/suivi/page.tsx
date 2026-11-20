@@ -34,8 +34,16 @@ export default function PageSuivi() {
   const n = (s: Faille["statut"]) => statuts.filter((x) => x === s).length;
   const segments = [...statuts].sort((a, b) => ORDRE.indexOf(a) - ORDRE.indexOf(b));
 
-  const pieces = logement.pieces.map((p) => {
-    const fs = logement.failles.filter((f) => f.piece_id === p.id).map(statut);
+  // Les points sans pièce (détecteur de fumée non repéré) comptent dans une ligne « Tout le logement ».
+  const groupes = [
+    ...logement.pieces.map((p) => ({ id: p.id, nom: p.nom, failles: logement.failles.filter((f) => f.piece_id === p.id) })),
+    ...(() => {
+      const hors = logement.failles.filter((f) => !logement.pieces.some((p) => p.id === f.piece_id));
+      return hors.length ? [{ id: "logement", nom: "Tout le logement", failles: hors }] : [];
+    })(),
+  ];
+  const pieces = groupes.map((p) => {
+    const fs = p.failles.map(statut);
     const nb = (s: Faille["statut"]) => fs.filter((x) => x === s).length;
     if (fs.length === 0) return [p.id, p.nom, "rien à faire", "bg-succes-bg text-succes-text"] as const;
     if (nb("a_traiter")) return [p.id, p.nom, `${nb("a_traiter")} à traiter`, "bg-danger-bg text-danger-text"] as const;

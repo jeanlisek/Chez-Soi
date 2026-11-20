@@ -138,7 +138,7 @@ et [protocole du replay depuis l’app](docs/protocole-replay-app.md).
 **2. Avec un compte (5 minutes).**
 
 1. Se connecter par lien e-mail, avec n'importe quelle adresse (vérifié avec une adresse hors Eugenia). La connexion Google n'accepte que les comptes `@eugeniaschool.com` : l'application Google est limitée à l'organisation Google d'Eugenia. Le logement est créé et le parcours commence au profil.
-2. Remplir le profil, puis déposer la vidéo d'une pièce (MP4 ou MOV, 50 Mo au plus). Le Space se réveille à l'ouverture de l'écran ; l'analyse prend quelques minutes. Le 20/11, le Space est bloqué par une panne Hugging Face (voir « Mises à jour du 20 novembre ») : tester alors l'agent sur le logement exemple.
+2. Remplir le profil, puis déposer la vidéo d'une pièce (MP4 ou MOV, 50 Mo au plus). Le Space se réveille à l'ouverture de l'écran ; l'analyse prend quelques minutes.
 3. Facultatif : déposer un contrat d'assurance habitation en PDF. Les clauses retenues apparaissent avec leur page. Le même écran peut lancer l'agent qui retrouve les conditions générales sur le site de l'assureur.
 4. Ouvrir le plan d'action, confirmer la cote d'un point, puis lancer l'agent. L'écran suit la vraie session H et demande la validation avant tout engagement. Approuver ne commande rien.
 5. Ouvrir le mode absence et demander à l'agent de préparer les démarches : il prépare l'OTV et l'information de l'assureur sans se connecter, puis s'arrête ; la seule réponse possible refuse l'envoi.
@@ -175,7 +175,7 @@ Testé en production le 20/11 (validation toujours refusée, aucun achat ni envo
 - **Usage 1** : conditions générales MAIF retrouvées (référence M2442 vérifiée par le code) ; avant, l'agent finissait sur la page de connexion et le coupe-circuit l'arrêtait.
 - **Plan d'action** : chaque clic sur « Lancer l'agent » lance la mission suivante, une session à la fois.
 
-Limite du jour : le Space vision ne démarre plus (erreur d'infrastructure Hugging Face « MOUNT_ATTR_IDMAP », sur L4 comme sur L40S). Les logements déjà analysés et le logement exemple fonctionnent ; une nouvelle vidéo reste « service indisponible, réessayez plus tard » tant que Hugging Face n'a pas corrigé.
+Incident du jour : de 09 h à 11 h, le Space vision ne démarrait plus (erreur d'infrastructure Hugging Face « MOUNT_ATTR_IDMAP », sur L4 comme sur L40S). Il est reparti sur L4 à 11 h 02 ; l'app affichait pendant la panne un bandeau orientant vers le logement exemple.
 
 ## État au 19 novembre
 

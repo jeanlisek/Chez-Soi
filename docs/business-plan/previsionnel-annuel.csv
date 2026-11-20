@@ -1,0 +1,4 @@
+statut,annee,pilotes,clients_fin,clients_equivalent_annee,diagnostics_b2b,diagnostics_pilotes,diagnostics_b2c,ca_pilotes,ca_licences,ca_usage_b2b,ca_b2c,ca_ht,cout_variable,marge_contribution,taux_marge,charges_fixes,ebitda,amortissement,impot_societes,resultat_net,tresorerie_fin,creances_clients_ht,credit_tva_fin,tva_a_payer
+ESTIMATION_FICTIVE_NON_VALIDEE,2027,4,2,0.50,1200,400,200,20000.00,4000.00,14400.00,6500.00,44900.00,7400.00,37500.00,83.52,160000.00,-122500.00,2000.00,0.00,-124500.00,204320.00,7933.33,9246.67,0.00
+ESTIMATION_FICTIVE_NON_VALIDEE,2028,8,8,5.00,6000,800,800,40000.00,40000.00,72000.00,26000.00,178000.00,31200.00,146800.00,82.47,230000.00,-83200.00,2000.00,0.00,-85200.00,123913.67,16733.33,0.00,2347.00
+ESTIMATION_FICTIVE_NON_VALIDEE,2029,12,16,11.50,25000,1200,2000,60000.00,92000.00,300000.00,65000.00,517000.00,114800.00,402200.00,77.79,330000.00,72200.00,2000.00,0.00,70200.00,169836.00,47866.67,0.00,7202.67

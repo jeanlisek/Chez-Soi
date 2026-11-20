@@ -1,0 +1,13 @@
+{
+  "statut": "ESTIMATIONS FICTIVES NON VALIDÉES ; ni ventes acquises ni financements sécurisés",
+  "financement_initial_eur": "350000.00",
+  "minimum_tresorerie_eur": "99318.00",
+  "minimum_tresorerie_b2b_90_jours_eur": "35037.00",
+  "minimum_tresorerie_cout_plus_2_eur": "60359.67",
+  "minimum_tresorerie_stress_combine_eur": "-16981.33",
+  "financement_supplementaire_pour_reserve_80k_stress_combine": "96981.33",
+  "seuil_b2b_avec_pilotes_2029": "15975.00",
+  "seuil_b2b_sans_nouveaux_pilotes_2029": "22875.00",
+  "ebitda_sans_nouveaux_pilotes_2029": "17000.00",
+  "tests": "Populations, CA, EBITDA, équivalents annuels, double compte des pilotes, équilibre mensuel et résultat fiscal vérifiés par assertions."
+}

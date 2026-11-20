@@ -161,10 +161,23 @@ Les variables d'environnement sont listées dans [`.env.example`](.env.example) 
 
 **Coût de run par diagnostic (calcul, pas une mesure de bout en bout).** Avec les moyennes mesurées de l'agent et le tarif public du GPU L4 du Space (0,80 USD par heure [3]), un diagnostic de 5 pièces, 1 contrat, 3 contre-mesures et 1 absence coûte de l'ordre de **0,25 à 0,65 USD**, hors appels LLM et abonnements fixes. Calcul et hypothèses : [`docs/resultats.md`](docs/resultats.md#coût-de-run-par-diagnostic).
 
-**Modèle économique : non tranché.** Payeurs envisagés par l'équipe : le particulier ou l'aidant, et en B2B les assureurs habitation et les caisses de retraite. Aucun prix n'est fixé à ce stade.
+**Modèle économique : B2B2C (proposition).** Les réseaux de prévention (caisses de retraite, mutuelles) et les assureurs habitation paient le service pour les familles qu'ils accompagnent, parce que ce sont eux qui supportent le coût des chutes et des cambriolages. L'offre directe aux aidants sert de vitrine et de preuve d'usage. Tous les prix sont des **estimations fictives non validées**, à tester :
 
-Proposition pour le jury : [business plan sourcé et simulation financière](docs/business-plan.md).
-Tous les prix, budgets et prévisionnels de cette proposition sont des **estimations fictives non validées** ; ils ne changent pas le statut ci-dessus.
+| Offre | Prix à tester |
+|---|---|
+| Pilote professionnel de 8 semaines, jusqu'à 100 dossiers | 5 000 € HT |
+| Déploiement professionnel | 8 000 € HT par an + 12 € HT par dossier exploitable |
+| Pass logement particulier, après une pièce gratuite | 39 € TTC |
+
+Le calcul (agent et GPU) coûte 0,25 à 0,65 USD par diagnostic ; avec le support, le business plan provisionne 4 € par dossier, soit 8 € de contribution pour un dossier à 12 € HT, avant charges fixes. Pas de commission sur les produits ni de vente de données : le choix de l'agent ne dépend que de la cote et du profil. Détail : [business plan](docs/business-plan.md) et [business model](docs/business-model.md).
+
+**Go-to-market en trois phases.**
+
+1. **Valider** : aidants d'Île-de-France, trouvés par les associations d'aidants et des vidéos courtes ; une pièce gratuite, puis le Pass logement. On passe à la suite à 100 diagnostics et une caisse de retraite partante.
+2. **Prouver** : pilotes payés de 8 semaines avec des caisses de retraite ; on mesure les actions faites. Un assureur teste Chez Soi sous son nom. On passe à la suite quand un payeur renouvelle.
+3. **Étendre** : autres caisses, mutuelles et assureurs, toute la France, puis locataires et familles.
+
+Premier marché : 5,0 millions de personnes aidées à domicile par 7,1 millions de proches aidants en France métropolitaine (DREES, juin 2026, données 2022).
 
 ## Mises à jour du 20 novembre
 

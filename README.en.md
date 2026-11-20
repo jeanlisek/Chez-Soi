@@ -158,7 +158,23 @@ Environment variables are listed in [`.env.example`](.env.example) (names only).
 
 **Run cost per assessment (a calculation, not an end-to-end measurement).** Using the agent's measured averages and the public price of the Space's L4 GPU (USD 0.80 per hour [3]), an assessment of 5 rooms, 1 contract, 3 countermeasures and 1 absence costs roughly **USD 0.25 to 0.65**, excluding LLM calls and fixed subscriptions. Calculation and assumptions: [`docs/resultats.md`](docs/resultats.md#coût-de-run-par-diagnostic).
 
-**Business model: not decided yet.** Payers considered by the team: the household or the family caregiver, and in B2B, home insurers and pension funds. No price has been set.
+**Business model: B2B2C (proposal).** Prevention networks (pension funds, mutual insurers) and home insurers pay for the service on behalf of the families they support, because they bear the cost of falls and burglaries. The direct offer to family caregivers is the shop window and the proof of use. All prices are **fictitious, unvalidated estimates**, to be tested:
+
+| Offer | Price to test |
+|---|---|
+| 8-week professional pilot, up to 100 cases | EUR 5,000 excl. VAT |
+| Professional rollout | EUR 8,000 excl. VAT per year + EUR 12 excl. VAT per usable case |
+| Home pass for households, after one free room | EUR 39 incl. VAT |
+
+Computing (agent and GPU) costs USD 0.25 to 0.65 per assessment; including support, the business plan budgets EUR 4 per case, i.e. EUR 8 contribution for a case at EUR 12 excl. VAT, before fixed costs. No commission on products and no data sales: the agent's choice depends only on the measurement and the profile. Details: [business plan](docs/business-plan.md) and [business model](docs/business-model.md) (in French).
+
+**Go-to-market in three phases.**
+
+1. **Validate**: caregivers in Île-de-France, reached through caregiver associations and short videos; one room free, then the Home pass. Next phase once there are 100 assessments and one pension fund on board.
+2. **Prove**: paid 8-week pilots with pension funds; we measure the actions taken. An insurer tests Chez Soi under its own brand. Next phase once a payer renews.
+3. **Expand**: other pension funds, mutual insurers and insurers across France, then tenants and families.
+
+First market: 5.0 million people helped at home by 7.1 million family caregivers in mainland France (DREES, June 2026, 2022 data).
 
 ## Updates on 20 November
 

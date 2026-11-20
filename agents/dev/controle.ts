@@ -131,11 +131,15 @@ export function ecartDecoupe(citation: string | undefined): string | null {
 export function controlerSortieUsage2(
   sortie: SortieUsage2,
   tapis: { largeur_cm: number; longueur_cm: number } = { largeur_cm: 60, longueur_cm: 160 },
+  sansDimension = false,
 ): string[] {
   if (!sortie.trouve) return [];
-  const ecarts: string[] = CHAMPS_ATTENDUS_USAGE_2.filter((champ) => sortie[champ] === undefined).map(
+  // Produit sans dimension à respecter (veilleuse, détecteur) : ni cote ni dimensions attendues.
+  const attendus = sansDimension ? CHAMPS_ATTENDUS_USAGE_2.filter((c) => c !== "largeur_cm" && c !== "longueur_cm") : CHAMPS_ATTENDUS_USAGE_2;
+  const ecarts: string[] = attendus.filter((champ) => sortie[champ] === undefined).map(
     (champ) => `${champ} : absent ou vide alors que trouve est vrai`,
   );
+  if (sansDimension) return ecarts;
   if (sortie.largeur_cm !== undefined && sortie.longueur_cm !== undefined) {
     const [petit, grand] = [sortie.largeur_cm, sortie.longueur_cm].sort((a, b) => a - b);
     const [petitTapis, grandTapis] = [tapis.largeur_cm, tapis.longueur_cm].sort((a, b) => a - b);

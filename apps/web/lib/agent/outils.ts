@@ -9,6 +9,7 @@ import {
   getContratEntreeSchema,
   getMesuresEntreeSchema,
   getMesuresSortieSchema,
+  sansDimension,
   type GetMesuresSortie,
 } from "@/lib/schemas";
 import type { Database } from "@/lib/supabase/types";
@@ -26,10 +27,24 @@ export type RunPourOutils = { session_id: string; logement_id: string; action_id
  */
 export function contraintesProfil(
   occupants: { deplacement: number; vue_reduite: boolean; vigilance: string }[],
+  element?: string | null,
 ): string[] {
-  const contraintes = ["Ne dépasse pas des dimensions données, sauf si la fiche dit qu'il se découpe."];
   const mobiliteReduite = occupants.some((o) => o.deplacement >= 1);
   const vigilance = occupants.some((o) => o.vue_reduite || o.vigilance !== "adulte");
+  // Contraintes propres au type de produit : celles d'un sous-tapis n'ont pas de sens pour une veilleuse.
+  if (element === "eclairage") {
+    const c = [
+      "Aucune dimension à respecter.",
+      "S'allume tout seul à la détection de mouvement : aucun interrupteur à chercher la nuit.",
+      "Sans fil (à pile ou rechargeable) et sans perçage si possible.",
+    ];
+    if (mobiliteReduite || vigilance) c.push("Lumière douce qui éclaire le sol sans éblouir.");
+    return c;
+  }
+  if (element === "detecteur_fumee") {
+    return ["Aucune dimension à respecter.", "Détecteur autonome avertisseur de fumée conforme à la norme NF EN 14604 (marquage CE)."];
+  }
+  const contraintes = ["Ne dépasse pas des dimensions données, sauf si la fiche dit qu'il se découpe."];
   if (mobiliteReduite || vigilance) {
     contraintes.push("Fin, sans surépaisseur ni bord qui rebique : rien qui accroche le pied ou une aide à la marche.");
     contraintes.push("Antidérapant, adapté à un sol dur.");
@@ -54,11 +69,21 @@ async function getMesures(admin: Admin, run: RunPourOutils, args: unknown): Prom
   if (!faille || faille.logement_id !== run.logement_id) {
     throw new Error(`Faille inconnue : ${faille_id}. Utilise le faille_id de la consigne.`);
   }
-  if (faille.cote_confirmee_cm === null) throw new Error("La cote de cette faille n'est pas encore confirmée.");
+  const libre = sansDimension(faille.element);
+  if (faille.cote_confirmee_cm === null && !libre) throw new Error("La cote de cette faille n'est pas encore confirmée.");
   const { data: occupants } = await admin
     .from("occupants")
     .select("deplacement, vue_reduite, vigilance")
     .eq("logement_id", run.logement_id);
+  if (libre) {
+    // Veilleuse, détecteur : pas de cote, seulement le type de produit et ses contraintes.
+    return getMesuresSortieSchema.parse({
+      element: faille.element,
+      piece: faille.piece ?? "",
+      sans_dimension: true,
+      contraintes_profil: contraintesProfil(occupants ?? [], faille.element),
+    });
+  }
   return getMesuresSortieSchema.parse({
     element: faille.element,
     piece: faille.piece ?? "",
@@ -66,7 +91,7 @@ async function getMesures(admin: Admin, run: RunPourOutils, args: unknown): Prom
     largeur_cm: faille.largeur_cm ?? faille.cote_confirmee_cm,
     hauteur_cm: faille.hauteur_cm ?? undefined,
     longueur_cm: faille.longueur_cm ?? undefined,
-    contraintes_profil: contraintesProfil(occupants ?? []),
+    contraintes_profil: contraintesProfil(occupants ?? [], faille.element),
   });
 }
 

@@ -204,10 +204,12 @@ export function contreMesure(element: string, f: Faille, seuil: string | null, i
   switch (element) {
     case "tapis":
       return { texte: `Sous-tapis antidérapant${dims}`, usage: 2 };
+    // IKEA France ne vend pas de rampe de seuil (recherche du 20/11) : c'est un artisan qui la pose.
     case "ressaut":
-      return { texte: "Rampe de seuil pour supprimer le ressaut", usage: 2 };
+      return { texte: "Rampe de seuil pour supprimer le ressaut", usage: null };
+    // Libellé au vocabulaire d'IKEA (« éclairage LED avec capteur ») : c'est ce que l'agent cherche.
     case "eclairage":
-      return { texte: "Chemin lumineux à détection de mouvement", usage: 2 };
+      return { texte: "Éclairage LED à détecteur de mouvement, sans fil", usage: 2 };
     case "porte_entree":
     case "porte_interieure":
       return { texte: `Élargir le passage de la porte (passage utile ${seuil ?? "conforme"})`, usage: null };

@@ -48,3 +48,10 @@ test('v2 : des dimensions absentes de la fiche ne sont pas prouvées', () => {
   assert.equal(dimensionsSurFiche('Largeur : 67,5 cm. Longueur : 200 cm.', 67.5, 200), true);
   assert.equal(dimensionsSurFiche('Format 200 × 67,5 cm', 67.5, 200), true);
 });
+test('produit sans dimension (veilleuse) : ni cote ni dimensions exigées, champs commerciaux toujours exigés', async () => {
+  const { controlerSortieUsage2 } = await import('./controle');
+  const sortie = { trouve: true, au_panier: true, produit: 'ANKARLÄGG Veilleuse LED avec capteur', prix_eur: 2.99, lien: 'https://www.ikea.com/fr/fr/p/x-60612827/', delai_livraison: '3 jours' };
+  assert.deepEqual(controlerSortieUsage2(sortie, undefined, true), []);
+  assert.ok(controlerSortieUsage2(sortie).some((e) => /largeur_cm/.test(e)));
+  assert.ok(controlerSortieUsage2({ ...sortie, prix_eur: undefined }, undefined, true).some((e) => /prix_eur/.test(e)));
+});

@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 
 import { Illus, Pill, Screen } from "@/components/cs/ui";
 import { clientNavigateur } from "@/lib/supabase/client";
+import { BandeauVision } from "@/components/cs/BandeauVision";
 
 /**
  * Écran 1 · Inscription (maquette de Hoang-Kim). Connexion sans mot de passe :
@@ -89,6 +90,7 @@ export function Inscription({ erreurInitiale }: { erreurInitiale?: string }) {
         <Link href="/logement/exemple/plan" className="flex h-10 items-center justify-center text-[15px] font-bold underline underline-offset-4">
           Voir d&apos;abord un logement exemple
         </Link>
+        <BandeauVision />
         <p className="text-center text-xs leading-[17px] text-ink-soft">L&apos;agent ne paie, n&apos;envoie et ne signe jamais à votre place.</p>
       </div>
     </Screen>

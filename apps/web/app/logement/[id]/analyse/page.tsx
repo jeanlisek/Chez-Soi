@@ -7,6 +7,7 @@ import { CircleCheck, Icon } from "@/components/cs/icons";
 import { AgentTag, BackButton, Header, Illus, Pill, RoundButton, Screen, SectionTitle, Signal, cx, useToast } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { clientNavigateur } from "@/lib/supabase/client";
+import { BandeauVision } from "@/components/cs/BandeauVision";
 
 // Ce que fait le pipeline vision pendant l'attente (images, profondeur, détection, cotes).
 const PENDANT = [
@@ -119,6 +120,7 @@ export default function PageAnalyse() {
 
   return (
     <Screen className="gap-3.5">
+      {!logement.exemple && <BandeauVision />}
       <Header left={<BackButton href={`${base}/capture`} />} title="Analyse" right={fini ? undefined : <RoundButton icon="bell" label={prevenir ? "Je serai prévenu à la fin" : "Me prévenir à la fin"} variant={prevenir ? "nuit" : "blanc"} onClick={() => void basculerPrevenir()} />} />
 
       <section className="relative h-[262px] flex-none overflow-hidden rounded-card bg-pervenche">

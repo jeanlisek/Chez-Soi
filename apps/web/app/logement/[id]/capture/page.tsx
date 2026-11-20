@@ -8,6 +8,7 @@ import { Chip, Pill, RoundButton, Screen, cx, useToast } from "@/components/cs/u
 import { useParcours } from "@/lib/demo/etat";
 import { envoyerFichier } from "@/lib/envoi";
 import { reveillerVision } from "@/lib/reveil";
+import { BandeauVision } from "@/components/cs/BandeauVision";
 
 /** Consignes par pièce (maquette de Hoang-Kim). */
 const PIECES_CAPTURE = [
@@ -277,6 +278,7 @@ export default function PageCapture() {
   /* ---------- Étape 1 : pièces filmées + choix d'une pièce ---------- */
   return (
     <Screen bg="nuit" className="gap-4">
+      {!logement.exemple && <BandeauVision sombre />}
       {entrees}
       <div className="flex items-center justify-between">
         <RoundButton icon="close" label="Quitter la visite" href={`${base}/contrat`} variant="sombre" />

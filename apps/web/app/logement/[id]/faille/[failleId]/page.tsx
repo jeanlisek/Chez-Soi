@@ -140,7 +140,9 @@ export default function PageFaille() {
       {f.non_repere ? (
         <section className="flex flex-col gap-3 rounded-card bg-pervenche px-4 py-4">
           <Signal kind={f.niveau} />
-          <p className="text-sm leading-5 font-semibold">Aucun détecteur de fumée repéré sur votre vidéo. En avez-vous un ?</p>
+          <p className="text-sm leading-5 font-semibold">
+            {f.absence_declaree ? "Vous avez indiqué ne pas en avoir. Si vous en installez un, dites-le ici." : "Aucun détecteur de fumée repéré sur votre vidéo. En avez-vous un ?"}
+          </p>
           {envoi && <p className="text-xs font-semibold" aria-live="polite">Mise à jour du plan… (une dizaine de secondes)</p>}
           <div className={cx("grid grid-cols-2 gap-1 rounded-full bg-white/60 p-1", envoi && "hidden")}>
             <button type="button" disabled={envoi} onClick={() => void repondreDetecteur(true)} className="h-[38px] rounded-full bg-white text-[13px] font-bold disabled:opacity-50">

@@ -21,6 +21,8 @@ export type EtatParcours = {
   sessionId?: string | null;
   decision: "approuve" | "refuse" | "modifier" | null;
   absenceJours: number;
+  /** Session H de la recherche des conditions générales (usage 1), gardée si l'on quitte l'écran Contrat. */
+  sessionCg?: string | null;
   /** Missions déjà lancées (une session H à la fois) : le bouton passe à la suivante. */
   lancees?: string[];
 };

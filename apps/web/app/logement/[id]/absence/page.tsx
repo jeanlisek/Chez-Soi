@@ -170,7 +170,8 @@ export default function PageAbsence() {
               <b className="text-[15px]">{d.titre}</b>
               <span className={cx("text-xs leading-4", d.sub)}>{d.detail}</span>
             </span>
-            {pret || (reel && Boolean(dossier?.recapitulatif || dossier?.otv_url_demarche)) ? <Signal kind="attention">À relire</Signal> : <span className="flex-none rounded-full bg-[#EEF0F6] px-2.5 py-1 text-[11px] font-bold text-nuit">À faire</span>}
+            {/* Le courrier n'est pas préparé par l'agent : il reste « À faire ». */}
+            {d.titre !== "Garde du courrier" && (pret || (reel && Boolean(dossier?.recapitulatif || dossier?.otv_url_demarche))) ? <Signal kind="attention">À relire</Signal> : <span className="flex-none rounded-full bg-[#EEF0F6] px-2.5 py-1 text-[11px] font-bold text-nuit">À faire</span>}
           </li>
         ))}
       </ul>
@@ -196,7 +197,7 @@ export default function PageAbsence() {
         <section className="flex flex-col gap-2.5 rounded-[26px] bg-white px-4 py-3.5 text-sm leading-5">
           <span className="text-xs font-bold tracking-[0.06em] text-ink-muted uppercase">Dossier préparé par l&apos;agent</span>
           {dossier.otv_url_demarche && (
-            <p><b>Tranquillité vacances.</b> {dossier.otv_connexion_requise ? `Connexion : ${dossier.otv_connexion_requise}. ` : ""}{dossier.otv_delai ? `Délai : ${dossier.otv_delai}. ` : ""}
+            <p><b>Tranquillité vacances.</b> {dossier.otv_connexion_requise ? `Connexion : ${dossier.otv_connexion_requise}. ` : ""}{dossier.otv_delai ? `Délai : ${dossier.otv_delai.replace(/[.\s]+$/, "")}. ` : ""}
               <a href={dossier.otv_url_demarche} target="_blank" rel="noopener noreferrer" className="font-bold text-cobalt underline">Ouvrir la page officielle</a>
             </p>
           )}

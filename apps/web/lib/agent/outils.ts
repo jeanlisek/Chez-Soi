@@ -126,7 +126,11 @@ async function enregistrerValidation(admin: Admin, run: RunPourOutils, appel: Ap
   const largeur = f?.largeur_cm ?? f?.cote_confirmee_cm;
   const longueur = f?.longueur_cm ?? f?.cote_confirmee_cm;
   const cote = !sansDimension(f?.element) && largeur && longueur ? { largeur_cm: Number(largeur), longueur_cm: Number(longueur) } : null;
-  const controle = await controlerAvantValidation(ficheAControler(demande.url, pagesVues), f?.element ?? null, cote).catch(() => null);
+  // Seulement pour un panier : une démarche (usage 3, action « envoi ») n'a pas de fiche produit.
+  const controle =
+    demande.action === "panier"
+      ? await controlerAvantValidation(ficheAControler(demande.url, pagesVues), f?.element ?? null, cote).catch(() => null)
+      : null;
   // Nom montré à l'utilisateur : celui de la fiche, relue par le code, plutôt que la recopie de
   // l'agent (run 40 du 19/11 : « pour tissus » au lieu de « pour tapis »). Fiche illisible : nom de l'agent.
   const produit = controle?.nom ?? demande.produit;

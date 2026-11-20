@@ -2,7 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { lireNomSurFiche } from "../../../../agents/dev/fiche";
+import { controlerAvantValidation, ficheAControler } from "../../../../agents/dev/fiche";
 import type { AppelOutilHai, ResultatOutilHai } from "@/lib/hai";
 import {
   demanderValidationEntreeSchema,
@@ -12,7 +12,7 @@ import {
   sansDimension,
   type GetMesuresSortie,
 } from "@/lib/schemas";
-import type { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 
 type Admin = SupabaseClient<Database>;
 
@@ -112,12 +112,24 @@ async function getContrat(admin: Admin, run: RunPourOutils, args: unknown): Prom
  * ne répond PAS à H. La réponse part seulement après le clic de l'utilisateur
  * (`POST /api/agent/tools` → `repondreValidation`).
  */
-async function enregistrerValidation(admin: Admin, run: RunPourOutils, appel: AppelOutilHai): Promise<void> {
+async function enregistrerValidation(admin: Admin, run: RunPourOutils, appel: AppelOutilHai, pagesVues: readonly string[] = []): Promise<void> {
   const demande = demanderValidationEntreeSchema.parse(appel.args ?? {});
   if (!run.action_id) throw new Error("Run sans action : validation impossible.");
+  // Contrôle AVANT la décision (20/11) : le code relit la fiche (celle de la demande, sinon la
+  // dernière fiche visitée par l'agent) et l'écran de validation montre le résultat avant « Approuver ».
+  const { data: action } = await admin
+    .from("actions")
+    .select("failles(element, largeur_cm, longueur_cm, cote_confirmee_cm)")
+    .eq("id", run.action_id)
+    .maybeSingle();
+  const f = action?.failles as { element: string; largeur_cm: number | null; longueur_cm: number | null; cote_confirmee_cm: number | null } | null;
+  const largeur = f?.largeur_cm ?? f?.cote_confirmee_cm;
+  const longueur = f?.longueur_cm ?? f?.cote_confirmee_cm;
+  const cote = !sansDimension(f?.element) && largeur && longueur ? { largeur_cm: Number(largeur), longueur_cm: Number(longueur) } : null;
+  const controle = await controlerAvantValidation(ficheAControler(demande.url, pagesVues), f?.element ?? null, cote).catch(() => null);
   // Nom montré à l'utilisateur : celui de la fiche, relue par le code, plutôt que la recopie de
   // l'agent (run 40 du 19/11 : « pour tissus » au lieu de « pour tapis »). Fiche illisible : nom de l'agent.
-  const produit = (demande.url ? await lireNomSurFiche(demande.url) : null) ?? demande.produit;
+  const produit = controle?.nom ?? demande.produit;
   await admin.from("validations").upsert(
     {
       action_id: run.action_id,
@@ -126,6 +138,7 @@ async function enregistrerValidation(admin: Admin, run: RunPourOutils, appel: Ap
       resume: [demande.resume, produit, demande.montant_eur !== undefined ? `${demande.montant_eur} €` : null, demande.url]
         .filter(Boolean)
         .join(" · "),
+      controle: (controle ?? null) as Json,
     },
     { onConflict: "session_id,call_id", ignoreDuplicates: true },
   );
@@ -136,7 +149,7 @@ async function enregistrerValidation(admin: Admin, run: RunPourOutils, appel: Ap
  * (get_mesures, get_contrat, outils inconnus en erreur) ; demander_validation est mis en
  * attente de l'utilisateur. Une exception devient une erreur visible par l'agent.
  */
-export async function traiterAppels(admin: Admin, run: RunPourOutils, appels: AppelOutilHai[]): Promise<{
+export async function traiterAppels(admin: Admin, run: RunPourOutils, appels: AppelOutilHai[], pagesVues: readonly string[] = []): Promise<{
   resultats: ResultatOutilHai[];
   validationsEnAttente: number;
 }> {
@@ -145,7 +158,7 @@ export async function traiterAppels(admin: Admin, run: RunPourOutils, appels: Ap
   for (const appel of appels) {
     try {
       if (appel.tool_name === "demander_validation") {
-        await enregistrerValidation(admin, run, appel);
+        await enregistrerValidation(admin, run, appel, pagesVues);
         validationsEnAttente += 1;
         continue;
       }

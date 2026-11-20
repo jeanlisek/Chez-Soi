@@ -221,6 +221,7 @@ export async function traiterSession(admin: Admin, hai: ClientHai, sessionId: st
       admin,
       { session_id: sessionId, logement_id: run.logement_id, action_id: run.action_id },
       changements.pending_tool_calls,
+      [...pages],
     );
     if (resultats.length) await hai.envoyerResultatsOutils(sessionId, resultats);
     return `${resultats.length} outil(s) répondu(s), ${validationsEnAttente} validation(s) en attente`;
@@ -376,7 +377,7 @@ export async function lireRun(utilisateur: Utilisateur, sessionId: string, admin
   }
   const { data: validations } = await utilisateur
     .from("validations")
-    .select("id, resume, decision, created_at")
+    .select("id, resume, decision, created_at, controle")
     .eq("session_id", sessionId)
     .order("created_at", { ascending: false });
   return { run, validation_en_attente: validations?.find((v) => !v.decision) ?? null };

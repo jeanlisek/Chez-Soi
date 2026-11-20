@@ -1191,6 +1191,7 @@ export type Database = {
         Row: {
           action_id: string
           call_id: string
+          controle: Json | null
           created_at: string
           decide_le: string | null
           decision: Database["public"]["Enums"]["decision"] | null
@@ -1201,6 +1202,7 @@ export type Database = {
         Insert: {
           action_id: string
           call_id: string
+          controle?: Json | null
           created_at?: string
           decide_le?: string | null
           decision?: Database["public"]["Enums"]["decision"] | null
@@ -1211,6 +1213,7 @@ export type Database = {
         Update: {
           action_id?: string
           call_id?: string
+          controle?: Json | null
           created_at?: string
           decide_le?: string | null
           decision?: Database["public"]["Enums"]["decision"] | null

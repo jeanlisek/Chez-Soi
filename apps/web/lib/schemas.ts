@@ -136,7 +136,8 @@ export const CHAMPS_ATTENDUS_USAGE_2 = [
   "largeur_cm",
   "longueur_cm",
   "lien",
-  "delai_livraison",
+  // Pas `delai_livraison` : IKEA et Castorama ne l'affichent qu'après un code postal, que l'agent
+  // n'a pas le droit de saisir (règle 5). Il manquait donc à chaque run (série du 20/11).
 ] as const satisfies readonly (keyof SortieUsage2)[];
 
 /* ---------- Usage 1 (sourcing) : réponse finale de l'agent ---------- */

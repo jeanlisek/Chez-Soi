@@ -91,7 +91,8 @@ export function ParcoursProvider({ logement, children }: { logement: Logement; c
 
   useEffect(() => {
     const sauve = lire(logement.id);
-    if (sauve) setEtat((e) => ({ ...e, ...sauve }));
+    // Choix et cotes fusionnés : un état enregistré avant un recalcul du plan ne doit pas effacer les nouvelles actions.
+    if (sauve) setEtat((e) => ({ ...e, ...sauve, missions: { ...e.missions, ...sauve.missions }, cotes: { ...e.cotes, ...sauve.cotes } }));
   }, [logement.id]);
 
   const maj = useCallback(

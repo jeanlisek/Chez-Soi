@@ -66,7 +66,10 @@ export default function PageActions() {
     const f = faillePour(a);
     return f?.cote?.statut === "confirmee" || sansDimension(f?.element);
   };
-  const missions = actions.filter((a) => lancable(a) && etat.missions[a.id] === "agent");
+  // Choix de l'utilisateur, sinon le défaut du plan (agent pour les priorités) : une action apparue
+  // après un recalcul (nouvel identifiant) n'a pas encore de choix enregistré.
+  const choix = (a: (typeof actions)[number]) => etat.missions[a.id] ?? (a.groupe === "plus_tard" ? "moi" : "agent");
+  const missions = actions.filter((a) => lancable(a) && choix(a) === "agent");
   const compte = (o: Onglet) =>
     o === "contrat" ? actions.filter((a) => a.source.force === "contrat").length : actions.filter((a) => a.groupe === o).length;
 
@@ -145,7 +148,7 @@ export default function PageActions() {
       ) : (
         <ul className="flex flex-col gap-3">
           {visibles.map((a, i) => {
-            const ag = lancable(a) && etat.missions[a.id] === "agent";
+            const ag = lancable(a) && choix(a) === "agent";
             const f = faillePour(a);
             const c = CARTE[Math.min(i, 2)];
             const rang = onglet === "priorite" ? i + 1 : a.priorite;

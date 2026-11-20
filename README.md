@@ -39,8 +39,8 @@ Persona de démo, fictif : Marc aide sa mère Jeanne, 79 ans, qui vit seule en r
 
 | Usage | Ce que fait l'agent | Où il s'arrête |
 |---|---|---|
-| 1 · Conditions générales | Retrouve sur le site officiel de l'assureur les conditions générales du contrat ; le code télécharge le PDF et vérifie la référence | Lecture seule, aucune connexion |
-| 2 · Contre-mesure | Lit les cotes du point de risque (`get_mesures`), choisit un produit compatible, prouve la compatibilité par une citation de la fiche, le met au panier | `demander_validation` : rien n'est commandé sans le clic de l'utilisateur |
+| 1 · Conditions générales | Part d'une recherche limitée au site officiel de l'assureur et retrouve le PDF public des conditions générales ; le code télécharge le PDF et vérifie le domaine et la référence | Lecture seule, aucune connexion, jamais l'espace client |
+| 2 · Contre-mesure | Lit les cotes et contraintes du point (`get_mesures`), compare IKEA et Castorama (sous-tapis, éclairage à détecteur ; Castorama seul pour le détecteur de fumée NF EN 14604), met au panier le moins cher qui convient. Le code relit la fiche et montre son contrôle **avant** la décision | `demander_validation` : rien n'est commandé sans le clic de l'utilisateur |
 | 3 · Absence | Prépare l'OTV et l'information de l'assureur à partir des dates et des clauses du contrat | Aucun envoi, aucune connexion FranceConnect |
 | 4 · Artisans | Pour les travaux du plan (serrure trois points, porte à élargir…), trouve jusqu'à trois artisans près de la commune, avec labels et coordonnées lus sur leur page, et rédige le message de devis. Seuls le code postal et la ville partent chez l'agent, jamais la rue | Lecture seule : il ne contacte personne et ne remplit aucun formulaire |
 
@@ -138,7 +138,7 @@ et [protocole du replay depuis l’app](docs/protocole-replay-app.md).
 **2. Avec un compte (5 minutes).**
 
 1. Se connecter par lien e-mail, avec n'importe quelle adresse (vérifié avec une adresse hors Eugenia). La connexion Google n'accepte que les comptes `@eugeniaschool.com` : l'application Google est limitée à l'organisation Google d'Eugenia. Le logement est créé et le parcours commence au profil.
-2. Remplir le profil, puis déposer la vidéo d'une pièce (MP4 ou MOV, 50 Mo au plus). Le Space se réveille à l'ouverture de l'écran ; l'analyse prend quelques minutes.
+2. Remplir le profil, puis déposer la vidéo d'une pièce (MP4 ou MOV, 50 Mo au plus). Le Space se réveille à l'ouverture de l'écran ; l'analyse prend quelques minutes. Le 20/11, le Space est bloqué par une panne Hugging Face (voir « Mises à jour du 20 novembre ») : tester alors l'agent sur le logement exemple.
 3. Facultatif : déposer un contrat d'assurance habitation en PDF. Les clauses retenues apparaissent avec leur page. Le même écran peut lancer l'agent qui retrouve les conditions générales sur le site de l'assureur.
 4. Ouvrir le plan d'action, confirmer la cote d'un point, puis lancer l'agent. L'écran suit la vraie session H et demande la validation avant tout engagement. Approuver ne commande rien.
 5. Ouvrir le mode absence et demander à l'agent de préparer les démarches : il prépare l'OTV et l'information de l'assureur sans se connecter, puis s'arrête ; la seule réponse possible refuse l'envoi.
@@ -162,6 +162,20 @@ Les variables d'environnement sont listées dans [`.env.example`](.env.example) 
 **Coût de run par diagnostic (calcul, pas une mesure de bout en bout).** Avec les moyennes mesurées de l'agent et le tarif public du GPU L4 du Space (0,80 USD par heure [3]), un diagnostic de 5 pièces, 1 contrat, 3 contre-mesures et 1 absence coûte de l'ordre de **0,25 à 0,65 USD**, hors appels LLM et abonnements fixes. Calcul et hypothèses : [`docs/resultats.md`](docs/resultats.md#coût-de-run-par-diagnostic).
 
 **Modèle économique : non tranché.** Payeurs envisagés par l'équipe : le particulier ou l'aidant, et en B2B les assureurs habitation et les caisses de retraite. Aucun prix n'est fixé à ce stade.
+
+## Mises à jour du 20 novembre
+
+Testé en production le 20/11 (validation toujours refusée, aucun achat ni envoi) :
+
+- **Contrôle avant validation** : dès que l'agent demande la validation, le code relit la fiche (celle de la demande, sinon la dernière fiche visitée) et affiche « Vérifié par Chez Soi sur la fiche » : taille compatible avec la cote ou découpe écrite, norme NF EN 14604 pour un détecteur, détection de mouvement pour un éclairage. Si une vérification manque : « Approuver quand même ».
+- **Deux enseignes comparées** : IKEA et Castorama (sous-tapis : STOPP IKEA 5,99 € retenu contre 12,90 € chez Castorama). Leroy Merlin, ManoMano et Boulanger bloquent les navigateurs automatisés ; Brico Dépôt et Bricomarché exigent un magasin avant le panier.
+- **Détecteur de fumée** (obligation légale, CCH art. R142-2) : si la vidéo n'en montre aucun, le plan le signale et demande « Vous en avez déjà un ? » ; sinon il propose de tester l'appareil et de vérifier la norme. L'agent achète un détecteur marqué NF EN 14604 sur Castorama (IKEA n'en vend pas).
+- **Objets sans dimension** (éclairage à détection de mouvement, détecteur) : confiés à l'agent sans cote, avec des contraintes propres au produit.
+- **Plus de « à acheter vous-même »** pour une action concrète : objet → agent acheteur, travaux (serrure, porte, poignées de fenêtre à clé, rampe de seuil, main courante) → agent artisans.
+- **Usage 1** : conditions générales MAIF retrouvées (référence M2442 vérifiée par le code) ; avant, l'agent finissait sur la page de connexion et le coupe-circuit l'arrêtait.
+- **Plan d'action** : chaque clic sur « Lancer l'agent » lance la mission suivante, une session à la fois.
+
+Limite du jour : le Space vision ne démarre plus (erreur d'infrastructure Hugging Face « MOUNT_ATTR_IDMAP », sur L4 comme sur L40S). Les logements déjà analysés et le logement exemple fonctionnent ; une nouvelle vidéo reste « service indisponible, réessayez plus tard » tant que Hugging Face n'a pas corrigé.
 
 ## État au 19 novembre
 

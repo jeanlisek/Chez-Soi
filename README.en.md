@@ -39,8 +39,8 @@ Demo persona, fictitious: Marc looks after his mother Jeanne, 79, who lives alon
 
 | Use | What the agent does | Where it stops |
 |---|---|---|
-| 1 · General terms | Finds the contract's general terms on the insurer's official website; our code downloads the PDF and checks its reference | Read-only, no sign-in |
-| 2 · Countermeasure | Reads the risk point's sizes (`get_mesures`), picks a compatible product, proves compatibility with a quote from the product page, adds it to the cart | `demander_validation`: nothing is ordered without the user's click |
+| 1 · General terms | Starts from a search restricted to the insurer's official site and finds the public PDF of the general terms; our code downloads it and checks domain and reference | Read-only, no sign-in, never the customer area |
+| 2 · Countermeasure | Reads the point's sizes and constraints (`get_mesures`), compares IKEA and Castorama (non-slip underlay, motion-sensor light; Castorama only for the NF EN 14604 smoke alarm), adds the cheapest suitable product to the cart. Our code re-reads the product page and shows its check **before** the decision | `demander_validation`: nothing is ordered without the user's click |
 | 3 · Absence | Prepares the OTV registration and the insurer notice from the dates and the contract clauses | Nothing sent, no FranceConnect sign-in |
 | 4 · Tradespeople | For the plan's works (three-point lock, door to widen…), finds up to three tradespeople near the town, with labels and contact details read on their page, and drafts the quote request. Only the postcode and town reach the agent, never the street | Read-only: contacts no one, fills in no form |
 
@@ -135,7 +135,7 @@ Circuit details: [`docs/architecture.md`](docs/architecture.md) (in French). Ful
 **2. With an account (5 minutes).**
 
 1. Sign in with an e-mail link, from any address (checked with a non-Eugenia address). Google sign-in only accepts `@eugeniaschool.com` accounts: the Google app is restricted to Eugenia's Google organisation. The home is created and the journey starts at the profile.
-2. Fill in the profile, then upload a video of one room (MP4 or MOV, 50 MB max). The Space wakes up when the screen opens; the analysis takes a few minutes.
+2. Fill in the profile, then upload a video of one room (MP4 or MOV, 50 MB max). The Space wakes up when the screen opens; the analysis takes a few minutes. On 20/11 the Space is blocked by a Hugging Face outage (see "Updates on 20 November"): use the sample home instead.
 3. Optional: upload a home insurance contract as a PDF. Kept clauses appear with their page. The same screen can start the agent that finds the general terms on the insurer's site.
 4. Open the action plan, confirm a risk point's size, then start the agent. The screen follows the real H session and asks for approval before any commitment. Approving orders nothing.
 5. Open absence mode and ask the agent to prepare the steps: it prepares the OTV registration and the insurer notice without signing in, then stops; the only possible answer refuses sending.
@@ -159,6 +159,20 @@ Environment variables are listed in [`.env.example`](.env.example) (names only).
 **Run cost per assessment (a calculation, not an end-to-end measurement).** Using the agent's measured averages and the public price of the Space's L4 GPU (USD 0.80 per hour [3]), an assessment of 5 rooms, 1 contract, 3 countermeasures and 1 absence costs roughly **USD 0.25 to 0.65**, excluding LLM calls and fixed subscriptions. Calculation and assumptions: [`docs/resultats.md`](docs/resultats.md#coût-de-run-par-diagnostic).
 
 **Business model: not decided yet.** Payers considered by the team: the household or the family caregiver, and in B2B, home insurers and pension funds. No price has been set.
+
+## Updates on 20 November
+
+Tested in production on 20/11 (approval always declined, nothing bought or sent):
+
+- **Check before approval**: when the agent asks for approval, our code re-reads the product page (the one in the request, otherwise the last one the agent visited) and shows "Checked by Chez Soi on the product page": size compatible with the measurement or cutting stated on the page, NF EN 14604 for a smoke alarm, motion detection for a light. If a check fails: "Approve anyway".
+- **Two retailers compared**: IKEA and Castorama (underlay: IKEA STOPP at €5.99 kept over €12.90 at Castorama). Leroy Merlin, ManoMano and Boulanger block automated browsers; Brico Dépôt and Bricomarché require picking a store before the cart.
+- **Smoke alarm** (legal requirement, CCH art. R142-2): if the video shows none, the plan flags it and asks "Do you already have one?"; otherwise it asks to test it and check the standard. The agent buys an NF EN 14604 alarm at Castorama (IKEA sells none).
+- **Products with no size** (motion-sensor light, smoke alarm): handed to the agent without a measurement, with product-specific constraints.
+- **No more "buy it yourself"** for a concrete action: product → buying agent, works (lock, door, keyed window handles, threshold ramp, handrail) → tradespeople agent.
+- **Use 1**: MAIF general terms found (reference M2442 checked by our code); before, the agent ended on the sign-in page and the circuit breaker stopped it.
+- **Action plan**: each click on "Launch the agent" starts the next mission, one session at a time.
+
+Limitation today: the vision Space no longer starts (Hugging Face infrastructure error "MOUNT_ATTR_IDMAP", on L4 and L40S). Already analysed homes and the sample home work; a new video shows "service unavailable, try again later" until Hugging Face fixes it.
 
 ## Status on 19 November
 

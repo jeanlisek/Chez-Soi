@@ -70,7 +70,9 @@ export default function PageAnalyse() {
     const a = reels?.find((r) => r.piece === nom);
     if (!a) return { etat: "en_attente", libelle: "en attente", pct: 0 };
     if (a.statut === "termine" || a.statut === "terminee") return { etat: "terminee", libelle: "points et cotes", pct: 100 };
-    if (a.statut === "echec") return { etat: "echec", libelle: "échec, refilmez", pct: 0 };
+    // Service vision qui ne démarre pas (n8n abandonne après 70 essais) : la vidéo n'y est pour rien.
+    if (a.statut === "echec")
+      return { etat: "echec", libelle: /d[ée]marrage|indisponible|timeout/i.test(a.erreur ?? "") ? "service indisponible, réessayez plus tard" : "échec, refilmez", pct: 0 };
     if (a.statut === "en_cours") return { etat: "en_cours", libelle: "analyse en cours", pct: 55 };
     return { etat: "en_attente", libelle: "en attente du service", pct: 0 };
   };
@@ -120,7 +122,7 @@ export default function PageAnalyse() {
       <Header left={<BackButton href={`${base}/capture`} />} title="Analyse" right={fini ? undefined : <RoundButton icon="bell" label={prevenir ? "Je serai prévenu à la fin" : "Me prévenir à la fin"} variant={prevenir ? "nuit" : "blanc"} onClick={() => void basculerPrevenir()} />} />
 
       <section className="relative h-[262px] flex-none overflow-hidden rounded-card bg-pervenche">
-        <span className="absolute top-[18px] left-[18px]"><AgentTag>Agent · usage 1</AgentTag></span>
+        <span className="absolute top-[18px] left-[18px]"><AgentTag>{logement.exemple ? "Agent · usage 1" : "Contrat · conditions générales"}</AgentTag></span>
         <span key={`${Boolean(contrat)}-${agentFini}`} className="anim-pop absolute top-[18px] right-[18px]">
           {!contrat ? <Signal kind="surveiller">Parcours B</Signal> : agentFini ? <Signal kind="succes">Terminé</Signal> : <Signal kind="info">En cours</Signal>}
         </span>

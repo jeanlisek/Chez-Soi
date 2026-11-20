@@ -93,7 +93,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
   const { data: l } = await supabase.from("logements").select("*").eq("id", id).maybeSingle();
   if (!l) return null;
 
-  const [occ, pcs, ana, fls, acts, ctr, abs] = await Promise.all([
+  const [occ, pcs, ana, fls, acts, ctr, abs, decl] = await Promise.all([
     supabase.from("occupants").select("*").eq("logement_id", id).order("created_at"),
     supabase.from("pieces").select("*").eq("logement_id", id).order("created_at"),
     supabase.from("analyses").select("*").eq("logement_id", id).eq("type", "video").order("created_at", { ascending: false }),
@@ -109,7 +109,16 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
       .order("created_at", { ascending: false })
       .limit(1),
     supabase.from("absences").select("*").eq("logement_id", id).order("created_at", { ascending: false }).limit(1),
+    supabase
+      .from("declarations")
+      .select("valeur")
+      .eq("logement_id", id)
+      .eq("element", "detecteur_fumee")
+      .order("declare_le", { ascending: false })
+      .limit(1),
   ]);
+  // Réponse « Non » à « Avez-vous un détecteur ? » : la question n'est plus reposée.
+  const detecteurAbsentDeclare = decl.data?.[0]?.valeur === "absent";
 
   const occupants: Occupant[] = (occ.data ?? []).map((o) => ({
     id: o.id,
@@ -234,6 +243,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
           : undefined,
       origine: f.origine === "manuel" ? "manuel" : "pipeline",
       non_repere: f.origine === "absence_video",
+      absence_declaree: f.origine === "absence_video" && detecteurAbsentDeclare,
       statut: a?.statut === "fait" ? "regle" : a?.statut === "en_cours" ? "en_traitement" : "a_traiter",
     };
   });

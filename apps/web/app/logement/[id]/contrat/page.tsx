@@ -31,7 +31,9 @@ export default function PageContrat() {
 
   // Usage 1 (vrai logement) : la recherche des conditions générales est une vraie session H, lancée
   // par l'utilisateur. L'écran n'annonce « l'agent cherche » que pendant qu'elle tourne.
-  const [sessionCg, setSessionCg] = useState<string | null>(null);
+  // Gardée dans l'état du parcours : quitter l'écran et revenir ne fait plus oublier la recherche en cours.
+  const sessionCg = etat.sessionCg ?? null;
+  const setSessionCg = (id: string | null) => maj({ sessionCg: id });
   const [lancementCg, setLancementCg] = useState(false);
   const [alerteCg, setAlerteCg] = useState<string | null>(null);
   const suiviCg = useRunAgent(sessionCg);
@@ -169,6 +171,11 @@ export default function PageContrat() {
                       ? "Arrêté par sécurité : le site de l'assureur l'envoyait vers une page de connexion. Déposez le PDF des conditions générales vous-même."
                       : sortieCg?.raison || "L'agent n'a pas trouvé le document sur le site de l'assureur."}
                 </span>
+                {!sortieCg?.trouve && (
+                  <button type="button" onClick={() => setSessionCg(null)} className="mt-1 h-10 self-start rounded-full bg-white px-4 text-sm font-bold text-nuit">
+                    Réessayer
+                  </button>
+                )}
               </>
             ) : (
               <>

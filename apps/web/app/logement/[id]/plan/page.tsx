@@ -200,7 +200,7 @@ function FailleRow({ f, href }: { f: Faille; href: string }) {
     : f.source.force === "contrat"
       ? `exigé par le contrat p. ${f.source.page}`
       : f.source.force === "loi"
-        ? "Loi"
+        ? f.non_repere ? "Obligation légale · non repéré" : "Loi"
         : f.source.reference.startsWith("Repéré")
           ? "Aucune action"
           : "Recommandé";

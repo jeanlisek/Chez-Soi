@@ -163,6 +163,9 @@ Les variables d'environnement sont listées dans [`.env.example`](.env.example) 
 
 **Modèle économique : non tranché.** Payeurs envisagés par l'équipe : le particulier ou l'aidant, et en B2B les assureurs habitation et les caisses de retraite. Aucun prix n'est fixé à ce stade.
 
+Proposition pour le jury : [business plan sourcé et simulation financière](docs/business-plan.md).
+Tous les prix, budgets et prévisionnels de cette proposition sont des **estimations fictives non validées** ; ils ne changent pas le statut ci-dessus.
+
 ## Mises à jour du 20 novembre
 
 Testé en production le 20/11 (validation toujours refusée, aucun achat ni envoi) :

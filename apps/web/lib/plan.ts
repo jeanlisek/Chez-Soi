@@ -220,10 +220,10 @@ export function contreMesure(element: string, f: Faille, seuil: string | null, i
       return { texte: `Élargir le passage de la porte (passage utile ${seuil ?? "conforme"})`, usage: null };
     case "main_courante":
       return { texte: "Poser une main courante à la bonne hauteur", usage: null };
-    // IKEA France ne vend pas de détecteur de fumée (recherche du 20/11) : achat par l'utilisateur.
+    // IKEA France ne vend pas de détecteur de fumée (recherche du 20/11) : l'agent le cherche sur Castorama.
     case "detecteur_fumee":
       return f.origine === ORIGINE_ABSENT_VIDEO
-        ? { texte: `Installer un détecteur de fumée marqué ${NORME_DAAF}`, usage: null }
+        ? { texte: `Détecteur de fumée marqué ${NORME_DAAF}`, usage: 2 }
         : { texte: `Tester le détecteur de fumée et vérifier qu'il porte la norme ${NORME_DAAF}`, usage: null };
     default:
       return { texte: intitule, usage: null };

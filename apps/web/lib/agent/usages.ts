@@ -98,14 +98,23 @@ const usage1: DefinitionUsage = {
 
 /* ---------- Usage 2 : objets (arrêt au panier) ---------- */
 
+/** Site marchand de l'usage 2 selon l'élément : IKEA par défaut, Castorama pour ce qu'IKEA ne vend pas. */
+const SITE_IKEA = { site: "www.ikea.com/fr/fr", urlDepart: "https://www.ikea.com/fr/fr" };
+const SITE_PAR_ELEMENT: Record<string, { site: string; urlDepart: string }> = {
+  detecteur_fumee: { site: "www.castorama.fr", urlDepart: "https://www.castorama.fr/electricite/detecteur-de-fumee/cat_id_3163.cat" },
+};
+
 const usage2: DefinitionUsage = {
   usage: 2,
   agent: "chez-soi-acheteur:2",
   formatReponse: versJsonSchema(sortieUsage2Schema),
   action: "faille",
-  // IKEA France : accueil, recherche, catégories, fiche produit et panier. Rien d'autre.
+  // IKEA France et Castorama : accueil, recherche, rayons, fiche produit et panier. Rien d'autre.
+  // Castorama pour ce qu'IKEA ne vend pas (détecteur de fumée) ; Leroy Merlin bloque les navigateurs
+  // automatisés (HTTP 403 dès la recherche, essai du 20/11).
   cheminsAutorises: [
     { hote: "ikea.com", exacts: ["/fr/fr"], prefixes: ["/fr/fr/search", "/fr/fr/cat/", "/fr/fr/p/", "/fr/fr/shoppingcart"] },
+    { hote: "castorama.fr", exacts: ["/"], prefixes: ["/search", "/basket"], suffixes: ["_cafr.prd", ".cat"] },
   ],
   preparer: async (admin, _logementId, action) => {
     // La contre-mesure du plan dit QUOI chercher (« Sous-tapis antidérapant 50 × 80 cm ») : sans elle,
@@ -113,18 +122,20 @@ const usage2: DefinitionUsage = {
     const { data } = action
       ? await admin.from("actions").select("contre_mesure, failles(element)").eq("id", action.id).maybeSingle()
       : { data: null };
-    const libre = sansDimension((data?.failles as { element: string } | null)?.element);
+    const element = (data?.failles as { element: string } | null)?.element;
+    const libre = sansDimension(element);
+    const { site, urlDepart } = SITE_PAR_ELEMENT[element ?? ""] ?? SITE_IKEA;
     // Le type seul, sans les dimensions du libellé (« … 38 × 59 cm ») : données telles quelles, l'agent
     // les a prises pour le nom du produit et a écarté un sous-tapis plus grand à découper (run du 19/11).
     // Les cotes viennent de get_mesures et la règle de dimension de la skill verifier-dimension.
     const recherche = data?.contre_mesure?.replace(/\s+\d+(?:[.,]\d+)?\s*×\s*\d+(?:[.,]\d+)?\s*cm\s*$/i, "").trim();
     return {
-      site: "www.ikea.com/fr/fr",
-      urlDepart: "https://www.ikea.com/fr/fr",
+      site,
+      urlDepart,
       consigne: [
         recherche
-          ? `Trouve sur le site www.ikea.com/fr/fr un produit de ce type : « ${recherche} » (c'est une catégorie de produit, pas un nom exact), pour corriger la faille ${action?.faille_id} du logement. Mets-le au panier, puis arrête-toi et demande la validation. Ne propose pas un autre type de produit ; si le site n'en vend aucun de ce type, dis-le.${libre ? "" : " Un produit plus grand que la cote convient s'il respecte ta règle de découpe."}`
-          : `Trouve sur le site www.ikea.com/fr/fr un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
+          ? `Trouve sur le site ${site} un produit de ce type : « ${recherche} » (c'est une catégorie de produit, pas un nom exact), pour corriger la faille ${action?.faille_id} du logement. Mets-le au panier, puis arrête-toi et demande la validation. Ne propose pas un autre type de produit ; si le site n'en vend aucun de ce type, dis-le.${libre ? "" : " Un produit plus grand que la cote convient s'il respecte ta règle de découpe."}`
+          : `Trouve sur le site ${site} un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
         libre
           ? `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les contraintes de l'occupant. Ce produit n'a aucune dimension à respecter : ne vérifie aucune cote, laisse largeur_cm, longueur_cm et citation_decoupe vides, et choisis selon le type demandé et ces contraintes.`
           : `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,

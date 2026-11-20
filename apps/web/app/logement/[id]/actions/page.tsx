@@ -152,11 +152,11 @@ export default function PageActions() {
                   </span>
                   <Signal kind={a.niveau} />
                 </div>
-                {a.usage === null && f?.element === "detecteur_fumee" ? (
+                {f?.element === "detecteur_fumee" && (
                   <div className="flex flex-col gap-2">
                     <p className={cx("text-xs leading-[17px]", c.sub)}>
                       {f.non_repere
-                        ? "Aucun détecteur repéré sur votre vidéo. Si vous n'en avez pas, achetez un détecteur autonome marqué NF EN 14604 et CE, à fixer au plafond. Vous en avez déjà un ?"
+                        ? "Aucun détecteur repéré sur votre vidéo. Il en faut au moins un : un détecteur autonome marqué NF EN 14604 et CE, fixé au plafond. Vous en avez déjà un ?"
                         : "Appuyez sur son bouton test et vérifiez au dos la norme NF EN 14604 et le marquage CE ; sinon, remplacez-le par un modèle conforme."}
                     </p>
                     {f.non_repere && (
@@ -170,7 +170,8 @@ export default function PageActions() {
                       </div>
                     )}
                   </div>
-                ) : a.usage === null ? (
+                )}
+                {a.usage === null && f?.element === "detecteur_fumee" ? null : a.usage === null ? (
                   <div className="flex flex-col gap-2">
                     <p className={cx("text-xs leading-[17px]", c.sub)}>Travaux à confier à un artisan : l&apos;agent cherche qui peut les faire près de chez vous, sans contacter personne.</p>
                     {a.faille_id && (

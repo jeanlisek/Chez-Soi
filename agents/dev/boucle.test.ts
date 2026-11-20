@@ -19,3 +19,16 @@ test('une fiche, une recherche et le panier simple restent accessibles', () => {
 test('un retour vers la connexion reste interdit même depuis le panier', () => {
   assert.equal(detecterPageInterdite('https://www.ikea.com/fr/fr/shoppingcart/?next=/login'), 'login');
 });
+
+test('liste blanche Castorama : fiche, rayon, recherche et panier permis, le reste coupé', async () => {
+  const { horsCheminsAutorises } = await import('./boucle');
+  const { estFicheAutorisee } = await import('./fiche');
+  const cs = [{ hote: 'castorama.fr', exacts: ['/'], prefixes: ['/search', '/basket'], suffixes: ['_cafr.prd', '.cat'] }];
+  assert.equal(horsCheminsAutorises('https://www.castorama.fr/detecteur-de-fumee-kidde-3y29/0047871276929_CAFR.prd', cs), null);
+  assert.equal(horsCheminsAutorises('https://www.castorama.fr/electricite/detecteur-de-fumee/cat_id_3163.cat', cs), null);
+  assert.equal(horsCheminsAutorises('https://www.castorama.fr/search?term=d%C3%A9tecteur', cs), null);
+  assert.equal(horsCheminsAutorises('https://www.castorama.fr/basket', cs), null);
+  assert.match(horsCheminsAutorises('https://www.castorama.fr/checkout/delivery', cs) ?? '', /chemin non autorisé/);
+  assert.equal(estFicheAutorisee('https://www.castorama.fr/x/0047871276929_CAFR.prd'), true);
+  assert.equal(estFicheAutorisee('https://www.castorama.fr/basket'), false);
+});

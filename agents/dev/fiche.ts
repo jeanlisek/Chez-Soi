@@ -140,11 +140,14 @@ export function ecartCitation(verification: VerificationCitation): string | null
 
 /* ---------- Nom du produit (run 40 du 19/11 : « pour tissus » au lieu de « pour tapis ») ---------- */
 
-/** Fiche produit IKEA France en https, comme la liste blanche de l'usage 2. Rien d'autre n'est relu. */
+/** Fiche produit IKEA France ou Castorama en https, comme la liste blanche de l'usage 2. Rien d'autre n'est relu. */
 export function estFicheAutorisee(url: string): boolean {
   try {
     const u = new URL(url);
-    return u.protocol === "https:" && (u.hostname === "www.ikea.com" || u.hostname === "ikea.com") && u.pathname.startsWith("/fr/fr/p/");
+    if (u.protocol !== "https:") return false;
+    if (u.hostname === "www.ikea.com" || u.hostname === "ikea.com") return u.pathname.startsWith("/fr/fr/p/");
+    if (u.hostname === "www.castorama.fr" || u.hostname === "castorama.fr") return /_cafr\.prd$/i.test(u.pathname);
+    return false;
   } catch {
     return false;
   }
@@ -156,7 +159,7 @@ export function nomDepuisHtml(html: string): string | null {
     /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i.exec(html)?.[1] ??
     /<title>([^<]+)<\/title>/i.exec(html)?.[1];
   if (!brut) return null;
-  const nom = texteDeLaPage(brut).replace(/\s*-\s*IKEA\s*$/i, "").replace(/\s+/g, " ").trim();
+  const nom = texteDeLaPage(brut).replace(/\s*-\s*IKEA\s*$/i, "").replace(/\s*\|\s*Castorama\s*$/i, "").replace(/\s+/g, " ").trim();
   return nom || null;
 }
 

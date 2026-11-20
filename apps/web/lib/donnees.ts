@@ -249,7 +249,14 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
       niveau: f.niveau,
       source,
       detail: source.force === "contrat" ? `Exigé par votre contrat · p. ${source.page}` : source.force === "loi" ? source.reference : "Recommandé",
-      mission: a.usage === 3 ? "Prépare la démarche, sans rien envoyer." : "Compare les produits compatibles et vérifie la dimension sur chaque fiche.",
+      mission:
+        a.usage === 3
+          ? "Prépare la démarche, sans rien envoyer."
+          : f.element === "detecteur_fumee"
+            ? "Cherche sur Castorama un détecteur marqué NF EN 14604 et le met au panier."
+            : f.element === "eclairage"
+              ? "Cherche sur IKEA un éclairage à détecteur de mouvement et le met au panier."
+              : "Compare les produits compatibles et vérifie la dimension sur chaque fiche.",
       usage: (a.usage as 1 | 2 | 3 | null) ?? null,
       groupe: (a.priorite ?? i + 1) <= 3 ? "priorite" : "plus_tard",
     };

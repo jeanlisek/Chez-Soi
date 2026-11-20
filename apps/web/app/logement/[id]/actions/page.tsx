@@ -7,6 +7,7 @@ import { Cursor } from "@/components/cs/icons";
 import { ActionBar, BackButton, Chip, ExempleTag, Header, Pill, RoundButton, Screen, Signal, cx } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
 import { libelleSource } from "@/lib/domaine";
+import { sansDimension } from "@/lib/schemas";
 
 type Onglet = "priorite" | "contrat" | "plus_tard";
 
@@ -36,10 +37,15 @@ export default function PageActions() {
     onglet === "contrat" ? a.source.force === "contrat" : onglet === "priorite" ? a.groupe === "priorite" : a.groupe === "plus_tard",
   );
   // L'agent lit la cote avec get_mesures : sur un vrai logement, un objet ne peut lui être confié
-  // qu'une fois la cote de son point confirmée. Les missions de tous les onglets comptent.
+  // qu'une fois la cote de son point confirmée, sauf s'il n'a aucune dimension à respecter
+  // (veilleuse, détecteur). Les missions de tous les onglets comptent.
   const faillePour = (a: (typeof actions)[number]) => logement.failles.find((f) => f.id === a.faille_id);
-  const lancable = (a: (typeof actions)[number]) =>
-    a.usage !== null && (logement.exemple || a.usage !== 2 || faillePour(a)?.cote?.statut === "confirmee");
+  const lancable = (a: (typeof actions)[number]) => {
+    if (a.usage === null) return false;
+    if (logement.exemple || a.usage !== 2) return true;
+    const f = faillePour(a);
+    return f?.cote?.statut === "confirmee" || sansDimension(f?.element);
+  };
   const missions = actions.filter((a) => lancable(a) && etat.missions[a.id] === "agent");
   const compte = (o: Onglet) =>
     o === "contrat" ? actions.filter((a) => a.source.force === "contrat").length : actions.filter((a) => a.groupe === o).length;
@@ -148,7 +154,7 @@ export default function PageActions() {
                         <a href={`${base}/faille/${f.id}`} className="font-bold text-nuit underline">confirmez-la sur l&apos;écran du point</a> pour le lui confier.
                       </>
                     ) : (
-                      "Pas de cote à vérifier pour ce produit : l'agent ne sait pas encore le choisir, à acheter vous-même pour l'instant."
+                      "Les dimensions de ce point n'ont pas pu être mesurées sur la vidéo : refilmez la pièce pour confier l'achat à l'agent."
                     )}
                   </p>
                 ) : (

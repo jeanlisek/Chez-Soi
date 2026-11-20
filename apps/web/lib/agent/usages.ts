@@ -5,7 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CheminsAutorises } from "../../../../agents/dev/boucle";
 import { controlerSortieUsage1, controlerSortieUsage2, evaluerSortie, type Evaluation } from "../../../../agents/dev/controle";
 import { estFicheAutorisee, preuvesSurFiche } from "../../../../agents/dev/fiche";
-import { artisansDe, sortieUsage1Schema, sortieUsage2Schema, sortieUsage3Schema, sortieUsage4Schema, versJsonSchema, type SortieUsage3, type SortieUsage4 } from "@/lib/schemas";
+import { artisansDe, sansDimension, sortieUsage1Schema, sortieUsage2Schema, sortieUsage3Schema, sortieUsage4Schema, versJsonSchema, type SortieUsage3, type SortieUsage4 } from "@/lib/schemas";
 import type { Database } from "@/lib/supabase/types";
 
 import { verifierCgUsage1 } from "./contrat_cg";
@@ -110,7 +110,10 @@ const usage2: DefinitionUsage = {
   preparer: async (admin, _logementId, action) => {
     // La contre-mesure du plan dit QUOI chercher (« Sous-tapis antidérapant 50 × 80 cm ») : sans elle,
     // l'agent choisit un produit de la bonne taille mais pas forcément du bon type (run du 19/11).
-    const { data } = action ? await admin.from("actions").select("contre_mesure").eq("id", action.id).maybeSingle() : { data: null };
+    const { data } = action
+      ? await admin.from("actions").select("contre_mesure, failles(element)").eq("id", action.id).maybeSingle()
+      : { data: null };
+    const libre = sansDimension((data?.failles as { element: string } | null)?.element);
     // Le type seul, sans les dimensions du libellé (« … 38 × 59 cm ») : données telles quelles, l'agent
     // les a prises pour le nom du produit et a écarté un sous-tapis plus grand à découper (run du 19/11).
     // Les cotes viennent de get_mesures et la règle de dimension de la skill verifier-dimension.
@@ -120,29 +123,35 @@ const usage2: DefinitionUsage = {
       urlDepart: "https://www.ikea.com/fr/fr",
       consigne: [
         recherche
-          ? `Trouve sur le site www.ikea.com/fr/fr un produit de ce type : « ${recherche} » (c'est une catégorie de produit, pas un nom exact), pour corriger la faille ${action?.faille_id} du logement. Mets-le au panier, puis arrête-toi et demande la validation. Ne propose pas un autre type de produit ; si le site n'en vend aucun de ce type, dis-le. Un produit plus grand que la cote convient s'il respecte ta règle de découpe.`
+          ? `Trouve sur le site www.ikea.com/fr/fr un produit de ce type : « ${recherche} » (c'est une catégorie de produit, pas un nom exact), pour corriger la faille ${action?.faille_id} du logement. Mets-le au panier, puis arrête-toi et demande la validation. Ne propose pas un autre type de produit ; si le site n'en vend aucun de ce type, dis-le.${libre ? "" : " Un produit plus grand que la cote convient s'il respecte ta règle de découpe."}`
           : `Trouve sur le site www.ikea.com/fr/fr un équipement compatible avec la faille ${action?.faille_id} du logement, mets-le au panier, puis arrête-toi et demande la validation.`,
-        `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,
-        "Applique tes règles permanentes : vérification de la dimension sur la fiche, panier comme dernière page, demander_validation avec action « panier », puis plus aucune action et la réponse finale au format demandé.",
+        libre
+          ? `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les contraintes de l'occupant. Ce produit n'a aucune dimension à respecter : ne vérifie aucune cote, laisse largeur_cm, longueur_cm et citation_decoupe vides, et choisis selon le type demandé et ces contraintes.`
+          : `Appelle d'abord get_mesures avec faille_id = "${action?.faille_id}" pour connaître les cotes et les contraintes de l'occupant.`,
+        libre
+          ? "Applique tes règles permanentes : panier comme dernière page, demander_validation avec action « panier », puis plus aucune action et la réponse finale au format demandé."
+          : "Applique tes règles permanentes : vérification de la dimension sur la fiche, panier comme dernière page, demander_validation avec action « panier », puis plus aucune action et la réponse finale au format demandé.",
       ].join("\n"),
     };
   },
   evaluer: async (admin, run, reponse) => {
     // Cote de la faille du run (et pas le tapis de démo) pour juger la dimension du produit.
     let cote: { largeur_cm: number; longueur_cm: number } | undefined;
+    let libre = false;
     if (run.action_id) {
       const { data: action } = await admin
         .from("actions")
-        .select("failles(largeur_cm, longueur_cm, cote_confirmee_cm)")
+        .select("failles(element, largeur_cm, longueur_cm, cote_confirmee_cm)")
         .eq("id", run.action_id)
         .maybeSingle();
-      const f = action?.failles as { largeur_cm: number | null; longueur_cm: number | null; cote_confirmee_cm: number | null } | null;
+      const f = action?.failles as { element: string; largeur_cm: number | null; longueur_cm: number | null; cote_confirmee_cm: number | null } | null;
+      libre = sansDimension(f?.element);
       // Jamais `hauteur_cm` ici : pour un tapis, c'est l'épaisseur (contrat de la PR #46).
       const largeur = f?.largeur_cm ?? f?.cote_confirmee_cm;
       const longueur = f?.longueur_cm ?? f?.cote_confirmee_cm;
       if (largeur && longueur) cote = { largeur_cm: largeur, longueur_cm: longueur };
     }
-    const evaluation = evaluerSortie(reponse, sortieUsage2Schema, (s) => controlerSortieUsage2(s, cote));
+    const evaluation = evaluerSortie(reponse, sortieUsage2Schema, (s) => controlerSortieUsage2(s, cote, libre));
     const sortie = evaluation.sortie;
     if (!sortie?.trouve || !sortie.lien || !estFicheAutorisee(sortie.lien)) return evaluation as Evaluation<unknown>;
     // Contrôle v2 (19/11) : le code relit la fiche et y cherche lui-même les preuves. La recopie de
@@ -153,7 +162,8 @@ const usage2: DefinitionUsage = {
       return { ...evaluation, ecarts_metier: [...evaluation.ecarts_metier, `fiche illisible (${preuves.erreur}) : aucune preuve, produit à REFUSER`] } as Evaluation<unknown>;
     }
     const ecarts = evaluation.ecarts_metier.filter((e) => !(preuves.phrase_decoupe && /citation_decoupe/.test(e)));
-    if (!preuves.dimensions_sur_fiche) ecarts.push(`dimensions ${sortie.largeur_cm} × ${sortie.longueur_cm} cm introuvables sur la fiche : produit à REFUSER`);
+    // Sans dimension à respecter (veilleuse, détecteur), seule la lecture de la fiche compte.
+    if (!libre && !preuves.dimensions_sur_fiche) ecarts.push(`dimensions ${sortie.largeur_cm} × ${sortie.longueur_cm} cm introuvables sur la fiche : produit à REFUSER`);
     return {
       ...evaluation,
       brut: { ...(evaluation.brut as object), preuves_fiche: preuves },
@@ -237,7 +247,11 @@ export function metierPour(element: string | null | undefined): string {
     case "fenetre":
       return "menuisier ou serrurier (fermetures et volets)";
     case "escalier":
+    case "main_courante":
       return "menuisier ou serrurier-métallier (main courante, garde-corps)";
+    case "ressaut":
+    case "seuil":
+      return "menuisier ou entreprise d'adaptation du logement (rampe de seuil, suppression de ressaut)";
     default:
       return "artisan du bâtiment";
   }

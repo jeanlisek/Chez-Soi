@@ -22,11 +22,23 @@ export type StubReponse = z.infer<typeof stubReponseSchema>;
 export const getMesuresEntreeSchema = z.object({
   faille_id: z.string(),
 });
+/**
+ * Éléments dont le produit n'a pas de dimension à respecter (une veilleuse, un détecteur) : l'agent
+ * peut les chercher sans cote confirmée, et le code ne juge ni la cote ni les dimensions de la fiche.
+ */
+export const ELEMENTS_SANS_DIMENSION = ["eclairage", "detecteur_fumee"] as const;
+export function sansDimension(element: string | null | undefined): boolean {
+  return (ELEMENTS_SANS_DIMENSION as readonly string[]).includes(element ?? "");
+}
+
 export const getMesuresSortieSchema = z.object({
   element: z.string(),
   piece: z.string(),
-  cote_confirmee_cm: z.number(),
-  largeur_cm: z.number(),
+  /** Absente quand le produit n'a pas de dimension à respecter (`sans_dimension`). */
+  cote_confirmee_cm: z.number().optional(),
+  largeur_cm: z.number().optional(),
+  /** Vrai : aucune cote à vérifier pour ce produit (veilleuse, détecteur). */
+  sans_dimension: z.boolean().optional(),
   /** Hauteur d'une porte ou d'une fenêtre, épaisseur d'un tapis ; absente si inconnue. */
   hauteur_cm: z.number().optional(),
   /** Longueur au sol (tapis, couloir) : `failles.longueur_cm`, depuis la migration 0006. */

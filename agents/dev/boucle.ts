@@ -73,7 +73,7 @@ export const MOTIFS_INTERDITS_PAR_DEFAUT: MotifsInterdits = {
 };
 
 /** Paramètres de recherche : leur valeur est du texte libre, pas une destination. */
-const CLES_DE_RECHERCHE = ["q", "query", "search", "s", "k", "w", "text", "keywords", "recherche"];
+const CLES_DE_RECHERCHE = ["q", "query", "search", "s", "k", "w", "text", "keywords", "recherche", "term"];
 
 function jetons(texte: string): string[] {
   let decode = texte;
@@ -124,8 +124,11 @@ export function detecterPageInterdite(
   return motifs.tunnel.find((motif) => motsChemin.has(motif)) ?? null;
 }
 
-/** Pages autorisées d'un site : hôte exact (ou sous-domaine) et préfixes de chemin. */
-export type CheminsAutorises = { hote: string; exacts?: string[]; prefixes: string[] }[];
+/**
+ * Pages autorisées d'un site : hôte exact (ou sous-domaine), chemins exacts, préfixes et
+ * terminaisons de chemin (Castorama : fiche « …/<EAN>_CAFR.prd », rayon « …/cat_id_N.cat »).
+ */
+export type CheminsAutorises = { hote: string; exacts?: string[]; prefixes: string[]; suffixes?: string[] }[];
 
 /**
  * Liste blanche par site : renvoie un motif si l'URL n'est pas sur un des hôtes autorisés,
@@ -146,7 +149,8 @@ export function horsCheminsAutorises(urlBrute: string, autorises: CheminsAutoris
   const sansBarre = chemin.replace(/\/+$/, "");
   const permise =
     (site.exacts ?? []).some((exact) => sansBarre === exact.replace(/\/+$/, "")) ||
-    site.prefixes.some((prefixe) => chemin.startsWith(prefixe));
+    site.prefixes.some((prefixe) => chemin.startsWith(prefixe)) ||
+    (site.suffixes ?? []).some((suffixe) => chemin.endsWith(suffixe));
   return permise
     ? null
     : `chemin non autorisé (${url.pathname})`;

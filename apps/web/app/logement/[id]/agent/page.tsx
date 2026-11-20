@@ -166,7 +166,7 @@ export default function PageAgent() {
         <>
           <section className="relative h-[318px] flex-none overflow-hidden rounded-card bg-pervenche">
             <span className="absolute top-[18px] left-[18px] flex items-center gap-2">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-pervenche bg-white text-xs font-extrabold">IKEA</span>
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-pervenche bg-white text-xs font-extrabold">{reel ? "H" : "IKEA"}</span>
             </span>
             <span className="absolute top-[18px] right-[18px]">
               {echec ? <Signal kind="info">Arrêté</Signal> : fini && etat.run === "termine" ? <Signal kind="info">Terminé</Signal> : fini ? <Signal kind="attentionPlein" icon>Validation attendue</Signal> : pause ? <Signal kind="info">En pause</Signal> : <Signal kind="info" icon>En cours</Signal>}
@@ -175,7 +175,7 @@ export default function PageAgent() {
             <p key={`${echec}-${fini}`} className="anim-in absolute top-[168px] left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-2.5 text-[13px] font-semibold whitespace-nowrap" aria-live="polite">
               {echec
                 ? coupe ? "Session coupée : page non autorisée." : "L'agent s'est arrêté sans proposition."
-                : fini ? "Proposition prête. Rien n'est acheté." : reel ? "Je cherche le produit sur IKEA" : "Je compare les sous-tapis pour le couloir"}
+                : fini ? "Proposition prête. Rien n'est acheté." : reel ? "Je cherche le produit sur le site" : "Je compare les sous-tapis pour le couloir"}
             </p>
             {/* Pause, aperçu et arrêt ne pilotent que le replay : sur une vraie session, ils ne feraient rien chez H. */}
             {reel && !fini && !echec && !termine && (

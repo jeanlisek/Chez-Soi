@@ -1,5 +1,7 @@
 # Résultats mesurés de l'agent H
 
+Vérification complémentaire du 20/11 : [calculs, rapprochement des réponses brutes, tests et gains de temps estimés](verification-mesures.md), reproductibles avec `python3 scripts/verifier_mesures.py`.
+
 Ce document rassemble les 40 runs réels de l'agent H Company lancés par l'équipe les 18 et 19 novembre 2026, sur de vrais sites, sans aucun achat ni envoi. Chaque run est une ligne de [`resultats_runs.csv`](resultats_runs.csv), reprise de l'onglet « Mesures agent » du tableau de pilotage de l'équipe. Les chiffres ci-dessous se recalculent avec :
 
 ```bash

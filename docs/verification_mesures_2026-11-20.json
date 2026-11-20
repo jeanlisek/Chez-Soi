@@ -1,0 +1,70 @@
+{
+  "methode": "Audit des données publiées ; aucun nouveau run H, aucun test humain chronométré.",
+  "historique": {
+    "runs": 40,
+    "durees_connues": 39,
+    "duree_moyenne_s": "88.48974358974358974358974359",
+    "duree_mediane_s": "81.9",
+    "cout_moyen_usd": "0.06225",
+    "cout_total_usd": "2.490"
+  },
+  "verdicts_v1_historique": {
+    "Partiel": 27,
+    "Succès": 11,
+    "Échec": 2
+  },
+  "verdicts_v2_usage2_relecture": {
+    "Partiel": 16,
+    "Succès": 14,
+    "Échec": 2
+  },
+  "correspondances_brutes_usage2": 32,
+  "serie_finale": {
+    "runs": 10,
+    "durees_connues": 10,
+    "duree_moyenne_s": "74.02",
+    "duree_mediane_s": "74.7",
+    "cout_moyen_usd": "0.02506",
+    "cout_total_usd": "0.2506"
+  },
+  "gains_estimes_cohorte_1_a_12": [
+    {
+      "usage": "1",
+      "runs": 4,
+      "manuel_estime_s": "360",
+      "agent_mesure_s": "126.25",
+      "gain_estime_s": "233.75",
+      "gain_estime_pct": "64.93055555555555555555555556",
+      "rapport_estime": "2.851485148514851485148514851"
+    },
+    {
+      "usage": "2",
+      "runs": 4,
+      "manuel_estime_s": "240",
+      "agent_mesure_s": "97.225",
+      "gain_estime_s": "142.775",
+      "gain_estime_pct": "59.48958333333333333333333333",
+      "rapport_estime": "2.468500899974286448958601183"
+    },
+    {
+      "usage": "3",
+      "runs": 4,
+      "manuel_estime_s": "900",
+      "agent_mesure_s": "77.45",
+      "gain_estime_s": "822.55",
+      "gain_estime_pct": "91.39444444444444444444444444",
+      "rapport_estime": "11.62040025823111684958037444"
+    }
+  ],
+  "limites": [
+    "Les coûts des CSV sont arrondis à la source.",
+    "Les 10 verdicts de production sont déclarés dans le CSV ; leurs trajectoires complètes ne sont pas dans ce fichier.",
+    "Relecture v2 rétrospective : mêmes réponses, règle différente, pas de nouveaux runs.",
+    "Aucun gain humain mesuré : les valeurs manuelles viennent de l'équipe."
+  ],
+  "sha256_sources": {
+    "docs/resultats_runs.csv": "97fd65c29f6becaa7f4cd10417fcab92b46067a8999f14c3267f27efccd6ff5e",
+    "docs/resultats_serie_v2.csv": "5e1ba309111b2b8e56d8fcef6543cbee7cb85e25b4a0b79c7ff17ccc11d05939",
+    "docs/preuves_fiches_v2.json": "7063c96ef611614dbaee3cf82158fc3f36cd72a6fb5308bf750a13bd83bcba3d"
+  }
+}

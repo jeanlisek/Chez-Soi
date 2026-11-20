@@ -5,7 +5,7 @@ import Link from "next/link";
  * (erreur d'infrastructure « MOUNT_ATTR_IDMAP », sur L4 comme sur L40S). Le bandeau le dit
  * et oriente vers le logement exemple. Repasser à `false` dès que le Space répond.
  */
-export const ANALYSE_VIDEO_INDISPONIBLE = true;
+export const ANALYSE_VIDEO_INDISPONIBLE = false;
 
 export function BandeauVision({ sombre = false }: { sombre?: boolean }) {
   if (!ANALYSE_VIDEO_INDISPONIBLE) return null;

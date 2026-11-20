@@ -135,7 +135,7 @@ Circuit details: [`docs/architecture.md`](docs/architecture.md) (in French). Ful
 **2. With an account (5 minutes).**
 
 1. Sign in with an e-mail link, from any address (checked with a non-Eugenia address). Google sign-in only accepts `@eugeniaschool.com` accounts: the Google app is restricted to Eugenia's Google organisation. The home is created and the journey starts at the profile.
-2. Fill in the profile, then upload a video of one room (MP4 or MOV, 50 MB max). The Space wakes up when the screen opens; the analysis takes a few minutes. On 20/11 the Space is blocked by a Hugging Face outage (see "Updates on 20 November"): use the sample home instead.
+2. Fill in the profile, then upload a video of one room (MP4 or MOV, 50 MB max). The Space wakes up when the screen opens; the analysis takes a few minutes.
 3. Optional: upload a home insurance contract as a PDF. Kept clauses appear with their page. The same screen can start the agent that finds the general terms on the insurer's site.
 4. Open the action plan, confirm a risk point's size, then start the agent. The screen follows the real H session and asks for approval before any commitment. Approving orders nothing.
 5. Open absence mode and ask the agent to prepare the steps: it prepares the OTV registration and the insurer notice without signing in, then stops; the only possible answer refuses sending.
@@ -172,7 +172,7 @@ Tested in production on 20/11 (approval always declined, nothing bought or sent)
 - **Use 1**: MAIF general terms found (reference M2442 checked by our code); before, the agent ended on the sign-in page and the circuit breaker stopped it.
 - **Action plan**: each click on "Launch the agent" starts the next mission, one session at a time.
 
-Limitation today: the vision Space no longer starts (Hugging Face infrastructure error "MOUNT_ATTR_IDMAP", on L4 and L40S). Already analysed homes and the sample home work; a new video shows "service unavailable, try again later" until Hugging Face fixes it.
+Incident today: from 09:00 to 11:00 the vision Space would not start (Hugging Face infrastructure error "MOUNT_ATTR_IDMAP", on L4 and L40S). It came back on L4 at 11:02; during the outage the app showed a banner pointing to the sample home.
 
 ## Status on 19 November
 

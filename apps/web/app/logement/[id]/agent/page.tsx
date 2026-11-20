@@ -213,6 +213,11 @@ export default function PageAgent() {
             ))}
           </div>
 
+          {/* Une consigne tapée n'apparaissait nulle part : l'utilisateur ne savait pas qu'elle était partie. */}
+          {consignes.length > 0 && (
+            <p className="text-xs leading-4 text-ink-muted" aria-live="polite">Envoyé à l&apos;agent : {consignes.map((c) => `« ${c} »`).join(", ")}</p>
+          )}
+
           {(alerte ?? suivi.erreur) && <p role="alert" className="rounded-[20px] bg-attention-bg px-4 py-3 text-sm font-semibold text-attention-text">{alerte ?? suivi.erreur}</p>}
           {reel && !etat.sessionId && <p role="alert" className="rounded-[20px] bg-attention-bg px-4 py-3 text-sm font-semibold text-attention-text">Session introuvable : relancez la mission depuis le plan d&apos;action.</p>}
 

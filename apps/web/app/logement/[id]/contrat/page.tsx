@@ -165,7 +165,9 @@ export default function PageContrat() {
                 <span className="text-[13px] leading-[18px] text-ink-soft">
                   {sortieCg?.trouve
                     ? [sortieCg.titre, sortieCg.reference_trouvee ? `référence lue : ${sortieCg.reference_trouvee}` : null].filter(Boolean).join(" · ") || "Le document est vérifié par Chez Soi avant d'être utilisé."
-                    : sortieCg?.raison || "L'agent n'a pas trouvé le document sur le site de l'assureur."}
+                    : suiviCg.etat?.run.coupe_circuit
+                      ? "Arrêté par sécurité : le site de l'assureur l'envoyait vers une page de connexion. Déposez le PDF des conditions générales vous-même."
+                      : sortieCg?.raison || "L'agent n'a pas trouvé le document sur le site de l'assureur."}
                 </span>
               </>
             ) : (

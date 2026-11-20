@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Cursor } from "@/components/cs/icons";
 import { ActionBar, BackButton, Chip, ExempleTag, Header, Pill, RoundButton, Screen, Signal, cx } from "@/components/cs/ui";
 import { useParcours } from "@/lib/demo/etat";
+
+import { declarerDetecteur } from "../actions-serveur";
 import { libelleSource } from "@/lib/domaine";
 import { sansDimension } from "@/lib/schemas";
 
@@ -31,6 +33,24 @@ export default function PageActions() {
   const [message, setMessage] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [artisan, setArtisan] = useState<string | null>(null);
+  const [reponse, setReponse] = useState(false);
+
+  // Détecteur non repéré sur la vidéo : l'utilisateur dit s'il en a un ; le plan est recalculé.
+  const repondreDetecteur = async (present: boolean) => {
+    if (logement.exemple) {
+      setMessage("Sur votre propre logement, votre réponse met le plan à jour.");
+      return;
+    }
+    setReponse(true);
+    const r = await declarerDetecteur(logement.id, present).catch(() => null);
+    setReponse(false);
+    if (!r?.ok) {
+      setMessage(r?.message ?? "Réponse non enregistrée. Réessayez dans un instant.");
+      return;
+    }
+    setMessage(present ? "C'est noté : pensez à le tester une fois par mois avec son bouton." : "C'est noté : le détecteur reste dans votre plan.");
+    router.refresh();
+  };
 
   const actions = [...logement.actions].sort((a, b) => a.priorite - b.priorite);
   const visibles = actions.filter((a) =>
@@ -132,7 +152,25 @@ export default function PageActions() {
                   </span>
                   <Signal kind={a.niveau} />
                 </div>
-                {a.usage === null ? (
+                {a.usage === null && f?.element === "detecteur_fumee" ? (
+                  <div className="flex flex-col gap-2">
+                    <p className={cx("text-xs leading-[17px]", c.sub)}>
+                      {f.non_repere
+                        ? "Aucun détecteur repéré sur votre vidéo. Si vous n'en avez pas, achetez un détecteur autonome marqué NF EN 14604 et CE, à fixer au plafond. Vous en avez déjà un ?"
+                        : "Appuyez sur son bouton test et vérifiez au dos la norme NF EN 14604 et le marquage CE ; sinon, remplacez-le par un modèle conforme."}
+                    </p>
+                    {f.non_repere && (
+                      <div className="grid grid-cols-2 gap-1 rounded-full bg-white/60 p-1">
+                        <button type="button" onClick={() => void repondreDetecteur(true)} disabled={reponse} className="h-[38px] rounded-full bg-white text-[13px] font-bold disabled:opacity-50">
+                          Oui, j&apos;en ai un
+                        </button>
+                        <button type="button" onClick={() => void repondreDetecteur(false)} disabled={reponse} className="h-[38px] rounded-full text-[13px] font-bold disabled:opacity-50">
+                          Non
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : a.usage === null ? (
                   <div className="flex flex-col gap-2">
                     <p className={cx("text-xs leading-[17px]", c.sub)}>Travaux à confier à un artisan : l&apos;agent cherche qui peut les faire près de chez vous, sans contacter personne.</p>
                     {a.faille_id && (

@@ -212,6 +212,24 @@ export async function enregistrerProfilComplet(entree: z.input<typeof profilComp
 }
 
 /**
+ * Réponse à « Avez-vous un détecteur de fumée ? » quand la vidéo n'en montre aucun. Enregistrée
+ * dans `declarations` sous RLS (le logement doit être celui de l'utilisateur), puis le plan est
+ * recalculé : « présent » retire le point, « absent » le garde.
+ */
+export async function declarerDetecteur(logementId: string, present: boolean): Promise<{ ok: boolean; message?: string }> {
+  if (!z.uuid().safeParse(logementId).success) return { ok: false, message: "Demande invalide." };
+  const supabase = await clientServeur();
+  const admin = clientAdmin();
+  if (!supabase || !admin) return { ok: false, message: "Service non configuré." };
+  const { error } = await supabase
+    .from("declarations")
+    .insert({ logement_id: logementId, element: "detecteur_fumee", valeur: present ? "present" : "absent" });
+  if (error) return { ok: false, message: "Réponse non enregistrée." };
+  await calculerPlan(admin, logementId).catch(() => undefined);
+  return { ok: true };
+}
+
+/**
  * « Signaler une erreur de détection » (écran du point) : retire un point de la vision que
  * l'utilisateur sait faux (le sol pris pour un tapis…). Le logement est vérifié sous RLS ;
  * ses actions partent avec lui, puis le plan est recalculé.

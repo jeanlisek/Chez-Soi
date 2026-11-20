@@ -53,7 +53,12 @@ type Faille = {
   /** Cote confirmée par l'utilisateur : l'action est prête pour l'agent, elle passe devant à rang égal. */
   cotes_confirmees_le: string | null;
   created_at: string;
+  origine?: string | null;
 };
+
+/** Point ajouté par le plan quand la vidéo ne montre aucun détecteur de fumée (obligation légale). */
+export const ORIGINE_ABSENT_VIDEO = "absence_video";
+const NORME_DAAF = "NF EN 14604";
 
 type Occupant = { deplacement: number; vue_reduite: boolean; audition_reduite: boolean; vigilance: string };
 
@@ -215,6 +220,11 @@ export function contreMesure(element: string, f: Faille, seuil: string | null, i
       return { texte: `Élargir le passage de la porte (passage utile ${seuil ?? "conforme"})`, usage: null };
     case "main_courante":
       return { texte: "Poser une main courante à la bonne hauteur", usage: null };
+    // IKEA France ne vend pas de détecteur de fumée (recherche du 20/11) : achat par l'utilisateur.
+    case "detecteur_fumee":
+      return f.origine === ORIGINE_ABSENT_VIDEO
+        ? { texte: `Installer un détecteur de fumée marqué ${NORME_DAAF}`, usage: null }
+        : { texte: `Tester le détecteur de fumée et vérifier qu'il porte la norme ${NORME_DAAF}`, usage: null };
     default:
       return { texte: intitule, usage: null };
   }
@@ -236,9 +246,10 @@ function gravite(risque: string, verdict: Verdict, occupants: Occupant[]): 1 | 2
 
 /** Calcule et enregistre le plan d'action du logement. À appeler avec le client service_role, propriété vérifiée. */
 export async function calculerPlan(admin: Admin, logementId: string): Promise<ResultatPlan> {
+  await synchroniserDetecteurAbsent(admin, logementId);
   const [lg, fls, occ, rgl, ctr] = await Promise.all([
     admin.from("logements").select("id, statut_occupation").eq("id", logementId).single(),
-    admin.from("failles").select("id, element, piece, risque, largeur_cm, longueur_cm, hauteur_cm, cotes_confirmees_le, created_at").eq("logement_id", logementId),
+    admin.from("failles").select("id, element, piece, risque, largeur_cm, longueur_cm, hauteur_cm, cotes_confirmees_le, created_at, origine").eq("logement_id", logementId),
     admin.from("occupants").select("deplacement, vue_reduite, audition_reduite, vigilance").eq("logement_id", logementId),
     admin.from("regles_en_vigueur").select("id, code, version, intitule, element, force, verdict_type, parametres, source_ref"),
     admin
@@ -304,6 +315,8 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
     usage: 2 | null;
     explication: string;
     gravite: 1 | 2 | 3;
+    /** Explication fixée par le code : pas de reformulation par le LLM. */
+    fixe?: boolean;
   };
   const lignes: Ligne[] = [];
   const diagnostics: { logement_id: string; faille_id: string; regle_id: string; regle_version: number; verdict: Verdict }[] = [];
@@ -370,6 +383,15 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
         gravite: 3,
       };
     }
+    if (retenue && f.origine === ORIGINE_ABSENT_VIDEO) {
+      // Rien n'a été vu : on ne conclut pas à l'absence, on la signale et on demande.
+      retenue = {
+        ...retenue,
+        gravite: 3,
+        fixe: true,
+        explication: `Aucun détecteur de fumée n'a été repéré sur votre vidéo. Tout logement doit en avoir au moins un${retenue.regle?.source_ref ? ` (${retenue.regle.source_ref.replace(/\s*\(Légifrance\)/, "")})` : ""} : choisissez un modèle autonome marqué ${NORME_DAAF} et CE, à fixer au plafond, de préférence près des chambres. Si vous en avez déjà un, dites-le.`,
+      };
+    }
     if (!retenue) {
       ignorees++;
       continue;
@@ -395,6 +417,7 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
   let explicationsLlm = 0;
   await Promise.all(
     lignes.map(async (l) => {
+      if (l.fixe) return;
       const faits: FaitsAction = {
         element: l.element.replace(/_/g, " "),
         piece: l.faille.piece,
@@ -491,4 +514,40 @@ export async function calculerPlan(admin: Admin, logementId: string): Promise<Re
     },
     explications_llm: explicationsLlm,
   };
+}
+
+/**
+ * Détecteur de fumée (obligation légale, règle DAAF) : la vision ne peut que le voir, pas prouver
+ * qu'il manque. Sans détecteur repéré ni réponse « j'en ai un », le plan ajoute un point
+ * « détecteur non repéré » qui pose la question ; il disparaît dès qu'un détecteur est vu ou déclaré.
+ */
+export async function synchroniserDetecteurAbsent(admin: Admin, logementId: string): Promise<void> {
+  const [regle, vus, decl] = await Promise.all([
+    admin.from("regles_en_vigueur").select("id").eq("element", "detecteur_fumee").limit(1),
+    admin.from("failles").select("id, origine").eq("logement_id", logementId).eq("element", "detecteur_fumee"),
+    admin
+      .from("declarations")
+      .select("valeur")
+      .eq("logement_id", logementId)
+      .eq("element", "detecteur_fumee")
+      .order("declare_le", { ascending: false })
+      .limit(1),
+  ]);
+  if (regle.error || vus.error || decl.error) return; // facultatif : le plan se calcule sans
+  const synthetiques = (vus.data ?? []).filter((f) => f.origine === ORIGINE_ABSENT_VIDEO);
+  const vuEnVideo = (vus.data ?? []).some((f) => f.origine !== ORIGINE_ABSENT_VIDEO);
+  const declare = decl.data?.[0]?.valeur === "present";
+  const attendu = Boolean(regle.data?.length) && !vuEnVideo && !declare;
+  if (attendu && synthetiques.length === 0) {
+    await admin.from("failles").insert({
+      logement_id: logementId,
+      element: "detecteur_fumee",
+      risque: "incendie",
+      source: "declaration",
+      origine: ORIGINE_ABSENT_VIDEO,
+      piece: null,
+    } as never);
+  } else if (!attendu && synthetiques.length) {
+    await admin.from("failles").delete().in("id", synthetiques.map((f) => f.id)).eq("origine", ORIGINE_ABSENT_VIDEO);
+  }
 }

@@ -67,6 +67,8 @@ export type Faille = {
   cote?: Cote;
   /** Origine de la mesure : pipeline vision, plan B précalculé, ou saisie manuelle. */
   origine: "pipeline" | "precalcule" | "manuel";
+  /** Vrai : point ajouté parce que la vidéo ne montre pas l'élément (détecteur de fumée) ; on demande à l'utilisateur. */
+  non_repere?: boolean;
   statut: "a_traiter" | "en_traitement" | "regle" | "a_surveiller";
   /** Position de l'élément dans le modèle 3D de sa pièce (repère du .glb, en mètres), quand la vision la donne. */
   repere_3d?: [number, number, number] | null;

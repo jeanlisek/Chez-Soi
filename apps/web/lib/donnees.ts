@@ -233,6 +233,7 @@ export async function chargerLogement(id: string): Promise<Logement | null> {
             }
           : undefined,
       origine: f.origine === "manuel" ? "manuel" : "pipeline",
+      non_repere: f.origine === "absence_video",
       statut: a?.statut === "fait" ? "regle" : a?.statut === "en_cours" ? "en_traitement" : "a_traiter",
     };
   });

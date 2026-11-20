@@ -16,7 +16,12 @@ export type EtatRun = {
     decision_validation: string | null;
     coupe_circuit: unknown;
   };
-  validation_en_attente: { id: string; resume: string | null } | null;
+  validation_en_attente: {
+    id: string;
+    resume: string | null;
+    /** Contrôle de la fiche par le code, fait avant la décision (migration 0016). */
+    controle?: { url: string | null; nom: string | null; verifications: { libelle: string; ok: boolean }[]; alerte: string | null } | null;
+  } | null;
 };
 
 const TERMINAUX = ["completed", "failed", "timed_out", "interrupted", "cancelled", "canceled"];

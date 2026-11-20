@@ -269,3 +269,88 @@ export function preuvesDepuisHtml(url: string, html: string, dims?: { largeur_cm
     erreur: null,
   };
 }
+
+/* ---------- Contrôle AVANT la décision de l'utilisateur (20/11) ---------- */
+
+/** Résultat montré sur l'écran de validation, avant « Approuver » : ce que le code a vérifié lui-même. */
+export type ControleFiche = {
+  url: string | null;
+  nom: string | null;
+  verifications: { libelle: string; ok: boolean }[];
+  /** Première vérification manquée, en clair ; `null` si tout est vérifié. */
+  alerte: string | null;
+};
+
+/** Couples « a × b cm » de la page. */
+function couplesCm(texte: string): [number, number][] {
+  const t = texte.replace(/,/g, ".");
+  return [...t.matchAll(/(\d+(?:\.\d+)?)\s*(?:cm)?\s*[x×]\s*(\d+(?:\.\d+)?)\s*cm/gi)].map((m) => [Number(m[1]), Number(m[2])]);
+}
+
+/**
+ * Partie pure du contrôle avant validation. `html` null : fiche introuvable ou illisible.
+ * Vérifications selon le produit : taille compatible avec la cote (ou découpe écrite sur la fiche),
+ * norme NF EN 14604 pour un détecteur, détection de mouvement pour un éclairage.
+ */
+export function controleDepuisHtml(
+  url: string | null,
+  html: string | null,
+  element: string | null,
+  cote: { largeur_cm: number; longueur_cm: number } | null,
+  raison?: string,
+): ControleFiche {
+  if (!url || html === null) {
+    const libelle = url ? `Fiche produit relue par Chez Soi (${raison ?? "illisible"})` : "Fiche produit trouvée dans le parcours de l'agent";
+    return { url, nom: null, verifications: [{ libelle, ok: false }], alerte: `${libelle} : non. Ouvrez la fiche et vérifiez avant d'approuver.` };
+  }
+  const texte = texteDeLaPage(html).replace(/\s+/g, " ");
+  const verifications: ControleFiche["verifications"] = [{ libelle: "Fiche produit relue par Chez Soi", ok: true }];
+  if (element === "detecteur_fumee") {
+    verifications.push({ libelle: "Norme NF EN 14604 indiquée sur la fiche", ok: /14\s?604/.test(texte) });
+  } else if (element === "eclairage") {
+    verifications.push({ libelle: "Allumage à la détection de mouvement indiqué sur la fiche", ok: /capteur|d[ée]tect(eur|ion) de (mouvement|pr[ée]sence)/i.test(texte) });
+  } else if (cote) {
+    const [petitC, grandC] = [cote.largeur_cm, cote.longueur_cm].sort((a, b) => a - b);
+    const decoupe = phraseDecoupe(texte);
+    const couples = couplesCm(texte).map(([a, b]) => [Math.min(a, b), Math.max(a, b)] as const);
+    const tient = couples.some(([p, g]) => p <= petitC + 1 && g <= grandC + 1);
+    const plusGrand = couples.some(([p, g]) => p >= petitC && g >= grandC);
+    verifications.push({
+      libelle: `Taille compatible avec ${Math.round(cote.largeur_cm)} × ${Math.round(cote.longueur_cm)} cm`,
+      ok: tient || (plusGrand && decoupe !== null),
+    });
+    if (!tient && plusGrand) verifications.push({ libelle: "La fiche dit qu'il se découpe", ok: decoupe !== null });
+  }
+  const manque = verifications.find((v) => !v.ok);
+  return {
+    url,
+    nom: nomDepuisHtml(html),
+    verifications,
+    alerte: manque ? `${manque.libelle} : non confirmé par Chez Soi. Ouvrez la fiche et vérifiez avant d'approuver.` : null,
+  };
+}
+
+/** URL de la fiche à contrôler : celle de la demande si c'est une fiche, sinon la dernière fiche visitée par l'agent. */
+export function ficheAControler(urlDemande: string | undefined, pagesVues: readonly string[]): string | null {
+  if (urlDemande && estFicheAutorisee(urlDemande)) return urlDemande;
+  return [...pagesVues].reverse().find((u) => estFicheAutorisee(u)) ?? null;
+}
+
+/** Lit la fiche (6 s au plus : le webhook H doit répondre vite) puis la contrôle. */
+export async function controlerAvantValidation(
+  url: string | null,
+  element: string | null,
+  cote: { largeur_cm: number; longueur_cm: number } | null,
+): Promise<ControleFiche> {
+  if (!url) return controleDepuisHtml(null, null, element, cote);
+  try {
+    const reponse = await fetch(url, {
+      headers: { "User-Agent": UA_NAVIGATEUR, "Accept-Language": "fr-FR,fr;q=0.9" },
+      signal: AbortSignal.timeout(6_000),
+    });
+    if (!reponse.ok || !estFicheAutorisee(reponse.url || url)) return controleDepuisHtml(url, null, element, cote, `HTTP ${reponse.status}`);
+    return controleDepuisHtml(url, await reponse.text(), element, cote);
+  } catch (erreur) {
+    return controleDepuisHtml(url, null, element, cote, erreur instanceof Error ? erreur.name : "erreur");
+  }
+}

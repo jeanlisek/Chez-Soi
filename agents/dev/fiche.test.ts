@@ -55,3 +55,17 @@ test('produit sans dimension (veilleuse) : ni cote ni dimensions exigées, champ
   assert.ok(controlerSortieUsage2(sortie).some((e) => /largeur_cm/.test(e)));
   assert.ok(controlerSortieUsage2({ ...sortie, prix_eur: undefined }, undefined, true).some((e) => /prix_eur/.test(e)));
 });
+
+test('contrôle avant validation : norme du détecteur, taille du tapis, fiche introuvable', async () => {
+  const { controleDepuisHtml, ficheAControler } = await import('./fiche');
+  const daaf = controleDepuisHtml('https://www.castorama.fr/x/1_CAFR.prd', '<title>Détecteur | Castorama</title><p>Norme EN 14604</p>', 'detecteur_fumee', null);
+  assert.equal(daaf.alerte, null);
+  assert.equal(daaf.nom, 'Détecteur');
+  const sans = controleDepuisHtml('https://www.castorama.fr/x/1_CAFR.prd', '<p>Détecteur</p>', 'detecteur_fumee', null);
+  assert.match(sans.alerte ?? '', /14604/);
+  const cote = { largeur_cm: 38.4, longueur_cm: 58.8 };
+  assert.equal(controleDepuisHtml('https://www.ikea.com/fr/fr/p/a-1/', '<p>67,5x200 cm</p><p>Facile à couper</p>', 'tapis', cote).alerte, null);
+  assert.match(controleDepuisHtml('https://www.ikea.com/fr/fr/p/a-1/', '<p>67,5x200 cm</p>', 'tapis', cote).alerte ?? '', /Taille/);
+  assert.match(controleDepuisHtml(null, null, 'tapis', cote).alerte ?? '', /Fiche produit/);
+  assert.equal(ficheAControler('https://www.ikea.com/fr/fr/shoppingcart/', ['https://www.ikea.com/fr/fr/search/', 'https://www.ikea.com/fr/fr/p/a-1/', 'https://www.ikea.com/fr/fr/shoppingcart/']), 'https://www.ikea.com/fr/fr/p/a-1/');
+});

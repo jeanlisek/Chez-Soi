@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { Icon, Triangle } from "@/components/cs/icons";
-import { ActionBar, BackButton, Header, Illus, Pill, RoundButton, Screen } from "@/components/cs/ui";
+import { ActionBar, BackButton, Header, Illus, Pill, RoundButton, Screen, cx } from "@/components/cs/ui";
 import { lireResume, useRunAgent } from "@/lib/agent/client";
 import { PROPOSITION_EXEMPLE } from "@/lib/demo/logement-exemple";
 import { useParcours } from "@/lib/demo/etat";
@@ -52,13 +52,15 @@ export default function PageValidation() {
   // Vrai logement : la proposition affichée est celle de la session ; on la garde après le clic.
   const sortie = suivi.etat?.run.sortie_finale as { lien?: string; produit?: string; prix_eur?: number; largeur_cm?: number; longueur_cm?: number } | null | undefined;
   const lue = demande ? lireResume(demande.resume) : null;
+  // Contrôle de la fiche par le code, fait AVANT la décision : montré avant « Approuver ».
+  const controle = demande?.controle ?? null;
   const reelle: typeof PROPOSITION_EXEMPLE | null = lue
-    ? { action: "panier", resume: lue.texte, produit: lue.produit ?? lue.texte, montant_eur: lue.montant_eur ?? 0, url: "", dimensions: undefined }
+    ? { action: "panier", resume: lue.texte, produit: lue.produit ?? lue.texte, montant_eur: lue.montant_eur ?? 0, url: controle?.url ?? "", dimensions: undefined }
     : garde;
   const p: typeof PROPOSITION_EXEMPLE = reel
     ? {
         ...(reelle ?? { action: "panier", resume: "", produit: sortie?.produit ?? "", montant_eur: sortie?.prix_eur ?? 0, url: "", dimensions: undefined }),
-        url: sortie?.lien ?? "",
+        url: reelle?.url || sortie?.lien || "",
         dimensions: sortie?.largeur_cm && sortie?.longueur_cm ? `${sortie.largeur_cm} × ${sortie.longueur_cm} cm` : undefined,
       }
     : PROPOSITION_EXEMPLE;
@@ -155,6 +157,21 @@ export default function PageValidation() {
             </div>
           </section>
 
+          {controle && (
+            <section className={cx("flex flex-col gap-1.5 rounded-[26px] border-2 bg-white px-4 py-3.5", controle.alerte ? "border-attention-icon" : "border-succes-border")}>
+              <span className="text-xs font-bold tracking-[0.06em] text-ink-muted uppercase">Vérifié par Chez Soi sur la fiche</span>
+              <ul className="flex flex-col gap-1">
+                {controle.verifications.map((v) => (
+                  <li key={v.libelle} className="flex items-start gap-2 text-sm leading-5">
+                    <span aria-hidden className={cx("mt-0.5 font-bold", v.ok ? "text-succes-text" : "text-attention-text")}>{v.ok ? "✓" : "!"}</span>
+                    <span>{v.libelle}<span className="sr-only">{v.ok ? " : oui" : " : non confirmé"}</span></span>
+                  </li>
+                ))}
+              </ul>
+              {controle.alerte && <p className="text-xs leading-4 font-semibold text-attention-text">{controle.alerte}</p>}
+            </section>
+          )}
+
           <section className="flex flex-col gap-2 rounded-[26px] bg-pervenche-soft p-3">
             {p.url && <LienProduit url={p.url} />}
             <p className="px-1 text-xs leading-4 text-ink-soft">
@@ -179,7 +196,7 @@ export default function PageValidation() {
       <ActionBar withNav>
         {attente && (
           <>
-            <Pill onClick={() => void decider("approuve")} disabled={envoi}>{envoi ? "Envoi…" : "Approuver"}</Pill>
+            <Pill onClick={() => void decider("approuve")} disabled={envoi}>{envoi ? "Envoi…" : controle?.alerte ? "Approuver quand même" : "Approuver"}</Pill>
             <div className="grid grid-cols-2 gap-2">
               <Pill variant="blanc" onClick={() => setModif(true)} disabled={envoi}>Modifier</Pill>
               <Pill variant="blanc" onClick={() => void decider("refuse")} disabled={envoi}>Refuser</Pill>

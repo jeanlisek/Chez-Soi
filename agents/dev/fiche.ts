@@ -6,6 +6,12 @@
  * citation, on la cherche sur la page publique (simple GET, sans session H).
  */
 
+/**
+ * En-tête de navigateur courant : Castorama répond HTTP 503 à un agent inconnu (run du 20/11).
+ * Lecture publique d'une fiche, une requête par run, sans cookie ni contournement de captcha.
+ */
+const UA_NAVIGATEUR = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36";
+
 export type VerificationCitation = {
   url: string;
   /** `exacte` : trouvée telle quelle ; `approchee` : trouvée à `mots_differents` mots près ; `absente` ; `non_verifiable` : page illisible. */
@@ -85,7 +91,7 @@ export async function verifierCitationSurFiche(url: string, citation: string): P
     let reponse!: Response;
     for (let i = 0; i < 5; i++) {
       reponse = await fetch(destination, { redirect: "manual",
-        headers: { "User-Agent": "Mozilla/5.0 (ChezSoi controle)", "Accept-Language": "fr-FR,fr;q=0.9" },
+        headers: { "User-Agent": UA_NAVIGATEUR, "Accept-Language": "fr-FR,fr;q=0.9" },
         signal: AbortSignal.timeout(20_000),
       });
       if (![301,302,303,307,308].includes(reponse.status)) break;
@@ -168,7 +174,7 @@ export async function lireNomSurFiche(url: string): Promise<string | null> {
   if (!estFicheAutorisee(url)) return null;
   try {
     const reponse = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (ChezSoi controle)", "Accept-Language": "fr-FR,fr;q=0.9" },
+      headers: { "User-Agent": UA_NAVIGATEUR, "Accept-Language": "fr-FR,fr;q=0.9" },
       signal: AbortSignal.timeout(6_000),
     });
     if (!reponse.ok || !estFicheAutorisee(reponse.url || url)) return null;
@@ -239,7 +245,7 @@ export async function preuvesSurFiche(url: string, dims?: { largeur_cm?: number;
   if (!estFicheAutorisee(url)) return { ...vide, erreur: "fiche hors liste blanche" };
   try {
     const reponse = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (ChezSoi controle)", "Accept-Language": "fr-FR,fr;q=0.9" },
+      headers: { "User-Agent": UA_NAVIGATEUR, "Accept-Language": "fr-FR,fr;q=0.9" },
       signal: AbortSignal.timeout(8_000),
     });
     if (!reponse.ok || !estFicheAutorisee(reponse.url || url)) return { ...vide, erreur: `HTTP ${reponse.status}` };

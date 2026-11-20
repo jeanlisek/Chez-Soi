@@ -21,6 +21,8 @@ export type EtatParcours = {
   sessionId?: string | null;
   decision: "approuve" | "refuse" | "modifier" | null;
   absenceJours: number;
+  /** Missions déjà lancées (une session H à la fois) : le bouton passe à la suivante. */
+  lancees?: string[];
 };
 
 type ContexteParcours = {

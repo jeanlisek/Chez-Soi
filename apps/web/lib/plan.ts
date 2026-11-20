@@ -220,6 +220,9 @@ export function contreMesure(element: string, f: Faille, seuil: string | null, i
       return { texte: `Élargir le passage de la porte (passage utile ${seuil ?? "conforme"})`, usage: null };
     case "main_courante":
       return { texte: "Poser une main courante à la bonne hauteur", usage: null };
+    // « Verrouiller avec soin » est une habitude, pas des travaux : l'action concrète est une poignée à clé.
+    case "fenetre":
+      return { texte: "Faire poser des poignées de fenêtre à clé", usage: null };
     // IKEA France ne vend pas de détecteur de fumée (recherche du 20/11) : l'agent le cherche sur Castorama.
     case "detecteur_fumee":
       return f.origine === ORIGINE_ABSENT_VIDEO

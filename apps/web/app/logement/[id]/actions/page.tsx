@@ -70,10 +70,17 @@ export default function PageActions() {
   const compte = (o: Onglet) =>
     o === "contrat" ? actions.filter((a) => a.source.force === "contrat").length : actions.filter((a) => a.groupe === o).length;
 
+  // Missions encore à lancer ; quand toutes l'ont été, on repart de la première.
+  const pretesAgent = missions.filter((a) => a.usage === 2);
+  const nonLancees = pretesAgent.filter((a) => !(etat.lancees ?? []).includes(a.id));
+  const dejaLancees = nonLancees.length ? (etat.lancees ?? []) : [];
+  const prochaine = (nonLancees.length ? nonLancees : pretesAgent)[0];
+  const rangProchaine = prochaine ? pretesAgent.indexOf(prochaine) + 1 : 0;
+
   const lancer = async () => {
     let sessionId: string | null = null;
     if (!logement.exemple) {
-      // Une session par action : la route lance la première de la liste (objets d'abord).
+      // Une session H à la fois (quota de l'équipe) : chaque clic lance la mission suivante.
       const pretes = missions.filter((a) => a.usage === 2);
       if (pretes.length === 0) {
         setMessage("Confirmez d'abord les dimensions sur l'écran du point concerné : l'agent en a besoin pour choisir le produit.");
@@ -83,7 +90,7 @@ export default function PageActions() {
       const r = await fetch("/api/agent/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ logement_id: logement.id, usage: 2, action_ids: pretes.map((a) => a.id) }),
+        body: JSON.stringify({ logement_id: logement.id, usage: 2, action_ids: [prochaine!.id] }),
       }).catch(() => null);
       const corps = r ? ((await r.json().catch(() => null)) as { session_id?: string; message?: string } | null) : null;
       setEnvoi(false);
@@ -93,7 +100,7 @@ export default function PageActions() {
       }
       sessionId = corps.session_id;
     }
-    maj({ run: "en_cours", decision: null, sessionId });
+    maj({ run: "en_cours", decision: null, sessionId, lancees: prochaine ? [...dejaLancees, prochaine.id] : etat.lancees });
     router.push(`${base}/agent`);
   };
 
@@ -159,7 +166,8 @@ export default function PageActions() {
                         ? "Aucun détecteur repéré sur votre vidéo. Il en faut au moins un : un détecteur autonome marqué NF EN 14604 et CE, fixé au plafond. Vous en avez déjà un ?"
                         : "Appuyez sur son bouton test et vérifiez au dos la norme NF EN 14604 et le marquage CE ; sinon, remplacez-le par un modèle conforme."}
                     </p>
-                    {f.non_repere && (
+                    {f.non_repere && reponse && <p className={cx("text-xs font-semibold", c.sub)} aria-live="polite">Mise à jour du plan… (une dizaine de secondes)</p>}
+                    {f.non_repere && !reponse && (
                       <div className="grid grid-cols-2 gap-1 rounded-full bg-white/60 p-1">
                         <button type="button" onClick={() => void repondreDetecteur(true)} disabled={reponse} className="h-[38px] rounded-full bg-white text-[13px] font-bold disabled:opacity-50">
                           Oui, j&apos;en ai un
@@ -223,7 +231,9 @@ export default function PageActions() {
       <ActionBar withNav>
         {message && <p className="rounded-[20px] bg-attention-bg px-4 py-3 text-sm font-semibold text-attention-text">{message}</p>}
         <Pill onClick={lancer} disabled={missions.length === 0 || envoi}>
-          {missions.length === 0 ? "Aucune mission pour l'agent" : envoi ? "Lancement…" : `Lancer l'agent · ${missions.length} mission${missions.length > 1 ? "s" : ""}`}
+          {missions.length === 0 ? "Aucune mission pour l'agent" : envoi ? "Lancement…" : logement.exemple || pretesAgent.length <= 1
+              ? `Lancer l'agent · ${missions.length} mission${missions.length > 1 ? "s" : ""}`
+              : `Lancer l'agent · mission ${rangProchaine} sur ${pretesAgent.length}`}
         </Pill>
       </ActionBar>
     </Screen>

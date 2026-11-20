@@ -164,7 +164,14 @@ const usage2: DefinitionUsage = {
     }
     const evaluation = evaluerSortie(reponse, sortieUsage2Schema, (s) => controlerSortieUsage2(s, cote, libre));
     const sortie = evaluation.sortie;
-    if (!sortie?.trouve || !sortie.lien || !estFicheAutorisee(sortie.lien)) return evaluation as Evaluation<unknown>;
+    if (!sortie?.trouve) return evaluation as Evaluation<unknown>;
+    // Un lien de recherche ou de panier ne prouve rien (run du 20/11 : lien = page de recherche IKEA).
+    if (!sortie.lien || !estFicheAutorisee(sortie.lien)) {
+      return {
+        ...evaluation,
+        ecarts_metier: [...evaluation.ecarts_metier, `lien « ${sortie.lien ?? "absent"} » : pas une fiche produit autorisée, aucune preuve, produit à REFUSER`],
+      } as Evaluation<unknown>;
+    }
     // Contrôle v2 (19/11) : le code relit la fiche et y cherche lui-même les preuves. La recopie de
     // l'agent (nom, citation) n'est plus jugée : seule la page compte. Sans phrase de découpe sur la
     // fiche, un produit plus grand que la cote reste refusé ; des dimensions absentes de la fiche aussi.

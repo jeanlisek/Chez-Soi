@@ -60,6 +60,7 @@ export default function PagePlan() {
     [toutes, sel, filtre],
   );
   const plan = disposer(logement.pieces);
+  const horsPiece = toutes.filter((f) => !logement.pieces.some((p) => p.id === f.piece_id) && (filtre === "toutes" || f.risque === filtre));
   const prenom = logement.occupant.libelle;
 
   // Maquette : tant qu'aucune pièce n'est analysée et qu'aucun point n'existe, l'accueil invite à filmer.
@@ -117,7 +118,25 @@ export default function PagePlan() {
         <Chip active={filtre === "toutes"} onClick={() => setFiltre("toutes")}>Toutes</Chip>
         <Chip active={filtre === "chute"} onClick={() => setFiltre("chute")}>Chute · {toutes.filter((f) => f.risque === "chute").length}</Chip>
         <Chip active={filtre === "intrusion"} onClick={() => setFiltre("intrusion")}>Intrusion · {toutes.filter((f) => f.risque === "intrusion").length}</Chip>
+        {toutes.some((f) => f.risque === "incendie") && (
+          <Chip active={filtre === "incendie"} onClick={() => setFiltre("incendie")}>Incendie · {toutes.filter((f) => f.risque === "incendie").length}</Chip>
+        )}
       </div>
+
+      {/* Points sans pièce (détecteur de fumée non repéré) : sinon invisibles sur le plan. */}
+      {horsPiece.length > 0 && (
+        <>
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-lg font-bold">Tout le logement</h2>
+            <span className="text-[13px] font-bold text-cobalt">{horsPiece.length} point{horsPiece.length > 1 ? "s" : ""}</span>
+          </div>
+          <ul className="flex flex-col gap-2">
+            {horsPiece.map((f) => (
+              <FailleRow key={f.id} f={f} href={`${base}/faille/${f.id}`} />
+            ))}
+          </ul>
+        </>
+      )}
 
       {logement.pieces.length > 0 && (
         <div className="relative mx-auto w-[350px] flex-none" style={{ height: plan.hauteur }} aria-label="Plan du logement, touchez une pièce">
@@ -193,7 +212,7 @@ function FailleRow({ f, href }: { f: Faille; href: string }) {
         </span>
         <span className="flex min-w-0 flex-1 flex-col">
           <b className="text-sm">{f.titre}</b>
-          <span className="text-xs text-ink-muted">{f.risque === "chute" ? "Chute" : f.risque === "intrusion" ? "Intrusion" : "Autre"} · {detail}</span>
+          <span className="text-xs text-ink-muted">{f.risque === "chute" ? "Chute" : f.risque === "intrusion" ? "Intrusion" : f.risque === "incendie" ? "Incendie" : "Autre"} · {detail}</span>
         </span>
         <Signal kind={f.niveau}>{LIBELLE_NIVEAU[f.niveau]}</Signal>
       </Link>

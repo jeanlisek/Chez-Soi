@@ -10,7 +10,7 @@ import { BackButton, Header, OptionsMenu, Pill, RoundButton, Screen, Sheet, Sign
 import { useParcours } from "@/lib/demo/etat";
 import { libelleSource, type Faille } from "@/lib/domaine";
 
-import { confirmerCote, retirerPoint } from "../../actions-serveur";
+import { confirmerCote, declarerDetecteur, retirerPoint } from "../../actions-serveur";
 
 /** Tapis repéré sans cote estimée par la vision : point de départ que l'utilisateur ajuste. */
 const COTE_PAR_DEFAUT = { largeur_cm: 60, longueur_cm: 90, confirmee: false };
@@ -44,6 +44,23 @@ export default function PageFaille() {
   const toast = useToast();
   const router = useRouter();
   if (!f) return null;
+
+  // Point « détecteur non repéré » : la réponse de l'utilisateur met le plan à jour.
+  const repondreDetecteur = async (present: boolean) => {
+    if (logement.exemple) return;
+    setEnvoi(true);
+    const r = await declarerDetecteur(logement.id, present).catch(() => null);
+    setEnvoi(false);
+    if (!r?.ok) {
+      toast.show(r?.message ?? "Réponse non enregistrée. Réessayez dans un instant.");
+      return;
+    }
+    toast.show(present ? "C'est noté : testez-le une fois par mois avec son bouton" : "C'est noté : le détecteur reste dans votre plan");
+    if (present) {
+      router.push(`${base}/actions`);
+      router.refresh();
+    } else router.refresh();
+  };
   const piece = logement.pieces.find((p) => p.id === f.piece_id);
   const photo = piece?.image_url ?? null;
   // Vrai logement : un tapis reste mesurable même si la vision n'a pas estimé sa cote.
@@ -115,10 +132,26 @@ export default function PageFaille() {
     <Screen className="gap-3">
       <Header left={<BackButton href={`${base}/plan`} />} title={piece?.nom ?? "Faille"} right={<OptionsMenu label="Options du point" items={[
         { label: "Partager avec un proche", icon: "share", onClick: () => void partager() },
-        { label: "Signaler une erreur de détection", icon: "police", onClick: () => setSignaler(true) },
+        // Un point « non repéré » ne vient pas de la vision : il n'y a pas d'erreur de détection à signaler.
+        ...(f.non_repere ? [] : [{ label: "Signaler une erreur de détection", icon: "police" as const, onClick: () => setSignaler(true) }]),
         { label: "Voir le plan d'action", icon: "list", onClick: () => router.push(`${base}/actions`) },
       ]} />} />
 
+      {f.non_repere ? (
+        <section className="flex flex-col gap-3 rounded-card bg-pervenche px-4 py-4">
+          <Signal kind={f.niveau} />
+          <p className="text-sm leading-5 font-semibold">Aucun détecteur de fumée repéré sur votre vidéo. En avez-vous un ?</p>
+          <div className="grid grid-cols-2 gap-1 rounded-full bg-white/60 p-1">
+            <button type="button" disabled={envoi} onClick={() => void repondreDetecteur(true)} className="h-[38px] rounded-full bg-white text-[13px] font-bold disabled:opacity-50">
+              Oui, j&apos;en ai un
+            </button>
+            <button type="button" disabled={envoi} onClick={() => void repondreDetecteur(false)} className="h-[38px] rounded-full text-[13px] font-bold disabled:opacity-50">
+              Non
+            </button>
+          </div>
+        </section>
+      ) : (
+      <>
       <section className="relative h-[300px] flex-none overflow-hidden rounded-card bg-pervenche">
         {photo && vue === "photo" ? (
           f.vignette ? (
@@ -178,6 +211,9 @@ export default function PageFaille() {
         </span>
         )}
       </div>
+
+      </>
+      )}
 
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-bold">{f.titre}</h1>

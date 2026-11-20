@@ -10,7 +10,7 @@ import { runTermine, useRunAgent } from "@/lib/agent/client";
 import { ETAPES_AGENT_EXEMPLE } from "@/lib/demo/logement-exemple";
 import { useParcours } from "@/lib/demo/etat";
 
-const CONSIGNES = ["sans découpe", "livraison rapide", "lavable"];
+const CONSIGNES = ["moins cher", "livraison rapide", "autre modèle"];
 
 // Ce que l'agent peut faire et ce qu'il ne fait jamais (arrêt garanti par `demander_validation`).
 const DROITS = ["Lire les fiches produit et comparer les prix", "Vérifier une dimension sur la fiche, avec la citation", "Préparer un panier, puis s'arrêter"];
@@ -44,7 +44,7 @@ export default function PageAgent() {
 
   const etapes = useMemo(() => {
     if (reel) {
-      const e = ["Session ouverte chez H, sans connexion à aucun compte", "Cotes et contraintes lues dans votre plan", "Recherche et vérification de la dimension sur la fiche"];
+      const e = ["Session ouverte chez H, sans connexion à aucun compte", "Mesures et contraintes lues dans votre plan", "Recherche du produit et vérification sur la fiche"];
       for (const c of consignes) e.push(`Consigne envoyée : ${c}`);
       e.push("Produit au panier, validation demandée");
       return e;
@@ -202,7 +202,7 @@ export default function PageAgent() {
 
           <form onSubmit={envoyer} className="flex items-center gap-2 rounded-full bg-white py-1.5 pr-1.5 pl-[18px]">
             <label htmlFor="steer" className="sr-only-focusable">Consigne pour l&apos;agent</label>
-            <input id="steer" value={texte} onChange={(e) => setTexte(e.target.value)} disabled={fini} maxLength={200} placeholder="Demandez-lui, ex. sans découpe" className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none disabled:opacity-50" />
+            <input id="steer" value={texte} onChange={(e) => setTexte(e.target.value)} disabled={fini} maxLength={200} placeholder="Demandez-lui, ex. moins de 20 €" className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none disabled:opacity-50" />
             <button type="submit" aria-label="Envoyer la consigne" disabled={fini || !texte.trim()} className="flex h-11 w-11 items-center justify-center rounded-full bg-nuit text-white disabled:opacity-40">
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinejoin="round"><path d="M4 12l16-8-6 16-2-7z" /></svg>
             </button>

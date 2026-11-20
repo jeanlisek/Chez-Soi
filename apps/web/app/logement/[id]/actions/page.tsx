@@ -166,7 +166,8 @@ export default function PageActions() {
                         ? "Aucun détecteur repéré sur votre vidéo. Il en faut au moins un : un détecteur autonome marqué NF EN 14604 et CE, fixé au plafond. Vous en avez déjà un ?"
                         : "Appuyez sur son bouton test et vérifiez au dos la norme NF EN 14604 et le marquage CE ; sinon, remplacez-le par un modèle conforme."}
                     </p>
-                    {f.non_repere && (
+                    {f.non_repere && reponse && <p className={cx("text-xs font-semibold", c.sub)} aria-live="polite">Mise à jour du plan… (une dizaine de secondes)</p>}
+                    {f.non_repere && !reponse && (
                       <div className="grid grid-cols-2 gap-1 rounded-full bg-white/60 p-1">
                         <button type="button" onClick={() => void repondreDetecteur(true)} disabled={reponse} className="h-[38px] rounded-full bg-white text-[13px] font-bold disabled:opacity-50">
                           Oui, j&apos;en ai un
